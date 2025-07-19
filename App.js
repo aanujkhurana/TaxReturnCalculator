@@ -332,6 +332,11 @@ const styles = StyleSheet.create({
     borderColor: '#357ABD',
     transform: [{ scale: 1.1 }],
   },
+  stepCircleDisabled: {
+    backgroundColor: '#f8f8f8',
+    borderColor: '#e0e0e0',
+    opacity: 0.5,
+  },
   stepNumber: {
     fontSize: 14,
     fontWeight: 'bold',
@@ -339,6 +344,9 @@ const styles = StyleSheet.create({
   },
   stepNumberActive: {
     color: '#fff',
+  },
+  stepNumberDisabled: {
+    color: '#ccc',
   },
   stepLabel: {
     fontSize: 12,
@@ -349,6 +357,10 @@ const styles = StyleSheet.create({
   stepLabelActive: {
     color: '#4A90E2',
     fontWeight: 'bold',
+  },
+  stepLabelDisabled: {
+    color: '#ccc',
+    opacity: 0.6,
   },
   stepLine: {
     position: 'absolute',
@@ -421,25 +433,49 @@ const styles = StyleSheet.create({
 });
 
 // Memoized InputField component to prevent unnecessary re-renders
-const InputField = memo(({ label, value, onChangeText, placeholder, keyboardType = 'numeric', multiline = false, icon }) => (
-  <View style={styles.inputContainer}>
-    <View style={styles.labelContainer}>
-      <Ionicons name={icon} size={18} color="#4A90E2" />
-      <Text style={styles.inputLabel}>{label}</Text>
+const InputField = memo(({ label, value, onChangeText, placeholder, keyboardType = 'numeric', multiline = false, icon }) => {
+  // Filter input for numeric fields to only allow numbers and decimal point
+  const handleTextChange = (text) => {
+    if (keyboardType === 'numeric') {
+      // Allow only numbers, decimal point, and handle empty string
+      const filteredText = text.replace(/[^0-9.]/g, '');
+
+      // Ensure only one decimal point
+      const parts = filteredText.split('.');
+      if (parts.length > 2) {
+        const filtered = parts[0] + '.' + parts.slice(1).join('');
+        onChangeText(filtered);
+      } else {
+        onChangeText(filteredText);
+      }
+    } else if (keyboardType === 'number-pad') {
+      // For integer-only fields, allow only numbers
+      const filteredText = text.replace(/[^0-9]/g, '');
+      onChangeText(filteredText);
+    } else {
+      onChangeText(text);
+    }
+  };
+
+  return (
+    <View style={styles.inputContainer}>
+      <View style={styles.labelContainer}>
+        <Ionicons name={icon} size={18} color="#4A90E2" />
+        <Text style={styles.inputLabel}>{label}</Text>
+      </View>
+      <TextInput
+        style={[styles.input, multiline && styles.multilineInput]}
+        value={value}
+        onChangeText={handleTextChange}
+        placeholder={placeholder}
+        keyboardType={keyboardType}
+        multiline={multiline}
+        placeholderTextColor="#999"
+        returnKeyType="done"
+      />
     </View>
-    <TextInput
-      style={[styles.input, multiline && styles.multilineInput]}
-      value={value}
-      onChangeText={onChangeText}
-      placeholder={placeholder}
-      keyboardType={keyboardType}
-      multiline={multiline}
-      placeholderTextColor="#999"
-      returnKeyType="done"
-      blurOnSubmit={true}
-    />
-  </View>
-));
+  );
+});
 
 InputField.displayName = 'InputField';
 
@@ -542,29 +578,73 @@ export default function App() {
 
   // Step navigation functions
   const nextStep = useCallback(() => {
+    console.log('Next step clicked. Current values:', { jobIncomes, abnIncome, taxWithheld });
     if (validateCurrentStep()) {
       setCurrentStep(prev => Math.min(prev + 1, totalSteps));
     }
-  }, [totalSteps]);
+  }, [totalSteps, validateCurrentStep, jobIncomes, abnIncome, taxWithheld]);
 
   const prevStep = useCallback(() => {
     setCurrentStep(prev => Math.max(prev - 1, 1));
   }, []);
 
   const goToStep = (step) => {
+    // Prevent direct access to results step unless calculation is complete
+    if (step === 4 && !result) {
+      Alert.alert('Complete Form First', 'Please complete the form and calculate your tax estimate before viewing results.');
+      return;
+    }
+
+    // For steps 2 and 3, validate step 1 first
+    if (step > 1) {
+      // Validate step 1 (income) before allowing navigation to later steps
+      const hasValidJobIncome = jobIncomes.some(income => {
+        const trimmed = income?.trim();
+        const parsed = parseFloat(trimmed);
+        return trimmed && !isNaN(parsed) && parsed > 0;
+      });
+
+      const hasValidAbnIncome = abnIncome?.trim() && !isNaN(parseFloat(abnIncome.trim())) && parseFloat(abnIncome.trim()) > 0;
+
+      if (!hasValidJobIncome && !hasValidAbnIncome) {
+        Alert.alert('Complete Income First', 'Please enter at least one income source before proceeding.');
+        return;
+      }
+
+      const taxWithheldTrimmed = taxWithheld?.trim();
+      if (!taxWithheldTrimmed || isNaN(parseFloat(taxWithheldTrimmed)) || parseFloat(taxWithheldTrimmed) < 0) {
+        Alert.alert('Complete Income First', 'Please enter a valid tax withheld amount before proceeding.');
+        return;
+      }
+    }
+
     setCurrentStep(step);
   };
 
   // Step validation
-  const validateCurrentStep = () => {
+  const validateCurrentStep = useCallback(() => {
     switch (currentStep) {
       case 1: // Income step
-        if (jobIncomes.every(income => !income || isNaN(parseFloat(income))) && (!abnIncome || isNaN(parseFloat(abnIncome)))) {
-          Alert.alert('Validation Error', 'At least one income source (TFN job or ABN income) is required');
+        // Check if at least one income source has a valid positive value
+        const hasValidJobIncome = jobIncomes.some(income => {
+          const trimmed = income?.trim();
+          const parsed = parseFloat(trimmed);
+          return trimmed && !isNaN(parsed) && parsed > 0;
+        });
+
+        const hasValidAbnIncome = abnIncome?.trim() && !isNaN(parseFloat(abnIncome.trim())) && parseFloat(abnIncome.trim()) > 0;
+
+        if (!hasValidJobIncome && !hasValidAbnIncome) {
+          Alert.alert('Validation Error', 'At least one income source (TFN job or ABN income) is required and must be greater than 0');
           return false;
         }
-        if (!taxWithheld || isNaN(parseFloat(taxWithheld))) {
-          Alert.alert('Validation Error', 'Tax withheld is required and must be a valid number');
+
+        // Check tax withheld
+        const taxWithheldTrimmed = taxWithheld?.trim();
+        const taxWithheldParsed = parseFloat(taxWithheldTrimmed);
+
+        if (!taxWithheldTrimmed || isNaN(taxWithheldParsed) || taxWithheldParsed < 0) {
+          Alert.alert('Validation Error', 'Tax withheld is required and must be a valid number (0 or greater)');
           return false;
         }
         return true;
@@ -577,17 +657,28 @@ export default function App() {
       default:
         return true;
     }
-  };
+  }, [currentStep, jobIncomes, abnIncome, taxWithheld]);
 
   const validateInputs = () => {
     const errors = [];
 
-    if (!taxWithheld || isNaN(parseFloat(taxWithheld))) {
-      errors.push('Tax withheld is required and must be a valid number');
+    // Check tax withheld
+    const taxWithheldTrimmed = taxWithheld?.trim();
+    if (!taxWithheldTrimmed || isNaN(parseFloat(taxWithheldTrimmed)) || parseFloat(taxWithheldTrimmed) < 0) {
+      errors.push('Tax withheld is required and must be a valid number (0 or greater)');
     }
 
-    if (jobIncomes.every(income => !income || isNaN(parseFloat(income))) && (!abnIncome || isNaN(parseFloat(abnIncome)))) {
-      errors.push('At least one income source (TFN job or ABN income) is required');
+    // Check if at least one income source has a valid positive value
+    const hasValidJobIncome = jobIncomes.some(income => {
+      const trimmed = income?.trim();
+      const parsed = parseFloat(trimmed);
+      return trimmed && !isNaN(parsed) && parsed > 0;
+    });
+
+    const hasValidAbnIncome = abnIncome?.trim() && !isNaN(parseFloat(abnIncome.trim())) && parseFloat(abnIncome.trim()) > 0;
+
+    if (!hasValidJobIncome && !hasValidAbnIncome) {
+      errors.push('At least one income source (TFN job or ABN income) is required and must be greater than 0');
     }
 
     if (errors.length > 0) {
@@ -758,36 +849,64 @@ export default function App() {
   };
 
   // Step Progress Indicator Component
-  const StepIndicator = () => (
-    <View style={styles.stepIndicator}>
-      {[1, 2, 3, 4].map((step) => (
-        <View key={step} style={styles.stepIndicatorRow}>
-          <TouchableOpacity
-            style={[
-              styles.stepCircle,
-              currentStep >= step && styles.stepCircleActive,
-              currentStep === step && styles.stepCircleCurrent
-            ]}
-            onPress={() => goToStep(step)}
-          >
-            <Text style={[
-              styles.stepNumber,
-              currentStep >= step && styles.stepNumberActive
-            ]}>
-              {step}
-            </Text>
-          </TouchableOpacity>
-          <Text style={[
-            styles.stepLabel,
-            currentStep >= step && styles.stepLabelActive
-          ]}>
-            {step === 1 ? 'Income' : step === 2 ? 'Deductions' : step === 3 ? 'Details' : 'Results'}
-          </Text>
-          {step < 4 && <View style={[styles.stepLine, currentStep > step && styles.stepLineActive]} />}
-        </View>
-      ))}
-    </View>
-  );
+  const StepIndicator = () => {
+    // Check if step 1 is complete for navigation purposes
+    const isStep1Complete = () => {
+      const hasValidJobIncome = jobIncomes.some(income => {
+        const trimmed = income?.trim();
+        const parsed = parseFloat(trimmed);
+        return trimmed && !isNaN(parsed) && parsed > 0;
+      });
+
+      const hasValidAbnIncome = abnIncome?.trim() && !isNaN(parseFloat(abnIncome.trim())) && parseFloat(abnIncome.trim()) > 0;
+      const taxWithheldTrimmed = taxWithheld?.trim();
+      const isValidTaxWithheld = taxWithheldTrimmed && !isNaN(parseFloat(taxWithheldTrimmed)) && parseFloat(taxWithheldTrimmed) >= 0;
+
+      return (hasValidJobIncome || hasValidAbnIncome) && isValidTaxWithheld;
+    };
+
+    const step1Complete = isStep1Complete();
+
+    return (
+      <View style={styles.stepIndicator}>
+        {[1, 2, 3, 4].map((step) => {
+          // Determine if step is accessible
+          const isAccessible = step === 1 || (step <= 3 && step1Complete) || (step === 4 && result);
+
+          return (
+            <View key={step} style={styles.stepIndicatorRow}>
+              <TouchableOpacity
+                style={[
+                  styles.stepCircle,
+                  currentStep >= step && styles.stepCircleActive,
+                  currentStep === step && styles.stepCircleCurrent,
+                  !isAccessible && styles.stepCircleDisabled
+                ]}
+                onPress={() => goToStep(step)}
+                disabled={!isAccessible}
+              >
+                <Text style={[
+                  styles.stepNumber,
+                  currentStep >= step && styles.stepNumberActive,
+                  !isAccessible && styles.stepNumberDisabled
+                ]}>
+                  {step}
+                </Text>
+              </TouchableOpacity>
+              <Text style={[
+                styles.stepLabel,
+                currentStep >= step && styles.stepLabelActive,
+                !isAccessible && styles.stepLabelDisabled
+              ]}>
+                {step === 1 ? 'Income' : step === 2 ? 'Deductions' : step === 3 ? 'Details' : 'Results'}
+              </Text>
+              {step < 4 && <View style={[styles.stepLine, currentStep > step && styles.stepLineActive]} />}
+            </View>
+          );
+        })}
+      </View>
+    );
+  };
 
 
 
@@ -963,6 +1082,7 @@ export default function App() {
         value={dependents}
         onChangeText={setDependents}
         placeholder="Number of children/dependents (e.g., 2)"
+        keyboardType="number-pad"
         icon="people-outline"
       />
 
