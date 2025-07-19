@@ -464,6 +464,7 @@ export default function App() {
   const [dependents, setDependents] = useState('0');
   const [result, setResult] = useState(null);
   const [savedCalculations, setSavedCalculations] = useState([]);
+  const [isCalculating, setIsCalculating] = useState(false);
 
   // Animation values
   const fadeAnim = new Animated.Value(0);
@@ -483,6 +484,13 @@ export default function App() {
       })
     ]).start();
   }, []);
+
+  // Auto-calculate when reaching step 4 if no result exists
+  useEffect(() => {
+    if (currentStep === 4 && !result) {
+      estimateTax();
+    }
+  }, [currentStep, result, estimateTax]);
 
   const updateJobIncome = useCallback((index, value) => {
     setJobIncomes(prevIncomes => {
@@ -533,15 +541,15 @@ export default function App() {
   };
 
   // Step navigation functions
-  const nextStep = () => {
+  const nextStep = useCallback(() => {
     if (validateCurrentStep()) {
       setCurrentStep(prev => Math.min(prev + 1, totalSteps));
     }
-  };
+  }, [totalSteps]);
 
-  const prevStep = () => {
+  const prevStep = useCallback(() => {
     setCurrentStep(prev => Math.max(prev - 1, 1));
-  };
+  }, []);
 
   const goToStep = (step) => {
     setCurrentStep(step);
@@ -589,8 +597,10 @@ export default function App() {
     return true;
   };
 
-  const estimateTax = () => {
+  const estimateTax = useCallback(() => {
     if (!validateInputs()) return;
+
+    setIsCalculating(true);
 
     const parsedJobIncomes = jobIncomes.map((val) => parseFloat(val || '0'));
     const totalTFNIncome = parsedJobIncomes.reduce((sum, curr) => sum + (isNaN(curr) ? 0 : curr), 0);
@@ -686,8 +696,9 @@ export default function App() {
     });
 
     // Navigate to results step
+    setIsCalculating(false);
     setCurrentStep(4);
-  };
+  }, [jobIncomes, abnIncome, taxWithheld, deductions, workFromHomeHours, hecsDebt, medicareExemption, dependents]);
 
   const saveCalculation = (name) => {
     if (!result) {
@@ -800,9 +811,13 @@ export default function App() {
       )}
 
       {currentStep === 3 && (
-        <TouchableOpacity style={[styles.navButton, styles.navButtonPrimary]} onPress={estimateTax}>
-          <Ionicons name="calculator-outline" size={20} color="#fff" />
-          <Text style={styles.navButtonTextPrimary}>Calculate</Text>
+        <TouchableOpacity
+          style={[styles.navButton, styles.navButtonPrimary, isCalculating && { opacity: 0.7 }]}
+          onPress={estimateTax}
+          disabled={isCalculating}
+        >
+          <Ionicons name={isCalculating ? "hourglass-outline" : "calculator-outline"} size={20} color="#fff" />
+          <Text style={styles.navButtonTextPrimary}>{isCalculating ? 'Calculating...' : 'Calculate'}</Text>
         </TouchableOpacity>
       )}
     </View>
@@ -961,7 +976,39 @@ export default function App() {
   );
 
   const renderResults = () => {
-    if (!result) return null;
+    if (isCalculating) {
+      return (
+        <View style={styles.tabContent}>
+          <View style={styles.infoBox}>
+            <Ionicons name="hourglass-outline" size={20} color="#4A90E2" />
+            <Text style={styles.infoBoxText}>
+              Calculating your tax estimation... Please wait.
+            </Text>
+          </View>
+        </View>
+      );
+    }
+
+    if (!result) {
+      return (
+        <View style={styles.tabContent}>
+          <View style={styles.infoBox}>
+            <Ionicons name="information-circle" size={20} color="#4A90E2" />
+            <Text style={styles.infoBoxText}>
+              No calculation results available. Please go back to step 3 and click "Calculate" to see your tax estimation.
+            </Text>
+          </View>
+
+          <TouchableOpacity
+            style={[styles.navButton, styles.navButtonPrimary]}
+            onPress={() => setCurrentStep(3)}
+          >
+            <Ionicons name="chevron-back" size={20} color="#fff" />
+            <Text style={styles.navButtonTextPrimary}>Back to Calculate</Text>
+          </TouchableOpacity>
+        </View>
+      );
+    }
 
     return (
       <Animated.View 
