@@ -1,18 +1,24 @@
 {
   "name": "taxmate-au",
   "version": "1.0.0",
-  "main": "App.js",
+  "main": "index.js",
   "scripts": {
     "start": "expo start"
   },
   "dependencies": {
-    "expo": "~50.0.0",
-    "expo-file-system": "~15.5.0",
-    "expo-sharing": "~11.5.0",
-    "react": "18.2.0",
-    "react-dom": "18.2.0",
-    "react-native": "0.73.0",
-    "react-native-web": "~0.19.6",
-    "expo-status-bar": "~1.6.0"
+    "expo": "^53.0.0",
+    "expo-file-system": "~18.1.11",
+    "expo-sharing": "~13.1.5",
+    "react": "19.0.0",
+    "react-dom": "19.0.0",
+    "react-native": "0.79.5",
+    "react-native-web": "^0.20.0",
+    "expo-status-bar": "~2.2.3",
+    "expo-linear-gradient": "~14.1.5",
+    "@expo/vector-icons": "^14.0.0"
+  },
+  "overrides": {
+    "react": "19.0.0",
+    "react-dom": "19.0.0"
   }
 }
