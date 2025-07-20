@@ -70,6 +70,12 @@ const styles = StyleSheet.create({
     marginLeft: 'auto',
     padding: 4,
   },
+  helpIconWithData: {
+    marginLeft: 'auto',
+    padding: 4,
+    backgroundColor: 'rgba(74, 144, 226, 0.1)',
+    borderRadius: 12,
+  },
   inputLabel: {
     fontSize: 15,
     fontWeight: '600',
@@ -755,7 +761,7 @@ const HelpModal = ({ visible, onClose, helpData }) => {
     <Modal
       visible={visible}
       transparent={true}
-      animationType="fade"
+      animationType="slide"
       onRequestClose={onClose}
     >
       <TouchableOpacity
@@ -864,7 +870,7 @@ const InputField = memo(({ label, value, onChangeText, placeholder, keyboardType
           <Ionicons name={icon} size={18} color={error ? "#FF6B6B" : "#4A90E2"} />
           <Text style={[styles.inputLabel, error && { color: '#FF6B6B' }]}>{label}</Text>
           <TouchableOpacity
-            style={styles.helpIcon}
+            style={helpData ? styles.helpIconWithData : styles.helpIcon}
             onPress={() => {
               if (helpData) {
                 setShowHelpModal(true);
@@ -873,7 +879,11 @@ const InputField = memo(({ label, value, onChangeText, placeholder, keyboardType
               }
             }}
           >
-            <Ionicons name="help-circle-outline" size={18} color="#64748B" />
+            <Ionicons
+              name={helpData ? "help-circle" : "help-circle-outline"}
+              size={18}
+              color={helpData ? "#4A90E2" : "#64748B"}
+            />
           </TouchableOpacity>
         </View>
         <TextInput
@@ -1966,6 +1976,7 @@ export default function App() {
         placeholder="Number of children/dependents (e.g., 2)"
         keyboardType="number-pad"
         icon="people-outline"
+        helpKey="dependents"
       />
 
       <View style={styles.infoBox}>
