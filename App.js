@@ -396,9 +396,10 @@ const styles = StyleSheet.create({
   summaryCard: {
     flex: 1,
     backgroundColor: '#FFFFFF',
-    padding: 20,
+    padding: 16,
     borderRadius: 16,
     alignItems: 'center',
+    justifyContent: 'center',
     borderWidth: 1,
     borderColor: '#E2E8F0',
     shadowColor: '#000',
@@ -406,6 +407,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.08,
     shadowRadius: 4,
     elevation: 2,
+    minHeight: 100,
   },
   summaryLabel: {
     fontSize: 13,
@@ -417,11 +419,12 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
   summaryAmount: {
-    fontSize: 28,
+    fontSize: 22,
     fontWeight: '800',
     color: '#2D3748',
     textAlign: 'center',
-    letterSpacing: 0.5,
+    letterSpacing: 0.3,
+    lineHeight: 26,
   },
   breakdownSection: {
     marginBottom: 24,
