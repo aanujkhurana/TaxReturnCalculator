@@ -10,7 +10,8 @@ import {
   Animated,
   Platform,
   KeyboardAvoidingView,
-  ActivityIndicator
+  ActivityIndicator,
+  Modal
 } from 'react-native';
 import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
@@ -715,6 +716,163 @@ const InputField = memo(({ label, value, onChangeText, placeholder, keyboardType
 });
 
 InputField.displayName = 'InputField';
+
+// Comprehensive help text data for all input fields
+const HELP_TEXT = {
+  jobIncome: {
+    title: "Employment Income (TFN Jobs)",
+    purpose: "Enter your gross annual salary or wages from employment where tax was withheld using your Tax File Number (TFN).",
+    format: "Enter the amount in dollars without commas or currency symbols (e.g., 65000 for $65,000).",
+    examples: [
+      "Full-time salary: 75000",
+      "Part-time wages: 35000",
+      "Multiple jobs: Add each separately"
+    ],
+    tips: [
+      "Use your gross income before tax, not your take-home pay",
+      "Find this amount on your payment summary or PAYG summary",
+      "Include bonuses, overtime, and allowances",
+      "Don't include super contributions or salary sacrifice amounts"
+    ],
+    whereToFind: "Check your payment summary, payslips, or PAYG summary from your employer"
+  },
+  abnIncome: {
+    title: "ABN/Freelance Income",
+    purpose: "Enter your total income from self-employment, contracting, or business activities using your Australian Business Number (ABN).",
+    format: "Enter the gross amount in dollars before expenses (e.g., 25000 for $25,000).",
+    examples: [
+      "Freelance consulting: 18000",
+      "Uber/delivery driving: 12000",
+      "Small business revenue: 45000"
+    ],
+    tips: [
+      "Enter gross income before business expenses",
+      "Include all ABN income from the financial year",
+      "Business expenses will be calculated separately",
+      "If you have multiple ABNs, combine the total income"
+    ],
+    whereToFind: "Check your business records, invoices, or BAS statements"
+  },
+  taxWithheld: {
+    title: "Tax Withheld (PAYG)",
+    purpose: "Enter the total amount of tax that was withheld from your pay during the financial year.",
+    format: "Enter the amount in dollars (e.g., 15500 for $15,500).",
+    examples: [
+      "Single job PAYG: 12500",
+      "Multiple jobs total: 18750",
+      "Including extra withholding: 16200"
+    ],
+    tips: [
+      "Add up tax withheld from all your jobs",
+      "Include any extra tax you asked to be withheld",
+      "Don't include super contributions or other deductions",
+      "This reduces your final tax bill"
+    ],
+    whereToFind: "Found on your payment summary, payslips, or in your myGov account"
+  },
+  workRelated: {
+    title: "Work-Related Expenses",
+    purpose: "Enter the total amount you spent on items required for your work that weren't reimbursed by your employer.",
+    format: "Enter the amount in dollars (e.g., 2500 for $2,500).",
+    examples: [
+      "Tools and equipment: 800",
+      "Work uniforms: 300",
+      "Professional development: 1200"
+    ],
+    tips: [
+      "Only include expenses directly related to earning your income",
+      "Keep receipts as evidence for the ATO",
+      "Don't include travel between home and work",
+      "Clothing must be specific uniforms or protective gear"
+    ],
+    whereToFind: "Review your receipts and records for work-related purchases"
+  },
+  selfEducation: {
+    title: "Self-Education Expenses",
+    purpose: "Enter costs for courses, training, or education that directly relates to your current job or increases your income-earning ability.",
+    format: "Enter the amount in dollars (e.g., 1800 for $1,800).",
+    examples: [
+      "Professional course: 1200",
+      "Work-related books: 150",
+      "Conference attendance: 800"
+    ],
+    tips: [
+      "Education must relate to your current work",
+      "Include course fees, textbooks, and travel to study",
+      "Don't include meals or accommodation",
+      "Keep all receipts and course documentation"
+    ],
+    whereToFind: "Check receipts for courses, books, and educational materials"
+  },
+  donations: {
+    title: "Charitable Donations",
+    purpose: "Enter the total amount of tax-deductible donations you made to registered charities.",
+    format: "Enter the amount in dollars (e.g., 750 for $750).",
+    examples: [
+      "Regular charity donations: 500",
+      "Disaster relief fund: 200",
+      "Religious organization: 300"
+    ],
+    tips: [
+      "Only donations to DGR (Deductible Gift Recipient) organizations qualify",
+      "Donations over $2 require receipts",
+      "Don't include raffle tickets or fundraising purchases",
+      "Check the charity's DGR status on the ATO website"
+    ],
+    whereToFind: "Review your donation receipts and bank statements"
+  },
+  otherDeductions: {
+    title: "Other Deductions",
+    purpose: "Enter other allowable tax deductions such as investment expenses, tax agent fees, or income protection insurance.",
+    format: "Enter the amount in dollars (e.g., 950 for $950).",
+    examples: [
+      "Tax agent fees: 300",
+      "Investment property expenses: 1200",
+      "Income protection insurance: 450"
+    ],
+    tips: [
+      "Only include expenses directly related to earning income",
+      "Investment expenses must relate to taxable investments",
+      "Keep detailed records and receipts",
+      "When in doubt, consult a tax professional"
+    ],
+    whereToFind: "Review receipts for professional services and investment-related expenses"
+  },
+  workFromHome: {
+    title: "Work From Home Hours",
+    purpose: "Enter the total number of hours you worked from home during the financial year using the ATO shortcut method.",
+    format: "Enter whole numbers only (e.g., 400 for 400 hours).",
+    examples: [
+      "2 days per week: ~400 hours",
+      "Full-time remote: ~1800 hours",
+      "Occasional WFH: ~100 hours"
+    ],
+    tips: [
+      "ATO shortcut method: $0.67 per hour (max $1,000)",
+      "Keep a diary or log of work from home hours",
+      "Must be for employment duties, not personal use",
+      "Alternative: claim actual expenses with detailed records"
+    ],
+    whereToFind: "Calculate from your work diary, calendar, or employment records"
+  },
+  dependents: {
+    title: "Number of Dependents",
+    purpose: "Enter the number of dependent children or other dependents that may affect your tax offsets and Medicare levy.",
+    format: "Enter a whole number (e.g., 2 for two dependents).",
+    examples: [
+      "Two children under 18: 2",
+      "One child + elderly parent: 2",
+      "No dependents: 0"
+    ],
+    tips: [
+      "Include children under 18 or full-time students under 25",
+      "Include other dependents you financially support",
+      "May affect Medicare levy surcharge thresholds",
+      "Can increase your tax-free threshold"
+    ],
+    whereToFind: "Count your dependent children and other dependents you financially support"
+  }
+};
 
 export default function App() {
   // Step management
