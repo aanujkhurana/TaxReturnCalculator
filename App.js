@@ -634,7 +634,33 @@ const styles = StyleSheet.create({
     shadowRadius: 3,
     elevation: 2,
   },
+  navButtonBack: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 14,
+    paddingHorizontal: 24,
+    borderRadius: 16,
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1.5,
+    borderColor: 'grey',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    elevation: 2,
+  },
   navButtonPrimary: {
+    backgroundColor: '#000000',
+    borderColor: '#333333',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
+    elevation: 3,
+    minWidth: 140,
+    paddingHorizontal: 32,
+  },
+  navButtonCalculate: {
     backgroundColor: '#4A90E2',
     borderColor: '#3A7BC2',
     shadowColor: '#4A90E2',
@@ -642,10 +668,18 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 5,
     elevation: 3,
+    minWidth: 140,
+    paddingHorizontal: 32,
   },
   navButtonText: {
     fontSize: 16,
     color: '#4A90E2',
+    fontWeight: '600',
+    marginLeft: 6,
+  },
+  navButtonTextBack: {
+    fontSize: 16,
+    color: 'grey',
     fontWeight: '600',
     marginLeft: 6,
   },
@@ -1809,9 +1843,9 @@ export default function App() {
   const NavigationButtons = () => (
     <View style={styles.navigationButtons}>
       {currentStep > 1 && (
-        <TouchableOpacity style={styles.navButton} onPress={prevStep}>
-          <Ionicons name="chevron-back" size={20} color="#4A90E2" />
-          <Text style={styles.navButtonText}>Previous</Text>
+        <TouchableOpacity style={styles.navButtonBack} onPress={prevStep}>
+          <Ionicons name="chevron-back" size={20} color="grey" />
+          <Text style={styles.navButtonTextBack}>Back</Text>
         </TouchableOpacity>
       )}
 
@@ -1826,7 +1860,7 @@ export default function App() {
 
       {currentStep === 3 && (
         <TouchableOpacity
-          style={[styles.navButton, styles.navButtonPrimary, isCalculating && { opacity: 0.7 }]}
+          style={[styles.navButton, styles.navButtonCalculate, isCalculating && { opacity: 0.7 }]}
           onPress={estimateTax}
           disabled={isCalculating}
         >
@@ -2120,7 +2154,7 @@ export default function App() {
               </Text>
 
               <TouchableOpacity
-                style={[styles.navButton, styles.navButtonPrimary, { marginTop: 16 }]}
+                style={[styles.navButton, styles.navButtonCalculate, { marginTop: 16 }]}
                 onPress={() => setCurrentStep(3)}
               >
                 <Ionicons name="chevron-back" size={20} color="#fff" />
@@ -2141,7 +2175,6 @@ export default function App() {
 
     return (
       <View style={styles.tabContent}>
-        <Text style={{ fontSize: 16, color: 'red', marginBottom: 10 }}>DEBUG: Results rendering</Text>
         <View style={styles.resultContainer}>
         <LinearGradient
           colors={['#4A90E2', '#357ABD']}
