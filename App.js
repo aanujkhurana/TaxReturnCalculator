@@ -832,14 +832,37 @@ const HelpModal = ({ visible, onClose, helpData }) => {
 };
 
 // Memoized InputField component to prevent unnecessary re-renders
-const InputField = memo(({ label, value, onChangeText, placeholder, keyboardType = 'numeric', multiline = false, icon, helpKey, error, editable = true }) => {
+const InputField = memo(({ label, value, onChangeText, placeholder, keyboardType = 'numeric', multiline = false, icon, helpKey, error, editable = true, prefix = '', suffix = '' }) => {
   const [showHelpModal, setShowHelpModal] = useState(false);
   const helpData = helpKey ? HELP_TEXT[helpKey] : null;
+
+  // Format display value with prefix and suffix
+  const getDisplayValue = (val) => {
+    if (!val) return '';
+    return `${prefix}${val}${suffix}`;
+  };
+
+  // Extract raw value from display value (remove prefix and suffix)
+  const getRawValue = (displayVal) => {
+    if (!displayVal) return '';
+    let rawVal = displayVal;
+    if (prefix && rawVal.startsWith(prefix)) {
+      rawVal = rawVal.substring(prefix.length);
+    }
+    if (suffix && rawVal.endsWith(suffix)) {
+      rawVal = rawVal.substring(0, rawVal.length - suffix.length);
+    }
+    return rawVal;
+  };
+
   // Filter input for numeric fields to only allow numbers and decimal point
   const handleTextChange = (text) => {
+    // First extract the raw value without prefix/suffix
+    const rawText = getRawValue(text);
+
     if (keyboardType === 'numeric') {
       // Allow only numbers, decimal point, and handle empty string
-      const filteredText = text.replace(/[^0-9.]/g, '');
+      const filteredText = rawText.replace(/[^0-9.]/g, '');
 
       // Ensure only one decimal point
       const parts = filteredText.split('.');
@@ -851,10 +874,10 @@ const InputField = memo(({ label, value, onChangeText, placeholder, keyboardType
       }
     } else if (keyboardType === 'number-pad') {
       // For integer-only fields, allow only numbers
-      const filteredText = text.replace(/[^0-9]/g, '');
+      const filteredText = rawText.replace(/[^0-9]/g, '');
       onChangeText(filteredText);
     } else {
-      onChangeText(text);
+      onChangeText(rawText);
     }
   };
 
@@ -888,7 +911,7 @@ const InputField = memo(({ label, value, onChangeText, placeholder, keyboardType
             error && styles.inputError,
             !editable && styles.inputDisabled
           ]}
-          value={value}
+          value={getDisplayValue(value)}
           onChangeText={handleTextChange}
           placeholder={placeholder}
           keyboardType={keyboardType}
@@ -1802,6 +1825,7 @@ export default function App() {
               icon="briefcase-outline"
               helpKey="jobIncome"
               error={validationErrors[`jobIncome_${idx}`]}
+              prefix="$"
             />
           </View>
           {jobIncomes.length > 1 && (
@@ -1831,6 +1855,7 @@ export default function App() {
         icon="business-outline"
         helpKey="abnIncome"
         error={validationErrors.abnIncome}
+        prefix="$"
       />
 
       <InputField
@@ -1847,6 +1872,7 @@ export default function App() {
         helpKey="taxWithheld"
         error={validationErrors.taxWithheld}
         editable={!paygUnknown}
+        prefix="$"
       />
 
       <TouchableOpacity
@@ -1876,6 +1902,7 @@ export default function App() {
         placeholder="Tools, uniforms, travel (e.g., 2500)"
         icon="construct-outline"
         helpKey="workRelated"
+        prefix="$"
       />
 
       <InputField
@@ -1885,6 +1912,7 @@ export default function App() {
         placeholder="Courses, books, conferences (e.g., 1200)"
         icon="school-outline"
         helpKey="selfEducation"
+        prefix="$"
       />
 
       <InputField
@@ -1894,6 +1922,7 @@ export default function App() {
         placeholder="Tax-deductible donations (e.g., 500)"
         icon="heart-outline"
         helpKey="donations"
+        prefix="$"
       />
 
       <InputField
@@ -1903,6 +1932,7 @@ export default function App() {
         placeholder="Investment, tax agent fees (e.g., 800)"
         icon="receipt-outline"
         helpKey="otherDeductions"
+        prefix="$"
       />
 
       <InputField
@@ -1912,6 +1942,7 @@ export default function App() {
         placeholder="Total WFH hours (e.g., 400 = $268 deduction)"
         icon="home-outline"
         helpKey="workFromHome"
+        suffix=" hrs"
       />
 
       <View style={styles.wfhInfo}>
