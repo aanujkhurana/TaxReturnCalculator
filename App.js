@@ -94,6 +94,11 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     backgroundColor: '#FFF5F5',
   },
+  inputDisabled: {
+    backgroundColor: '#F7F8FA',
+    borderColor: '#E2E8F0',
+    color: '#64748B',
+  },
   multilineInput: {
     height: 80,
     textAlignVertical: 'top',
@@ -652,7 +657,7 @@ const styles = StyleSheet.create({
 });
 
 // Memoized InputField component to prevent unnecessary re-renders
-const InputField = memo(({ label, value, onChangeText, placeholder, keyboardType = 'numeric', multiline = false, icon, helpText, error }) => {
+const InputField = memo(({ label, value, onChangeText, placeholder, keyboardType = 'numeric', multiline = false, icon, helpText, error, editable = true }) => {
   // Filter input for numeric fields to only allow numbers and decimal point
   const handleTextChange = (text) => {
     if (keyboardType === 'numeric') {
@@ -692,15 +697,17 @@ const InputField = memo(({ label, value, onChangeText, placeholder, keyboardType
         style={[
           styles.input,
           multiline && styles.multilineInput,
-          error && styles.inputError
+          error && styles.inputError,
+          !editable && styles.inputDisabled
         ]}
         value={value}
         onChangeText={handleTextChange}
         placeholder={placeholder}
         keyboardType={keyboardType}
         multiline={multiline}
-        placeholderTextColor="#999"
+        placeholderTextColor={!editable ? "#A0AEC0" : "#999"}
         returnKeyType="done"
+        editable={editable}
       />
       {error && <Text style={styles.errorText}>{error}</Text>}
     </View>
@@ -728,6 +735,10 @@ export default function App() {
   const [hecsDebt, setHecsDebt] = useState(false);
   const [medicareExemption, setMedicareExemption] = useState(false);
   const [dependents, setDependents] = useState('0');
+
+  // PAYG estimation feature
+  const [paygUnknown, setPaygUnknown] = useState(false);
+  const [estimatedPayg, setEstimatedPayg] = useState('');
   const [result, setResult] = useState(null);
   const [savedCalculations, setSavedCalculations] = useState([]);
   const [isCalculating, setIsCalculating] = useState(false);
@@ -761,6 +772,78 @@ export default function App() {
   const clearAllErrors = () => {
     setValidationErrors({});
   };
+
+  // Calculate estimated PAYG withholding based on total income
+  const calculateEstimatedPayg = useCallback(() => {
+    const parsedJobIncomes = jobIncomes.map((val) => parseFloat(val || '0'));
+    const totalTFNIncome = parsedJobIncomes.reduce((sum, curr) => sum + (isNaN(curr) ? 0 : curr), 0);
+    const abnIncomeNum = parseFloat(abnIncome || '0');
+    const totalIncome = totalTFNIncome + abnIncomeNum;
+
+    if (totalIncome <= 0) {
+      return '0';
+    }
+
+    // Use a simplified withholding estimation based on income brackets
+    // This approximates what employers typically withhold
+    let estimatedWithholding = 0;
+
+    if (totalIncome <= 18200) {
+      // Tax-free threshold
+      estimatedWithholding = 0;
+    } else if (totalIncome <= 45000) {
+      // 19% bracket - typically withhold around 15-20% due to tax-free threshold
+      estimatedWithholding = (totalIncome - 18200) * 0.17;
+    } else if (totalIncome <= 120000) {
+      // 32.5% bracket - withhold around 25-30%
+      const baseTax = (45000 - 18200) * 0.17;
+      estimatedWithholding = baseTax + (totalIncome - 45000) * 0.28;
+    } else if (totalIncome <= 190000) {
+      // 37% bracket - withhold around 32-35%
+      const baseTax = (45000 - 18200) * 0.17 + (120000 - 45000) * 0.28;
+      estimatedWithholding = baseTax + (totalIncome - 120000) * 0.34;
+    } else {
+      // 45% bracket - withhold around 40-42%
+      const baseTax = (45000 - 18200) * 0.17 + (120000 - 45000) * 0.28 + (190000 - 120000) * 0.34;
+      estimatedWithholding = baseTax + (totalIncome - 190000) * 0.42;
+    }
+
+    // Add Medicare levy estimation (2% of taxable income)
+    if (totalIncome > 23226) { // Medicare levy threshold for 2024-25
+      estimatedWithholding += totalIncome * 0.02;
+    }
+
+    return Math.round(estimatedWithholding).toString();
+  }, [jobIncomes, abnIncome]);
+
+  // Handle PAYG unknown checkbox toggle
+  const handlePaygUnknownToggle = useCallback(() => {
+    const newPaygUnknown = !paygUnknown;
+    setPaygUnknown(newPaygUnknown);
+
+    if (newPaygUnknown) {
+      // When enabling estimation, calculate and set estimated value
+      const estimated = calculateEstimatedPayg();
+      setEstimatedPayg(estimated);
+      setTaxWithheld(estimated);
+    } else {
+      // When disabling estimation, clear the field for manual entry
+      setTaxWithheld('');
+      setEstimatedPayg('');
+    }
+
+    // Clear any validation errors
+    clearFieldError('taxWithheld');
+  }, [paygUnknown, calculateEstimatedPayg, clearFieldError]);
+
+  // Update estimated PAYG when income values change and estimation is enabled
+  useEffect(() => {
+    if (paygUnknown) {
+      const estimated = calculateEstimatedPayg();
+      setEstimatedPayg(estimated);
+      setTaxWithheld(estimated);
+    }
+  }, [paygUnknown, jobIncomes, abnIncome, calculateEstimatedPayg]);
 
   useEffect(() => {
     Animated.parallel([
@@ -995,12 +1078,23 @@ export default function App() {
         const taxWithheldTrimmed = taxWithheld?.trim();
         const taxWithheldParsed = parseFloat(taxWithheldTrimmed);
 
-        if (!taxWithheldTrimmed) {
-          setFieldError('taxWithheld', 'Tax withheld is required');
-          hasErrors = true;
-        } else if (isNaN(taxWithheldParsed) || taxWithheldParsed < 0) {
-          setFieldError('taxWithheld', 'Must be a valid number (0 or greater)');
-          hasErrors = true;
+        if (paygUnknown) {
+          // If PAYG is estimated, ensure we have a valid estimated value
+          if (!taxWithheldTrimmed || isNaN(taxWithheldParsed) || taxWithheldParsed < 0) {
+            // Recalculate estimation if needed
+            const estimated = calculateEstimatedPayg();
+            setEstimatedPayg(estimated);
+            setTaxWithheld(estimated);
+          }
+        } else {
+          // Manual entry validation
+          if (!taxWithheldTrimmed) {
+            setFieldError('taxWithheld', 'Tax withheld is required');
+            hasErrors = true;
+          } else if (isNaN(taxWithheldParsed) || taxWithheldParsed < 0) {
+            setFieldError('taxWithheld', 'Must be a valid number (0 or greater)');
+            hasErrors = true;
+          }
         }
 
         return !hasErrors;
@@ -1013,7 +1107,7 @@ export default function App() {
       default:
         return true;
     }
-  }, [currentStep, jobIncomes, abnIncome, taxWithheld]);
+  }, [currentStep, jobIncomes, abnIncome, taxWithheld, paygUnknown, calculateEstimatedPayg, setEstimatedPayg, setTaxWithheld]);
 
   const validateInputs = () => {
     clearAllErrors(); // Clear previous errors
@@ -1398,13 +1492,30 @@ export default function App() {
         label="Tax Withheld (PAYG)"
         value={taxWithheld}
         onChangeText={(value) => {
-          setTaxWithheld(value);
-          clearFieldError('taxWithheld');
+          if (!paygUnknown) {
+            setTaxWithheld(value);
+            clearFieldError('taxWithheld');
+          }
         }}
-        placeholder="Total tax withheld (e.g., 12500)"
+        placeholder={paygUnknown ? "Estimated" : "Total tax withheld (e.g., 12500)"}
         icon="card-outline"
         error={validationErrors.taxWithheld}
+        editable={!paygUnknown}
       />
+
+      <TouchableOpacity
+        style={[styles.toggleButton, paygUnknown && styles.toggleButtonActive]}
+        onPress={handlePaygUnknownToggle}
+      >
+        <Ionicons
+          name={paygUnknown ? "checkbox-outline" : "square-outline"}
+          size={24}
+          color={paygUnknown ? "#4A90E2" : "#666"}
+        />
+        <Text style={[styles.toggleText, paygUnknown && styles.toggleTextActive]}>
+          I don't know my PAYG withholding amount
+        </Text>
+      </TouchableOpacity>
     </View>
   );
 
