@@ -652,7 +652,7 @@ const styles = StyleSheet.create({
 });
 
 // Memoized InputField component to prevent unnecessary re-renders
-const InputField = memo(({ label, value, onChangeText, placeholder, keyboardType = 'numeric', multiline = false, icon, helpText }) => {
+const InputField = memo(({ label, value, onChangeText, placeholder, keyboardType = 'numeric', multiline = false, icon, helpText, error }) => {
   // Filter input for numeric fields to only allow numbers and decimal point
   const handleTextChange = (text) => {
     if (keyboardType === 'numeric') {
@@ -679,17 +679,21 @@ const InputField = memo(({ label, value, onChangeText, placeholder, keyboardType
   return (
     <View style={styles.inputContainer}>
       <View style={styles.labelContainer}>
-        <Ionicons name={icon} size={18} color="#4A90E2" />
-        <Text style={styles.inputLabel}>{label}</Text>
-        <TouchableOpacity 
-          style={styles.helpIcon} 
+        <Ionicons name={icon} size={18} color={error ? "#FF6B6B" : "#4A90E2"} />
+        <Text style={[styles.inputLabel, error && { color: '#FF6B6B' }]}>{label}</Text>
+        <TouchableOpacity
+          style={styles.helpIcon}
           onPress={() => Alert.alert(label, helpText || placeholder)}
         >
           <Ionicons name="help-circle-outline" size={18} color="#64748B" />
         </TouchableOpacity>
       </View>
       <TextInput
-        style={[styles.input, multiline && styles.multilineInput]}
+        style={[
+          styles.input,
+          multiline && styles.multilineInput,
+          error && styles.inputError
+        ]}
         value={value}
         onChangeText={handleTextChange}
         placeholder={placeholder}
@@ -698,6 +702,7 @@ const InputField = memo(({ label, value, onChangeText, placeholder, keyboardType
         placeholderTextColor="#999"
         returnKeyType="done"
       />
+      {error && <Text style={styles.errorText}>{error}</Text>}
     </View>
   );
 });
@@ -736,6 +741,26 @@ export default function App() {
   const fadeAnim = new Animated.Value(0);
   const slideAnim = new Animated.Value(50);
   const loadingPulseAnim = new Animated.Value(1);
+
+  // Helper functions for validation errors
+  const setFieldError = (fieldName, errorMessage) => {
+    setValidationErrors(prev => ({
+      ...prev,
+      [fieldName]: errorMessage
+    }));
+  };
+
+  const clearFieldError = (fieldName) => {
+    setValidationErrors(prev => {
+      const newErrors = { ...prev };
+      delete newErrors[fieldName];
+      return newErrors;
+    });
+  };
+
+  const clearAllErrors = () => {
+    setValidationErrors({});
+  };
 
   useEffect(() => {
     Animated.parallel([
@@ -878,8 +903,12 @@ export default function App() {
 
   // Step validation
   const validateCurrentStep = useCallback(() => {
+    clearAllErrors(); // Clear previous errors
+
     switch (currentStep) {
       case 1: // Income step
+        let hasErrors = false;
+
         // Check if at least one income source has a valid positive value
         const hasValidJobIncome = jobIncomes.some(income => {
           const trimmed = income?.trim();
@@ -889,20 +918,49 @@ export default function App() {
 
         const hasValidAbnIncome = abnIncome?.trim() && !isNaN(parseFloat(abnIncome.trim())) && parseFloat(abnIncome.trim()) > 0;
 
+        // Validate individual job income fields
+        jobIncomes.forEach((income, index) => {
+          const trimmed = income?.trim();
+          const parsed = parseFloat(trimmed);
+          if (trimmed && (isNaN(parsed) || parsed <= 0)) {
+            setFieldError(`jobIncome_${index}`, 'Must be a valid number greater than 0');
+            hasErrors = true;
+          }
+        });
+
+        // Validate ABN income if provided
+        if (abnIncome?.trim()) {
+          const parsed = parseFloat(abnIncome.trim());
+          if (isNaN(parsed) || parsed <= 0) {
+            setFieldError('abnIncome', 'Must be a valid number greater than 0');
+            hasErrors = true;
+          }
+        }
+
+        // Check if at least one income source is valid
         if (!hasValidJobIncome && !hasValidAbnIncome) {
-          Alert.alert('Validation Error', 'At least one income source (TFN job or ABN income) is required and must be greater than 0');
-          return false;
+          if (!jobIncomes.some(income => income?.trim())) {
+            setFieldError('jobIncome_0', 'At least one income source is required');
+          }
+          if (!abnIncome?.trim()) {
+            setFieldError('abnIncome', 'Enter ABN income or at least one job income');
+          }
+          hasErrors = true;
         }
 
         // Check tax withheld
         const taxWithheldTrimmed = taxWithheld?.trim();
         const taxWithheldParsed = parseFloat(taxWithheldTrimmed);
 
-        if (!taxWithheldTrimmed || isNaN(taxWithheldParsed) || taxWithheldParsed < 0) {
-          Alert.alert('Validation Error', 'Tax withheld is required and must be a valid number (0 or greater)');
-          return false;
+        if (!taxWithheldTrimmed) {
+          setFieldError('taxWithheld', 'Tax withheld is required');
+          hasErrors = true;
+        } else if (isNaN(taxWithheldParsed) || taxWithheldParsed < 0) {
+          setFieldError('taxWithheld', 'Must be a valid number (0 or greater)');
+          hasErrors = true;
         }
-        return true;
+
+        return !hasErrors;
       case 2: // Deductions step - optional, always valid
         return true;
       case 3: // Details step - optional, always valid
@@ -915,12 +973,17 @@ export default function App() {
   }, [currentStep, jobIncomes, abnIncome, taxWithheld]);
 
   const validateInputs = () => {
-    const errors = [];
+    clearAllErrors(); // Clear previous errors
+    let hasErrors = false;
 
     // Check tax withheld
     const taxWithheldTrimmed = taxWithheld?.trim();
-    if (!taxWithheldTrimmed || isNaN(parseFloat(taxWithheldTrimmed)) || parseFloat(taxWithheldTrimmed) < 0) {
-      errors.push('Tax withheld is required and must be a valid number (0 or greater)');
+    if (!taxWithheldTrimmed) {
+      setFieldError('taxWithheld', 'Tax withheld is required');
+      hasErrors = true;
+    } else if (isNaN(parseFloat(taxWithheldTrimmed)) || parseFloat(taxWithheldTrimmed) < 0) {
+      setFieldError('taxWithheld', 'Must be a valid number (0 or greater)');
+      hasErrors = true;
     }
 
     // Check if at least one income source has a valid positive value
@@ -932,15 +995,37 @@ export default function App() {
 
     const hasValidAbnIncome = abnIncome?.trim() && !isNaN(parseFloat(abnIncome.trim())) && parseFloat(abnIncome.trim()) > 0;
 
-    if (!hasValidJobIncome && !hasValidAbnIncome) {
-      errors.push('At least one income source (TFN job or ABN income) is required and must be greater than 0');
+    // Validate individual job income fields
+    jobIncomes.forEach((income, index) => {
+      const trimmed = income?.trim();
+      const parsed = parseFloat(trimmed);
+      if (trimmed && (isNaN(parsed) || parsed <= 0)) {
+        setFieldError(`jobIncome_${index}`, 'Must be a valid number greater than 0');
+        hasErrors = true;
+      }
+    });
+
+    // Validate ABN income if provided
+    if (abnIncome?.trim()) {
+      const parsed = parseFloat(abnIncome.trim());
+      if (isNaN(parsed) || parsed <= 0) {
+        setFieldError('abnIncome', 'Must be a valid number greater than 0');
+        hasErrors = true;
+      }
     }
 
-    if (errors.length > 0) {
-      Alert.alert('Validation Error', errors.join('\n'));
-      return false;
+    // Check if at least one income source is valid
+    if (!hasValidJobIncome && !hasValidAbnIncome) {
+      if (!jobIncomes.some(income => income?.trim())) {
+        setFieldError('jobIncome_0', 'At least one income source is required');
+      }
+      if (!abnIncome?.trim()) {
+        setFieldError('abnIncome', 'Enter ABN income or at least one job income');
+      }
+      hasErrors = true;
     }
-    return true;
+
+    return !hasErrors;
   };
 
   const estimateTax = useCallback(() => {
