@@ -166,7 +166,7 @@ const HomeScreen = ({ onCreateNew, onViewCalculation }) => {
         style={styles.header}
       >
         <View style={styles.headerContent}>
-          <Text style={styles.headerTitle}>TaxMate AU</Text>
+          <Text style={styles.headerTitle}>Australia Tax Return</Text>
           <Text style={styles.headerSubtitle}>Your Tax Calculations</Text>
         </View>
       </LinearGradient>
