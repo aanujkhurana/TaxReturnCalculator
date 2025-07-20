@@ -790,11 +790,6 @@ const HelpModal = ({ visible, onClose, helpData }) => {
               <Text style={styles.helpSectionText}>{helpData.purpose}</Text>
             </View>
 
-            <View style={styles.helpSection}>
-              <Text style={styles.helpSectionTitle}>Format</Text>
-              <Text style={styles.helpSectionText}>{helpData.format}</Text>
-            </View>
-
             {helpData.examples && helpData.examples.length > 0 && (
               <View style={styles.helpSection}>
                 <Text style={styles.helpSectionTitle}>Examples</Text>
@@ -921,7 +916,6 @@ const HELP_TEXT = {
   jobIncome: {
     title: "Employment Income (TFN Jobs)",
     purpose: "Enter your gross annual salary or wages from employment where tax was withheld using your Tax File Number (TFN).",
-    format: "Enter the amount in dollars without commas or currency symbols (e.g., 65000 for $65,000).",
     examples: [
       "Full-time salary: 75000",
       "Part-time wages: 35000",
@@ -938,7 +932,6 @@ const HELP_TEXT = {
   abnIncome: {
     title: "ABN/Freelance Income",
     purpose: "Enter your total income from self-employment, contracting, or business activities using your Australian Business Number (ABN).",
-    format: "Enter the gross amount in dollars before expenses (e.g., 25000 for $25,000).",
     examples: [
       "Freelance consulting: 18000",
       "Uber/delivery driving: 12000",
@@ -955,7 +948,6 @@ const HELP_TEXT = {
   taxWithheld: {
     title: "Tax Withheld (PAYG)",
     purpose: "Enter the total amount of tax that was withheld from your pay during the financial year.",
-    format: "Enter the amount in dollars (e.g., 15500 for $15,500).",
     examples: [
       "Single job PAYG: 12500",
       "Multiple jobs total: 18750",
@@ -972,7 +964,6 @@ const HELP_TEXT = {
   workRelated: {
     title: "Work-Related Expenses",
     purpose: "Enter the total amount you spent on items required for your work that weren't reimbursed by your employer.",
-    format: "Enter the amount in dollars (e.g., 2500 for $2,500).",
     examples: [
       "Tools and equipment: 800",
       "Work uniforms: 300",
@@ -989,7 +980,6 @@ const HELP_TEXT = {
   selfEducation: {
     title: "Self-Education Expenses",
     purpose: "Enter costs for courses, training, or education that directly relates to your current job or increases your income-earning ability.",
-    format: "Enter the amount in dollars (e.g., 1800 for $1,800).",
     examples: [
       "Professional course: 1200",
       "Work-related books: 150",
@@ -1006,7 +996,6 @@ const HELP_TEXT = {
   donations: {
     title: "Charitable Donations",
     purpose: "Enter the total amount of tax-deductible donations you made to registered charities.",
-    format: "Enter the amount in dollars (e.g., 750 for $750).",
     examples: [
       "Regular charity donations: 500",
       "Disaster relief fund: 200",
@@ -1023,7 +1012,6 @@ const HELP_TEXT = {
   otherDeductions: {
     title: "Other Deductions",
     purpose: "Enter other allowable tax deductions such as investment expenses, tax agent fees, or income protection insurance.",
-    format: "Enter the amount in dollars (e.g., 950 for $950).",
     examples: [
       "Tax agent fees: 300",
       "Investment property expenses: 1200",
@@ -1040,7 +1028,6 @@ const HELP_TEXT = {
   workFromHome: {
     title: "Work From Home Hours",
     purpose: "Enter the total number of hours you worked from home during the financial year using the ATO shortcut method.",
-    format: "Enter whole numbers only (e.g., 400 for 400 hours).",
     examples: [
       "2 days per week: ~400 hours",
       "Full-time remote: ~1800 hours",
@@ -1057,7 +1044,6 @@ const HELP_TEXT = {
   dependents: {
     title: "Number of Dependents",
     purpose: "Enter the number of dependent children or other dependents that may affect your tax offsets and Medicare levy.",
-    format: "Enter a whole number (e.g., 2 for two dependents).",
     examples: [
       "Two children under 18: 2",
       "One child + elderly parent: 2",
