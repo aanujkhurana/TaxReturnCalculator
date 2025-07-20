@@ -553,13 +553,26 @@ const styles = StyleSheet.create({
   stepLineActive: {
     backgroundColor: '#4A90E2',
   },
+  // Bottom button container styles
+  bottomButtonContainer: {
+    backgroundColor: '#f8f9fa',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#E2E8F0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 5,
+  },
   // Navigation button styles
   navigationButtons: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: 24,
-    marginBottom: 16,
+    marginTop: 0,
+    marginBottom: 0,
     paddingHorizontal: 4,
   },
   navButton: {
@@ -1622,9 +1635,13 @@ export default function App() {
 
       <ScrollView style={styles.scrollContainer} showsVerticalScrollIndicator={false}>
         {renderCurrentStep()}
-
-        {currentStep < 4 && <NavigationButtons />}
       </ScrollView>
+
+      {currentStep < 4 && (
+        <View style={styles.bottomButtonContainer}>
+          <NavigationButtons />
+        </View>
+      )}
     </KeyboardAvoidingView>
   );
 }
