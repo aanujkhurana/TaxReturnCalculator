@@ -26,8 +26,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#f8f9fa',
   },
   header: {
-    paddingTop: Platform.OS === 'ios' ? 60 : 50,
-    paddingBottom: 32,
+    paddingTop: Platform.OS === 'ios' ? 50 : 40,
+    paddingBottom: 16,
     paddingHorizontal: 24,
     borderBottomLeftRadius: 30,
     borderBottomRightRadius: 30,
@@ -2353,7 +2353,7 @@ export default function App() {
         >
           <View style={styles.headerAccent} />
           <View style={styles.headerContent}>
-            <Text style={styles.headerTitle}>Australian Tax Calculator 2024-25</Text>
+            <Text style={styles.headerTitle}>Australian Tax Calculator</Text>
           </View>
         </LinearGradient>
       </Animated.View>
