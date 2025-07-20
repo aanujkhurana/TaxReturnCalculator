@@ -10,6 +10,8 @@ This calculator eliminates the complexity of traditional tax estimation tools by
 - **Comprehensive calculations** using 2024-25 Australian tax brackets and rates
 - **Professional reporting** with detailed breakdowns and PDF export capability
 - **Smart estimation** features for unknown PAYG withholding amounts
+- **Calculation history** with local storage for managing multiple tax calculations
+- **Home screen dashboard** for easy access to saved calculations
 
 ## ✨ Key Features
 
@@ -36,6 +38,14 @@ This calculator eliminates the complexity of traditional tax estimation tools by
 - **Multiple job income** support with easy add/remove functionality
 - **Dependent-based** Medicare levy adjustments
 - **Comprehensive validation** preventing calculation errors
+
+### Storage & Navigation
+- **Home Screen Dashboard** displaying all saved calculations
+- **Local Storage** using AsyncStorage for secure, offline data persistence
+- **Calculation Management** with save, view, and delete functionality
+- **Quick Access** to previous calculations with detailed summaries
+- **Navigation System** between home screen and calculator with proper state management
+- **Automatic Sorting** of saved calculations by date (newest first)
 
 ## 📋 Input Fields Documentation
 

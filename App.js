@@ -679,6 +679,25 @@ const styles = StyleSheet.create({
     maxWidth: 120,
     height: 56,
   },
+  navButtonCancel: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    borderRadius: 14,
+    backgroundColor: 'transparent',
+    borderWidth: 2,
+    borderColor: '#EF4444',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    elevation: 2,
+    minWidth: '30%',
+    maxWidth: 120,
+    height: 56,
+  },
   navButtonPrimary: {
     backgroundColor: '#000000',
     borderColor: '#333333',
@@ -716,6 +735,12 @@ const styles = StyleSheet.create({
   navButtonTextBack: {
     fontSize: 14,
     color: '#6B7280',
+    fontWeight: '600',
+    marginLeft: 8,
+  },
+  navButtonTextCancel: {
+    fontSize: 14,
+    color: '#EF4444',
     fontWeight: '600',
     marginLeft: 8,
   },
@@ -2129,6 +2154,13 @@ export default function App() {
   // Navigation Buttons Component
   const NavigationButtons = () => (
     <View style={styles.navigationButtons}>
+      {currentStep === 1 && (
+        <TouchableOpacity style={styles.navButtonCancel} onPress={navigateToHome}>
+          <Ionicons name="close" size={18} color="#EF4444" />
+          <Text style={styles.navButtonTextCancel}>Cancel</Text>
+        </TouchableOpacity>
+      )}
+
       {currentStep > 1 && (
         <TouchableOpacity style={styles.navButtonBack} onPress={prevStep}>
           <Ionicons name="chevron-back" size={18} color="#6B7280" />
