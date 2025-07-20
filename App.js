@@ -26,23 +26,38 @@ const styles = StyleSheet.create({
     backgroundColor: '#f8f9fa',
   },
   header: {
-    paddingTop: 50,
-    paddingBottom: 20,
+    paddingTop: Platform.OS === 'ios' ? 60 : 50,
+    paddingBottom: 32,
     paddingHorizontal: 24,
-    borderBottomLeftRadius: 25,
-    borderBottomRightRadius: 25,
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.15,
+    shadowRadius: 16,
+    elevation: 12,
+  },
+  headerContent: {
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   headerTitle: {
     fontSize: 28,
-    fontWeight: 'bold',
+    fontWeight: '700',
     color: '#fff',
     textAlign: 'center',
+    letterSpacing: 0.3,
+    textShadowColor: 'rgba(0,0,0,0.3)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 4,
   },
-  headerSubtitle: {
-    fontSize: 14,
-    color: 'rgba(255,255,255,0.8)',
-    textAlign: 'center',
-    marginTop: 4,
+  headerAccent: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 4,
+    backgroundColor: 'rgba(255,255,255,0.3)',
   },
 
   scrollContainer: {
@@ -1118,6 +1133,8 @@ export default function App() {
   const fadeAnim = new Animated.Value(0);
   const slideAnim = new Animated.Value(50);
   const loadingPulseAnim = new Animated.Value(1);
+  const headerScaleAnim = new Animated.Value(0.95);
+  const headerOpacityAnim = new Animated.Value(0);
 
   // Helper functions for validation errors
   const setFieldError = (fieldName, errorMessage) => {
@@ -1221,6 +1238,17 @@ export default function App() {
       Animated.timing(slideAnim, {
         toValue: 0,
         duration: 600,
+        useNativeDriver: true,
+      }),
+      Animated.timing(headerOpacityAnim, {
+        toValue: 1,
+        duration: 1000,
+        useNativeDriver: true,
+      }),
+      Animated.spring(headerScaleAnim, {
+        toValue: 1,
+        tension: 100,
+        friction: 8,
         useNativeDriver: true,
       })
     ]).start();
@@ -2280,13 +2308,22 @@ export default function App() {
           </Text>
         </Animated.View>
       )}
-      <LinearGradient
-        colors={['#4A90E2', '#357ABD', '#2C5F8C']}
-        style={styles.header}
+      <Animated.View
+        style={{
+          opacity: headerOpacityAnim,
+          transform: [{ scale: headerScaleAnim }]
+        }}
       >
-        <Text style={styles.headerTitle}>TaxMate AU</Text>
-        <Text style={styles.headerSubtitle}>Australian Tax Calculator 2024-25</Text>
-      </LinearGradient>
+        <LinearGradient
+          colors={['#4A90E2', '#357ABD', '#2C5F8C']}
+          style={styles.header}
+        >
+          <View style={styles.headerAccent} />
+          <View style={styles.headerContent}>
+            <Text style={styles.headerTitle}>Australian Tax Calculator 2024-25</Text>
+          </View>
+        </LinearGradient>
+      </Animated.View>
 
       <StepIndicator />
 
