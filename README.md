@@ -1,2 +1,2 @@
 # TaxReturnCalculator
-ATO tax return calculator
+TaxMate AU is a lightweight mobile app designed to help Australian individuals quickly estimate their tax refunds or amounts owed to the ATO. It offers a clear, user-friendly experience without the clutter of official portals.

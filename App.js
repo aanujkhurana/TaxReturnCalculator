@@ -966,7 +966,7 @@ export default function App() {
     // Medicare Levy
     const medicareThreshold = dependentsNum > 0 ? 27355 + (dependentsNum * 4237) : 26000;
     let medicare = 0;
-    if (!medicareExemption && taxableIncome > medicareThreshold) {
+    if (medicareExemption && taxableIncome > medicareThreshold) {
       if (taxableIncome <= medicareThreshold * 1.1) {
         // Medicare levy reduction
         medicare = (taxableIncome * 0.02) * ((taxableIncome - medicareThreshold) / (medicareThreshold * 0.1));
@@ -1313,7 +1313,7 @@ export default function App() {
           color={medicareExemption ? "#4A90E2" : "#666"} 
         />
         <Text style={[styles.toggleText, medicareExemption && styles.toggleTextActive]}>
-          Medicare exemption (overseas visitor, etc.)
+          Apply Medicare Levy (2% of taxable income)
         </Text>
       </TouchableOpacity>
 
