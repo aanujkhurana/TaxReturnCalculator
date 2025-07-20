@@ -557,7 +557,8 @@ const styles = StyleSheet.create({
   bottomButtonContainer: {
     backgroundColor: '#f8f9fa',
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingTop: 12,
+    paddingBottom: Platform.OS === 'ios' ? 34 : 20, // Extra padding for phone navigation area
     borderTopWidth: 1,
     borderTopColor: '#E2E8F0',
     shadowColor: '#000',
