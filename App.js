@@ -9,7 +9,8 @@ import {
   Alert,
   Animated,
   Platform,
-  KeyboardAvoidingView
+  KeyboardAvoidingView,
+  ActivityIndicator
 } from 'react-native';
 import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
@@ -170,6 +171,126 @@ const styles = StyleSheet.create({
     marginLeft: 12,
     flex: 1,
     lineHeight: 20,
+  },
+
+  // Professional loading styles
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 60,
+    paddingHorizontal: 24,
+  },
+  loadingCard: {
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    padding: 32,
+    alignItems: 'center',
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    minWidth: 280,
+    maxWidth: 320,
+  },
+  loadingIconContainer: {
+    marginBottom: 24,
+    padding: 16,
+    borderRadius: 50,
+    backgroundColor: '#f8f9ff',
+  },
+  loadingTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#1a1a1a',
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  loadingSubtitle: {
+    fontSize: 15,
+    color: '#666',
+    textAlign: 'center',
+    marginBottom: 24,
+    lineHeight: 22,
+  },
+  loadingProgressContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  loadingSpinner: {
+    marginRight: 12,
+  },
+  loadingProgressText: {
+    fontSize: 14,
+    color: '#4A90E2',
+    fontWeight: '500',
+  },
+  loadingSteps: {
+    alignSelf: 'stretch',
+    marginTop: 8,
+  },
+  loadingStep: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 6,
+  },
+  loadingStepIcon: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: '#e8f4fd',
+    marginRight: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  loadingStepIconActive: {
+    backgroundColor: '#4A90E2',
+  },
+  loadingStepText: {
+    fontSize: 13,
+    color: '#666',
+    flex: 1,
+  },
+  loadingStepTextActive: {
+    color: '#4A90E2',
+    fontWeight: '500',
+  },
+  loadingFooter: {
+    marginTop: 20,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#f0f0f0',
+    alignSelf: 'stretch',
+  },
+  loadingFooterText: {
+    fontSize: 12,
+    color: '#999',
+    textAlign: 'center',
+    lineHeight: 18,
+  },
+
+  // Success banner styles
+  successBanner: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: '#4CAF50',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 1000,
+    elevation: 10,
+  },
+  successBannerText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
+    marginLeft: 8,
   },
 
   resultContainer: {
@@ -501,10 +622,13 @@ export default function App() {
   const [result, setResult] = useState(null);
   const [savedCalculations, setSavedCalculations] = useState([]);
   const [isCalculating, setIsCalculating] = useState(false);
+  const [loadingStep, setLoadingStep] = useState(0);
+  const [showSuccessAnimation, setShowSuccessAnimation] = useState(false);
 
   // Animation values
   const fadeAnim = new Animated.Value(0);
   const slideAnim = new Animated.Value(50);
+  const loadingPulseAnim = new Animated.Value(1);
 
   useEffect(() => {
     Animated.parallel([
@@ -520,6 +644,30 @@ export default function App() {
       })
     ]).start();
   }, []);
+
+  // Loading pulse animation
+  useEffect(() => {
+    if (isCalculating) {
+      const pulseAnimation = Animated.loop(
+        Animated.sequence([
+          Animated.timing(loadingPulseAnim, {
+            toValue: 1.05,
+            duration: 1000,
+            useNativeDriver: true,
+          }),
+          Animated.timing(loadingPulseAnim, {
+            toValue: 1,
+            duration: 1000,
+            useNativeDriver: true,
+          })
+        ])
+      );
+      pulseAnimation.start();
+      return () => pulseAnimation.stop();
+    } else {
+      loadingPulseAnim.setValue(1);
+    }
+  }, [isCalculating, loadingPulseAnim]);
 
   // Auto-calculate when reaching step 4 if no result exists
   useEffect(() => {
@@ -692,6 +840,21 @@ export default function App() {
     if (!validateInputs()) return;
 
     setIsCalculating(true);
+    setLoadingStep(0);
+
+    // Simulate professional loading steps with realistic timing
+    const loadingSteps = [
+      { step: 1, delay: 800, message: 'Validating income sources' },
+      { step: 2, delay: 1200, message: 'Processing deductions' },
+      { step: 3, delay: 1600, message: 'Applying tax brackets & offsets' },
+      { step: 4, delay: 2000, message: 'Generating comprehensive report' }
+    ];
+
+    loadingSteps.forEach(({ step, delay }) => {
+      setTimeout(() => {
+        setLoadingStep(step);
+      }, delay);
+    });
 
     const parsedJobIncomes = jobIncomes.map((val) => parseFloat(val || '0'));
     const totalTFNIncome = parsedJobIncomes.reduce((sum, curr) => sum + (isNaN(curr) ? 0 : curr), 0);
@@ -786,9 +949,18 @@ export default function App() {
       effectiveTaxRate: taxableIncome > 0 ? (finalTax / taxableIncome * 100) : 0
     });
 
-    // Navigate to results step
-    setIsCalculating(false);
-    setCurrentStep(4);
+    // Complete the calculation after final loading step
+    setTimeout(() => {
+      setIsCalculating(false);
+      setLoadingStep(0);
+      setShowSuccessAnimation(true);
+      setCurrentStep(4);
+
+      // Hide success animation after 3 seconds
+      setTimeout(() => {
+        setShowSuccessAnimation(false);
+      }, 3000);
+    }, 2400); // Complete after all loading steps
   }, [jobIncomes, abnIncome, taxWithheld, deductions, workFromHomeHours, hecsDebt, medicareExemption, dependents]);
 
   const saveCalculation = (name) => {
@@ -1096,14 +1268,72 @@ export default function App() {
   );
 
   const renderResults = () => {
+    console.log('renderResults called - isCalculating:', isCalculating, 'result:', !!result);
+
     if (isCalculating) {
       return (
         <View style={styles.tabContent}>
-          <View style={styles.infoBox}>
-            <Ionicons name="hourglass-outline" size={20} color="#4A90E2" />
-            <Text style={styles.infoBoxText}>
-              Calculating your tax estimation... Please wait.
-            </Text>
+          <View style={styles.loadingContainer}>
+            <View style={styles.loadingCard}>
+              <View style={styles.loadingIconContainer}>
+                <Ionicons name="calculator" size={32} color="#4A90E2" />
+              </View>
+
+              <Text style={styles.loadingTitle}>Processing Your Tax Return</Text>
+              <Text style={styles.loadingSubtitle}>
+                Our advanced algorithms are analyzing your financial data to provide accurate tax calculations
+              </Text>
+
+              <View style={styles.loadingProgressContainer}>
+                <ActivityIndicator
+                  size="small"
+                  color="#4A90E2"
+                  style={styles.loadingSpinner}
+                />
+                <Text style={styles.loadingProgressText}>Calculating...</Text>
+              </View>
+
+              <View style={styles.loadingSteps}>
+                {[
+                  'Validating income sources',
+                  'Processing deductions',
+                  'Applying tax brackets & offsets',
+                  'Generating comprehensive report'
+                ].map((stepText, index) => {
+                  const stepNumber = index + 1;
+                  const isCompleted = loadingStep > stepNumber;
+                  const isActive = loadingStep === stepNumber;
+
+                  return (
+                    <View key={stepNumber} style={styles.loadingStep}>
+                      <View style={[
+                        styles.loadingStepIcon,
+                        isCompleted && styles.loadingStepIconActive
+                      ]}>
+                        {isCompleted ? (
+                          <Ionicons name="checkmark" size={10} color="#fff" />
+                        ) : isActive ? (
+                          <ActivityIndicator size={8} color="#4A90E2" />
+                        ) : null}
+                      </View>
+                      <Text style={[
+                        styles.loadingStepText,
+                        (isCompleted || isActive) && styles.loadingStepTextActive
+                      ]}>
+                        {stepText}
+                      </Text>
+                    </View>
+                  );
+                })}
+              </View>
+
+              <View style={styles.loadingFooter}>
+                <Text style={styles.loadingFooterText}>
+                  Using 2024-25 ATO tax rates and thresholds{'\n'}
+                  Calculations typically complete within 3-5 seconds
+                </Text>
+              </View>
+            </View>
           </View>
         </View>
       );
@@ -1112,34 +1342,52 @@ export default function App() {
     if (!result) {
       return (
         <View style={styles.tabContent}>
-          <View style={styles.infoBox}>
-            <Ionicons name="information-circle" size={20} color="#4A90E2" />
-            <Text style={styles.infoBoxText}>
-              No calculation results available. Please go back to step 3 and click "Calculate" to see your tax estimation.
-            </Text>
-          </View>
+          <View style={styles.loadingContainer}>
+            <View style={styles.loadingCard}>
+              <View style={styles.loadingIconContainer}>
+                <Ionicons name="document-text-outline" size={32} color="#4A90E2" />
+              </View>
 
-          <TouchableOpacity
-            style={[styles.navButton, styles.navButtonPrimary]}
-            onPress={() => setCurrentStep(3)}
-          >
-            <Ionicons name="chevron-back" size={20} color="#fff" />
-            <Text style={styles.navButtonTextPrimary}>Back to Calculate</Text>
-          </TouchableOpacity>
+              <Text style={styles.loadingTitle}>Ready to Calculate</Text>
+              <Text style={styles.loadingSubtitle}>
+                Complete your tax information in the previous steps to generate your comprehensive tax estimation report
+              </Text>
+
+              <TouchableOpacity
+                style={[styles.navButton, styles.navButtonPrimary, { marginTop: 16 }]}
+                onPress={() => setCurrentStep(3)}
+              >
+                <Ionicons name="chevron-back" size={20} color="#fff" />
+                <Text style={styles.navButtonTextPrimary}>Complete Calculation</Text>
+              </TouchableOpacity>
+
+              <View style={styles.loadingFooter}>
+                <Text style={styles.loadingFooterText}>
+                  Ensure all income sources and deductions are entered{'\n'}
+                  for the most accurate tax estimation
+                </Text>
+              </View>
+            </View>
+          </View>
         </View>
       );
     }
 
     return (
-      <Animated.View 
-        style={[styles.resultContainer, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}
-      >
+      <View style={styles.tabContent}>
+        <Text style={{ fontSize: 16, color: 'red', marginBottom: 10 }}>DEBUG: Results rendering</Text>
+        <View style={styles.resultContainer}>
         <LinearGradient
           colors={['#4A90E2', '#357ABD']}
           style={styles.resultHeader}
         >
-          <Text style={styles.resultTitle}>Tax Estimation Results</Text>
-          <Text style={styles.resultSubtitle}>Financial Year 2024-25</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+            <Ionicons name="checkmark-circle" size={24} color="#fff" style={{ marginRight: 8 }} />
+            <Text style={styles.resultTitle}>Tax Estimation Complete</Text>
+          </View>
+          <Text style={styles.resultSubtitle}>
+            Financial Year 2024-25 • Calculated using current ATO rates
+          </Text>
         </LinearGradient>
 
         <View style={styles.resultContent}>
@@ -1252,7 +1500,8 @@ export default function App() {
             <Text style={styles.startOverButtonText}>Start New Calculation</Text>
           </TouchableOpacity>
         </View>
-      </Animated.View>
+      </View>
+      </View>
     );
   };
 
@@ -1278,6 +1527,21 @@ export default function App() {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <StatusBar style="light" />
+
+      {showSuccessAnimation && (
+        <Animated.View style={[
+          styles.successBanner,
+          {
+            opacity: fadeAnim,
+            transform: [{ translateY: slideAnim }]
+          }
+        ]}>
+          <Ionicons name="checkmark-circle" size={20} color="#fff" />
+          <Text style={styles.successBannerText}>
+            Tax calculation completed successfully!
+          </Text>
+        </Animated.View>
+      )}
       <LinearGradient
         colors={['#4A90E2', '#357ABD', '#2C5F8C']}
         style={styles.header}
