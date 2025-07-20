@@ -655,10 +655,185 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginLeft: 8,
   },
+  // Help Modal Styles
+  helpModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  helpModalContent: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 24,
+    maxWidth: '100%',
+    width: '100%',
+    maxHeight: '80%',
+    elevation: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+  },
+  helpModalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E2E8F0',
+  },
+  helpModalTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#2D3748',
+    flex: 1,
+  },
+  helpModalCloseButton: {
+    padding: 4,
+  },
+  helpModalScrollView: {
+    maxHeight: 400,
+  },
+  helpSection: {
+    marginBottom: 16,
+  },
+  helpSectionTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#4A90E2',
+    marginBottom: 6,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  helpSectionText: {
+    fontSize: 15,
+    color: '#4A5568',
+    lineHeight: 22,
+    marginBottom: 8,
+  },
+  helpExamplesList: {
+    marginLeft: 12,
+  },
+  helpExampleItem: {
+    fontSize: 14,
+    color: '#718096',
+    marginBottom: 4,
+    lineHeight: 20,
+  },
+  helpTipsList: {
+    marginLeft: 12,
+  },
+  helpTipItem: {
+    fontSize: 14,
+    color: '#718096',
+    marginBottom: 6,
+    lineHeight: 20,
+  },
+  helpWhereToFind: {
+    backgroundColor: '#F7FAFC',
+    padding: 12,
+    borderRadius: 8,
+    borderLeftWidth: 3,
+    borderLeftColor: '#4A90E2',
+  },
+  helpWhereToFindText: {
+    fontSize: 14,
+    color: '#2D3748',
+    fontStyle: 'italic',
+    lineHeight: 20,
+  },
 });
 
+// Help Modal Component
+const HelpModal = ({ visible, onClose, helpData }) => {
+  if (!helpData) return null;
+
+  return (
+    <Modal
+      visible={visible}
+      transparent={true}
+      animationType="fade"
+      onRequestClose={onClose}
+    >
+      <TouchableOpacity
+        style={styles.helpModalOverlay}
+        activeOpacity={1}
+        onPress={onClose}
+      >
+        <TouchableOpacity
+          style={styles.helpModalContent}
+          activeOpacity={1}
+          onPress={() => {}} // Prevent modal close when tapping content
+        >
+          <View style={styles.helpModalHeader}>
+            <Text style={styles.helpModalTitle}>{helpData.title}</Text>
+            <TouchableOpacity
+              style={styles.helpModalCloseButton}
+              onPress={onClose}
+            >
+              <Ionicons name="close" size={24} color="#64748B" />
+            </TouchableOpacity>
+          </View>
+
+          <ScrollView style={styles.helpModalScrollView} showsVerticalScrollIndicator={false}>
+            <View style={styles.helpSection}>
+              <Text style={styles.helpSectionTitle}>Purpose</Text>
+              <Text style={styles.helpSectionText}>{helpData.purpose}</Text>
+            </View>
+
+            <View style={styles.helpSection}>
+              <Text style={styles.helpSectionTitle}>Format</Text>
+              <Text style={styles.helpSectionText}>{helpData.format}</Text>
+            </View>
+
+            {helpData.examples && helpData.examples.length > 0 && (
+              <View style={styles.helpSection}>
+                <Text style={styles.helpSectionTitle}>Examples</Text>
+                <View style={styles.helpExamplesList}>
+                  {helpData.examples.map((example, index) => (
+                    <Text key={index} style={styles.helpExampleItem}>
+                      • {example}
+                    </Text>
+                  ))}
+                </View>
+              </View>
+            )}
+
+            {helpData.tips && helpData.tips.length > 0 && (
+              <View style={styles.helpSection}>
+                <Text style={styles.helpSectionTitle}>Tips</Text>
+                <View style={styles.helpTipsList}>
+                  {helpData.tips.map((tip, index) => (
+                    <Text key={index} style={styles.helpTipItem}>
+                      • {tip}
+                    </Text>
+                  ))}
+                </View>
+              </View>
+            )}
+
+            {helpData.whereToFind && (
+              <View style={styles.helpSection}>
+                <Text style={styles.helpSectionTitle}>Where to Find</Text>
+                <View style={styles.helpWhereToFind}>
+                  <Text style={styles.helpWhereToFindText}>{helpData.whereToFind}</Text>
+                </View>
+              </View>
+            )}
+          </ScrollView>
+        </TouchableOpacity>
+      </TouchableOpacity>
+    </Modal>
+  );
+};
+
 // Memoized InputField component to prevent unnecessary re-renders
-const InputField = memo(({ label, value, onChangeText, placeholder, keyboardType = 'numeric', multiline = false, icon, helpText, error, editable = true }) => {
+const InputField = memo(({ label, value, onChangeText, placeholder, keyboardType = 'numeric', multiline = false, icon, helpKey, error, editable = true }) => {
+  const [showHelpModal, setShowHelpModal] = useState(false);
+  const helpData = helpKey ? HELP_TEXT[helpKey] : null;
   // Filter input for numeric fields to only allow numbers and decimal point
   const handleTextChange = (text) => {
     if (keyboardType === 'numeric') {
@@ -683,35 +858,49 @@ const InputField = memo(({ label, value, onChangeText, placeholder, keyboardType
   };
 
   return (
-    <View style={styles.inputContainer}>
-      <View style={styles.labelContainer}>
-        <Ionicons name={icon} size={18} color={error ? "#FF6B6B" : "#4A90E2"} />
-        <Text style={[styles.inputLabel, error && { color: '#FF6B6B' }]}>{label}</Text>
-        <TouchableOpacity
-          style={styles.helpIcon}
-          onPress={() => Alert.alert(label, helpText || placeholder)}
-        >
-          <Ionicons name="help-circle-outline" size={18} color="#64748B" />
-        </TouchableOpacity>
+    <>
+      <View style={styles.inputContainer}>
+        <View style={styles.labelContainer}>
+          <Ionicons name={icon} size={18} color={error ? "#FF6B6B" : "#4A90E2"} />
+          <Text style={[styles.inputLabel, error && { color: '#FF6B6B' }]}>{label}</Text>
+          <TouchableOpacity
+            style={styles.helpIcon}
+            onPress={() => {
+              if (helpData) {
+                setShowHelpModal(true);
+              } else {
+                Alert.alert(label, placeholder);
+              }
+            }}
+          >
+            <Ionicons name="help-circle-outline" size={18} color="#64748B" />
+          </TouchableOpacity>
+        </View>
+        <TextInput
+          style={[
+            styles.input,
+            multiline && styles.multilineInput,
+            error && styles.inputError,
+            !editable && styles.inputDisabled
+          ]}
+          value={value}
+          onChangeText={handleTextChange}
+          placeholder={placeholder}
+          keyboardType={keyboardType}
+          multiline={multiline}
+          placeholderTextColor={!editable ? "#A0AEC0" : "#999"}
+          returnKeyType="done"
+          editable={editable}
+        />
+        {error && <Text style={styles.errorText}>{error}</Text>}
       </View>
-      <TextInput
-        style={[
-          styles.input,
-          multiline && styles.multilineInput,
-          error && styles.inputError,
-          !editable && styles.inputDisabled
-        ]}
-        value={value}
-        onChangeText={handleTextChange}
-        placeholder={placeholder}
-        keyboardType={keyboardType}
-        multiline={multiline}
-        placeholderTextColor={!editable ? "#A0AEC0" : "#999"}
-        returnKeyType="done"
-        editable={editable}
+
+      <HelpModal
+        visible={showHelpModal}
+        onClose={() => setShowHelpModal(false)}
+        helpData={helpData}
       />
-      {error && <Text style={styles.errorText}>{error}</Text>}
-    </View>
+    </>
   );
 });
 
@@ -1615,6 +1804,7 @@ export default function App() {
               onChangeText={jobIncomeCallbacks[idx]}
               placeholder="Annual salary (e.g., 65000)"
               icon="briefcase-outline"
+              helpKey="jobIncome"
               error={validationErrors[`jobIncome_${idx}`]}
             />
           </View>
@@ -1643,6 +1833,7 @@ export default function App() {
         }}
         placeholder="Self-employed income (e.g., 15000)"
         icon="business-outline"
+        helpKey="abnIncome"
         error={validationErrors.abnIncome}
       />
 
@@ -1657,6 +1848,7 @@ export default function App() {
         }}
         placeholder={paygUnknown ? "Estimated" : "Total tax withheld (e.g., 12500)"}
         icon="card-outline"
+        helpKey="taxWithheld"
         error={validationErrors.taxWithheld}
         editable={!paygUnknown}
       />
@@ -1687,6 +1879,7 @@ export default function App() {
         onChangeText={updateWorkRelatedDeduction}
         placeholder="Tools, uniforms, travel (e.g., 2500)"
         icon="construct-outline"
+        helpKey="workRelated"
       />
 
       <InputField
@@ -1695,6 +1888,7 @@ export default function App() {
         onChangeText={updateSelfEducationDeduction}
         placeholder="Courses, books, conferences (e.g., 1200)"
         icon="school-outline"
+        helpKey="selfEducation"
       />
 
       <InputField
@@ -1703,6 +1897,7 @@ export default function App() {
         onChangeText={updateDonationsDeduction}
         placeholder="Tax-deductible donations (e.g., 500)"
         icon="heart-outline"
+        helpKey="donations"
       />
 
       <InputField
@@ -1711,6 +1906,7 @@ export default function App() {
         onChangeText={updateOtherDeduction}
         placeholder="Investment, tax agent fees (e.g., 800)"
         icon="receipt-outline"
+        helpKey="otherDeductions"
       />
 
       <InputField
@@ -1719,6 +1915,7 @@ export default function App() {
         onChangeText={setWorkFromHomeHours}
         placeholder="Total WFH hours (e.g., 400 = $268 deduction)"
         icon="home-outline"
+        helpKey="workFromHome"
       />
 
       <View style={styles.wfhInfo}>
