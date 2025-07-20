@@ -814,6 +814,8 @@ export default function App() {
       newIncomes[index] = value;
       return newIncomes;
     });
+    // Clear error for this field when user starts typing
+    clearFieldError(`jobIncome_${index}`);
   }, []);
 
   const addJobIncomeField = useCallback(() => {
@@ -877,7 +879,11 @@ export default function App() {
 
     // For steps 2 and 3, validate step 1 first
     if (step > 1) {
-      // Validate step 1 (income) before allowing navigation to later steps
+      // Validate step 1 income data
+      clearAllErrors();
+      let hasErrors = false;
+
+      // Check if at least one income source has a valid positive value
       const hasValidJobIncome = jobIncomes.some(income => {
         const trimmed = income?.trim();
         const parsed = parseFloat(trimmed);
@@ -886,14 +892,51 @@ export default function App() {
 
       const hasValidAbnIncome = abnIncome?.trim() && !isNaN(parseFloat(abnIncome.trim())) && parseFloat(abnIncome.trim()) > 0;
 
-      if (!hasValidJobIncome && !hasValidAbnIncome) {
-        Alert.alert('Complete Income First', 'Please enter at least one income source before proceeding.');
-        return;
+      // Validate individual job income fields
+      jobIncomes.forEach((income, index) => {
+        const trimmed = income?.trim();
+        const parsed = parseFloat(trimmed);
+        if (trimmed && (isNaN(parsed) || parsed <= 0)) {
+          setFieldError(`jobIncome_${index}`, 'Must be a valid number greater than 0');
+          hasErrors = true;
+        }
+      });
+
+      // Validate ABN income if provided
+      if (abnIncome?.trim()) {
+        const parsed = parseFloat(abnIncome.trim());
+        if (isNaN(parsed) || parsed <= 0) {
+          setFieldError('abnIncome', 'Must be a valid number greater than 0');
+          hasErrors = true;
+        }
       }
 
+      // Check if at least one income source is valid
+      if (!hasValidJobIncome && !hasValidAbnIncome) {
+        if (!jobIncomes.some(income => income?.trim())) {
+          setFieldError('jobIncome_0', 'At least one income source is required');
+        }
+        if (!abnIncome?.trim()) {
+          setFieldError('abnIncome', 'Enter ABN income or at least one job income');
+        }
+        hasErrors = true;
+      }
+
+      // Check tax withheld
       const taxWithheldTrimmed = taxWithheld?.trim();
-      if (!taxWithheldTrimmed || isNaN(parseFloat(taxWithheldTrimmed)) || parseFloat(taxWithheldTrimmed) < 0) {
-        Alert.alert('Complete Income First', 'Please enter a valid tax withheld amount before proceeding.');
+      const taxWithheldParsed = parseFloat(taxWithheldTrimmed);
+
+      if (!taxWithheldTrimmed) {
+        setFieldError('taxWithheld', 'Tax withheld is required');
+        hasErrors = true;
+      } else if (isNaN(taxWithheldParsed) || taxWithheldParsed < 0) {
+        setFieldError('taxWithheld', 'Must be a valid number (0 or greater)');
+        hasErrors = true;
+      }
+
+      if (hasErrors) {
+        // Stay on step 1 to show validation errors
+        setCurrentStep(1);
         return;
       }
     }
@@ -1320,6 +1363,7 @@ export default function App() {
               onChangeText={jobIncomeCallbacks[idx]}
               placeholder="Annual salary (e.g., 65000)"
               icon="briefcase-outline"
+              error={validationErrors[`jobIncome_${idx}`]}
             />
           </View>
           {jobIncomes.length > 1 && (
@@ -1332,7 +1376,7 @@ export default function App() {
           )}
         </View>
       ))}
-      
+
       <TouchableOpacity style={styles.addButton} onPress={addJobIncomeField}>
         <Ionicons name="add-circle-outline" size={20} color="#4A90E2" />
         <Text style={styles.addButtonText}>Add Another Job</Text>
@@ -1341,17 +1385,25 @@ export default function App() {
       <InputField
         label="ABN/Freelance Income"
         value={abnIncome}
-        onChangeText={setAbnIncome}
+        onChangeText={(value) => {
+          setAbnIncome(value);
+          clearFieldError('abnIncome');
+        }}
         placeholder="Self-employed income (e.g., 15000)"
         icon="business-outline"
+        error={validationErrors.abnIncome}
       />
 
       <InputField
         label="Tax Withheld (PAYG)"
         value={taxWithheld}
-        onChangeText={setTaxWithheld}
+        onChangeText={(value) => {
+          setTaxWithheld(value);
+          clearFieldError('taxWithheld');
+        }}
         placeholder="Total tax withheld (e.g., 12500)"
         icon="card-outline"
+        error={validationErrors.taxWithheld}
       />
     </View>
   );
