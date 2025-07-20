@@ -65,6 +65,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 6,
   },
+  helpIcon: {
+    marginLeft: 'auto',
+    padding: 4,
+  },
   inputLabel: {
     fontSize: 15,
     fontWeight: '600',
@@ -665,6 +669,12 @@ const InputField = memo(({ label, value, onChangeText, placeholder, keyboardType
       <View style={styles.labelContainer}>
         <Ionicons name={icon} size={18} color="#4A90E2" />
         <Text style={styles.inputLabel}>{label}</Text>
+        <TouchableOpacity 
+          style={styles.helpIcon} 
+          onPress={() => Alert.alert(label, placeholder)}
+        >
+          <Ionicons name="help-circle-outline" size={18} color="#64748B" />
+        </TouchableOpacity>
       </View>
       <TextInput
         style={[styles.input, multiline && styles.multilineInput]}
