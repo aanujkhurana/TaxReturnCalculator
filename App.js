@@ -490,8 +490,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderRadius: 10,
   },
-  saveButton: {
-    backgroundColor: '#28a745',
+  pdfButton: {
+    backgroundColor: '#dc3545',
   },
   actionButtonText: {
     color: '#fff',
@@ -1158,7 +1158,6 @@ export default function App() {
   const [paygUnknown, setPaygUnknown] = useState(false);
   const [estimatedPayg, setEstimatedPayg] = useState('');
   const [result, setResult] = useState(null);
-  const [savedCalculations, setSavedCalculations] = useState([]);
   const [isCalculating, setIsCalculating] = useState(false);
   const [loadingStep, setLoadingStep] = useState(0);
   const [showSuccessAnimation, setShowSuccessAnimation] = useState(false);
@@ -1723,27 +1722,7 @@ export default function App() {
     }, 2400); // Complete after all loading steps
   }, [jobIncomes, abnIncome, taxWithheld, deductions, workFromHomeHours, hecsDebt, medicareExemption, dependents]);
 
-  const saveCalculation = (name) => {
-    if (!result) {
-      Alert.alert('Error', 'Please calculate your tax first');
-      return;
-    }
 
-    if (!name || !name.trim()) {
-      Alert.alert('Error', 'Please enter a name for this calculation');
-      return;
-    }
-
-    const calculation = {
-      id: Date.now().toString(),
-      name: name.trim(),
-      date: new Date().toLocaleDateString('en-AU'),
-      ...result
-    };
-
-    setSavedCalculations([...savedCalculations, calculation]);
-    Alert.alert('Success', 'Calculation saved successfully!');
-  };
 
   const exportCSV = async () => {
     if (!result) return;
@@ -1777,6 +1756,132 @@ export default function App() {
       await Sharing.shareAsync(path, { dialogTitle: 'Export Tax Summary' });
     } catch (error) {
       Alert.alert('Export Error', 'Failed to export CSV file');
+    }
+  };
+
+  const exportPDF = async () => {
+    if (!result) return;
+
+    try {
+      // Create HTML content for the PDF
+      const htmlContent = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <title>Tax Calculation Report</title>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 20px; color: #333; }
+            .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #4A90E2; padding-bottom: 20px; }
+            .title { color: #4A90E2; font-size: 24px; font-weight: bold; margin-bottom: 10px; }
+            .date { color: #666; font-size: 14px; }
+            .section { margin-bottom: 25px; }
+            .section-title { color: #2D3748; font-size: 18px; font-weight: bold; margin-bottom: 15px; border-bottom: 1px solid #E2E8F0; padding-bottom: 5px; }
+            .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+            .summary-card { background: #F8FAFC; padding: 15px; border-radius: 8px; border: 1px solid #E2E8F0; }
+            .summary-label { font-size: 12px; color: #64748B; text-transform: uppercase; font-weight: 600; margin-bottom: 5px; }
+            .summary-amount { font-size: 20px; font-weight: bold; color: #2D3748; }
+            .breakdown-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+            .breakdown-table th, .breakdown-table td { padding: 10px; text-align: left; border-bottom: 1px solid #E2E8F0; }
+            .breakdown-table th { background: #F8FAFC; font-weight: 600; color: #2D3748; }
+            .breakdown-table .total-row { font-weight: bold; border-top: 2px solid #4A90E2; background: #F0F9FF; }
+            .footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #E2E8F0; text-align: center; color: #666; font-size: 12px; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <div class="title">Australian Tax Calculation Report</div>
+            <div class="date">Generated on ${new Date().toLocaleDateString('en-AU', {
+              weekday: 'long',
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric'
+            })}</div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Summary</div>
+            <div class="summary-grid">
+              <div class="summary-card">
+                <div class="summary-label">Total Income</div>
+                <div class="summary-amount">${formatCurrency(result.totalTFNIncome + result.abnIncomeNum).replace('$', '$')}</div>
+              </div>
+              <div class="summary-card">
+                <div class="summary-label">Total Deductions</div>
+                <div class="summary-amount">${formatCurrency(result.totalDeductions).replace('$', '$')}</div>
+              </div>
+              <div class="summary-card">
+                <div class="summary-label">Taxable Income</div>
+                <div class="summary-amount">${formatCurrency(result.taxableIncome).replace('$', '$')}</div>
+              </div>
+              <div class="summary-card">
+                <div class="summary-label">${result.refund >= 0 ? 'Tax Refund' : 'Tax Owing'}</div>
+                <div class="summary-amount" style="color: ${result.refund >= 0 ? '#28a745' : '#dc3545'}">${formatCurrency(Math.abs(result.refund)).replace('$', '$')}</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Income Breakdown</div>
+            <table class="breakdown-table">
+              <tr><th>Source</th><th>Amount</th></tr>
+              <tr><td>Employment Income (TFN)</td><td>${formatCurrency(result.totalTFNIncome).replace('$', '$')}</td></tr>
+              <tr><td>ABN/Freelance Income</td><td>${formatCurrency(result.abnIncomeNum).replace('$', '$')}</td></tr>
+              <tr class="total-row"><td>Total Income</td><td>${formatCurrency(result.totalTFNIncome + result.abnIncomeNum).replace('$', '$')}</td></tr>
+            </table>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Deductions Breakdown</div>
+            <table class="breakdown-table">
+              <tr><th>Type</th><th>Amount</th></tr>
+              <tr><td>Work-Related Expenses</td><td>${formatCurrency(parseFloat(deductions.workRelated || '0')).replace('$', '$')}</td></tr>
+              <tr><td>Self-Education Expenses</td><td>${formatCurrency(parseFloat(deductions.selfEducation || '0')).replace('$', '$')}</td></tr>
+              <tr><td>Charitable Donations</td><td>${formatCurrency(parseFloat(deductions.donations || '0')).replace('$', '$')}</td></tr>
+              <tr><td>Other Deductions</td><td>${formatCurrency(parseFloat(deductions.other || '0')).replace('$', '$')}</td></tr>
+              <tr><td>Work From Home (${workFromHomeHours || 0} hrs)</td><td>${formatCurrency(result.workFromHomeDeduction).replace('$', '$')}</td></tr>
+              <tr class="total-row"><td>Total Deductions</td><td>${formatCurrency(result.totalDeductions).replace('$', '$')}</td></tr>
+            </table>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Tax Calculation</div>
+            <table class="breakdown-table">
+              <tr><th>Component</th><th>Amount</th></tr>
+              <tr><td>Taxable Income</td><td>${formatCurrency(result.taxableIncome).replace('$', '$')}</td></tr>
+              <tr><td>Income Tax</td><td>${formatCurrency(result.tax).replace('$', '$')}</td></tr>
+              <tr><td>Low Income Tax Offset</td><td>-${formatCurrency(result.lito).replace('$', '$')}</td></tr>
+              <tr><td>Medicare Levy</td><td>${formatCurrency(result.medicare).replace('$', '$')}</td></tr>
+              ${result.hecsRepayment > 0 ? `<tr><td>HECS-HELP Repayment</td><td>${formatCurrency(result.hecsRepayment).replace('$', '$')}</td></tr>` : ''}
+              <tr><td>Tax Withheld (PAYG)</td><td>-${formatCurrency(parseFloat(taxWithheld || '0')).replace('$', '$')}</td></tr>
+              <tr class="total-row"><td>${result.refund >= 0 ? 'Tax Refund' : 'Tax Owing'}</td><td style="color: ${result.refund >= 0 ? '#28a745' : '#dc3545'}">${formatCurrency(Math.abs(result.refund)).replace('$', '$')}</td></tr>
+            </table>
+          </div>
+
+          <div class="footer">
+            <p>This is an estimate only. Please consult a qualified tax professional for official tax advice.</p>
+            <p>Generated by TaxMate AU - Australian Tax Calculator</p>
+          </div>
+        </body>
+        </html>
+      `;
+
+      const fileName = `tax_calculation_${new Date().toISOString().split('T')[0]}.html`;
+      const fileUri = FileSystem.documentDirectory + fileName;
+
+      await FileSystem.writeAsStringAsync(fileUri, htmlContent);
+
+      if (await Sharing.isAvailableAsync()) {
+        await Sharing.shareAsync(fileUri, {
+          mimeType: 'text/html',
+          dialogTitle: 'Export Tax Calculation Report'
+        });
+      } else {
+        Alert.alert('Success', `Report saved to ${fileUri}`);
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Failed to export PDF report');
+      console.error('PDF export error:', error);
     }
   };
 
@@ -2275,19 +2380,9 @@ export default function App() {
               <Text style={styles.actionButtonText}>Export CSV</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={[styles.actionButton, styles.saveButton]} onPress={() => {
-              Alert.prompt(
-                'Save Calculation',
-                'Enter a name for this calculation:',
-                [
-                  { text: 'Cancel', style: 'cancel' },
-                  { text: 'Save', onPress: (name) => name && saveCalculation(name) }
-                ],
-                'plain-text'
-              );
-            }}>
-              <Ionicons name="bookmark-outline" size={18} color="#fff" />
-              <Text style={styles.actionButtonText}>Save</Text>
+            <TouchableOpacity style={[styles.actionButton, styles.pdfButton]} onPress={exportPDF}>
+              <Ionicons name="document-outline" size={18} color="#fff" />
+              <Text style={styles.actionButtonText}>Export PDF</Text>
             </TouchableOpacity>
           </View>
 
