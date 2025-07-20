@@ -89,9 +89,21 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 2,
   },
+  inputError: {
+    borderColor: '#FF6B6B',
+    borderWidth: 2,
+    backgroundColor: '#FFF5F5',
+  },
   multilineInput: {
     height: 80,
     textAlignVertical: 'top',
+  },
+  errorText: {
+    color: '#FF6B6B',
+    fontSize: 12,
+    marginTop: 4,
+    marginLeft: 8,
+    fontWeight: '500',
   },
   jobIncomeRow: {
     flexDirection: 'row',
@@ -640,7 +652,7 @@ const styles = StyleSheet.create({
 });
 
 // Memoized InputField component to prevent unnecessary re-renders
-const InputField = memo(({ label, value, onChangeText, placeholder, keyboardType = 'numeric', multiline = false, icon }) => {
+const InputField = memo(({ label, value, onChangeText, placeholder, keyboardType = 'numeric', multiline = false, icon, helpText }) => {
   // Filter input for numeric fields to only allow numbers and decimal point
   const handleTextChange = (text) => {
     if (keyboardType === 'numeric') {
@@ -671,7 +683,7 @@ const InputField = memo(({ label, value, onChangeText, placeholder, keyboardType
         <Text style={styles.inputLabel}>{label}</Text>
         <TouchableOpacity 
           style={styles.helpIcon} 
-          onPress={() => Alert.alert(label, placeholder)}
+          onPress={() => Alert.alert(label, helpText || placeholder)}
         >
           <Ionicons name="help-circle-outline" size={18} color="#64748B" />
         </TouchableOpacity>
@@ -716,6 +728,9 @@ export default function App() {
   const [isCalculating, setIsCalculating] = useState(false);
   const [loadingStep, setLoadingStep] = useState(0);
   const [showSuccessAnimation, setShowSuccessAnimation] = useState(false);
+
+  // Form validation errors
+  const [validationErrors, setValidationErrors] = useState({});
 
   // Animation values
   const fadeAnim = new Animated.Value(0);
