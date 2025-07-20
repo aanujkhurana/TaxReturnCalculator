@@ -18,6 +18,8 @@ import * as Sharing from 'expo-sharing';
 import { StatusBar } from 'expo-status-bar';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
+import HomeScreen from './HomeScreen';
+import { saveCalculation } from './storage';
 
 // Styles definition
 const styles = StyleSheet.create({
@@ -40,6 +42,14 @@ const styles = StyleSheet.create({
   headerContent: {
     alignItems: 'center',
     justifyContent: 'center',
+    flexDirection: 'row',
+    position: 'relative',
+  },
+  backButton: {
+    position: 'absolute',
+    left: 0,
+    padding: 8,
+    zIndex: 1,
   },
   headerTitle: {
     fontSize: 28,
@@ -501,6 +511,9 @@ const styles = StyleSheet.create({
   pdfButton: {
     backgroundColor: '#dc3545',
   },
+  saveButton: {
+    backgroundColor: '#10B981',
+  },
   actionButtonText: {
     color: '#fff',
     fontSize: 15,
@@ -716,10 +729,10 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   startOverButton: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 20,
     paddingVertical: 14,
     paddingHorizontal: 24,
     borderRadius: 12,
@@ -734,6 +747,36 @@ const styles = StyleSheet.create({
     height: 48,
   },
   startOverButtonText: {
+    fontSize: 16,
+    color: '#4A90E2',
+    fontWeight: '600',
+    marginLeft: 10,
+    letterSpacing: 0.2,
+  },
+  navigationButtonsContainer: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 20,
+  },
+  homeButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: '#4A90E2',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    elevation: 2,
+    height: 48,
+  },
+  homeButtonText: {
     fontSize: 16,
     color: '#4A90E2',
     fontWeight: '600',
@@ -1162,6 +1205,10 @@ const HELP_TEXT = {
 };
 
 export default function App() {
+  // Navigation state
+  const [currentScreen, setCurrentScreen] = useState('home'); // 'home' or 'calculator'
+  const [viewingCalculation, setViewingCalculation] = useState(null);
+
   // Step management
   const [currentStep, setCurrentStep] = useState(1);
   const totalSteps = 4;
@@ -1198,6 +1245,111 @@ export default function App() {
   const loadingPulseAnim = new Animated.Value(1);
   const headerScaleAnim = new Animated.Value(0.95);
   const headerOpacityAnim = new Animated.Value(0);
+
+  // Navigation functions
+  const navigateToCalculator = () => {
+    setCurrentScreen('calculator');
+    resetForm();
+  };
+
+  const navigateToHome = () => {
+    setCurrentScreen('home');
+    setViewingCalculation(null);
+  };
+
+  const viewCalculation = async (calculation) => {
+    setViewingCalculation(calculation);
+    // Load the calculation data into the form
+    setJobIncomes(calculation.formData.jobIncomes || ['']);
+    setTaxWithheld(calculation.formData.taxWithheld || '');
+    setDeductions(calculation.formData.deductions || {
+      workRelated: '',
+      selfEducation: '',
+      donations: '',
+      other: ''
+    });
+    setWorkFromHomeHours(calculation.formData.workFromHomeHours || '');
+    setAbnIncome(calculation.formData.abnIncome || '');
+    setHecsDebt(calculation.formData.hecsDebt || false);
+    setMedicareExemption(calculation.formData.medicareExemption || false);
+    setDependents(calculation.formData.dependents || '0');
+    setResult(calculation.result);
+    setCurrentStep(4); // Go directly to results
+    setCurrentScreen('calculator');
+  };
+
+  const resetForm = () => {
+    setCurrentStep(1);
+    setJobIncomes(['']);
+    setTaxWithheld('');
+    setDeductions({
+      workRelated: '',
+      selfEducation: '',
+      donations: '',
+      other: ''
+    });
+    setWorkFromHomeHours('');
+    setAbnIncome('');
+    setHecsDebt(false);
+    setMedicareExemption(false);
+    setDependents('0');
+    setResult(null);
+    setValidationErrors({});
+    setPaygUnknown(false);
+    setEstimatedPayg('');
+  };
+
+  const handleSaveCalculation = async () => {
+    if (!result) {
+      Alert.alert('Error', 'No calculation to save');
+      return;
+    }
+
+    Alert.prompt(
+      'Save Calculation',
+      'Enter a name for this calculation (optional):',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Save',
+          onPress: async (name) => {
+            try {
+              const calculationData = {
+                jobIncomes,
+                taxWithheld,
+                deductions,
+                workFromHomeHours,
+                abnIncome,
+                hecsDebt,
+                medicareExemption,
+                dependents,
+                result,
+              };
+
+              await saveCalculation(calculationData, name);
+              Alert.alert(
+                'Success',
+                'Calculation saved successfully!',
+                [
+                  {
+                    text: 'OK',
+                    onPress: () => navigateToHome(),
+                  },
+                ]
+              );
+            } catch (error) {
+              console.error('Error saving calculation:', error);
+              Alert.alert('Error', 'Failed to save calculation');
+            }
+          },
+        },
+      ],
+      'plain-text'
+    );
+  };
 
   // Helper functions for validation errors
   const setFieldError = (fieldName, errorMessage) => {
@@ -2402,6 +2554,13 @@ export default function App() {
           </View>
 
           <View style={styles.actionButtons}>
+            {!viewingCalculation && (
+              <TouchableOpacity style={[styles.actionButton, styles.saveButton]} onPress={handleSaveCalculation}>
+                <Ionicons name="bookmark-outline" size={18} color="#fff" />
+                <Text style={styles.actionButtonText}>Save Calculation</Text>
+              </TouchableOpacity>
+            )}
+
             <TouchableOpacity style={styles.actionButton} onPress={exportCSV}>
               <Ionicons name="download-outline" size={18} color="#fff" />
               <Text style={styles.actionButtonText}>Export CSV</Text>
@@ -2413,16 +2572,25 @@ export default function App() {
             </TouchableOpacity>
           </View>
 
-          <TouchableOpacity
-            style={styles.startOverButton}
-            onPress={() => {
-              setCurrentStep(1);
-              setResult(null);
-            }}
-          >
-            <Ionicons name="refresh-outline" size={18} color="#4A90E2" />
-            <Text style={styles.startOverButtonText}>Start New Calculation</Text>
-          </TouchableOpacity>
+          <View style={styles.navigationButtonsContainer}>
+            <TouchableOpacity
+              style={styles.homeButton}
+              onPress={navigateToHome}
+            >
+              <Ionicons name="home-outline" size={18} color="#4A90E2" />
+              <Text style={styles.homeButtonText}>Back to Home</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.startOverButton}
+              onPress={() => {
+                resetForm();
+              }}
+            >
+              <Ionicons name="refresh-outline" size={18} color="#4A90E2" />
+              <Text style={styles.startOverButtonText}>Start New Calculation</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
       </View>
@@ -2445,6 +2613,20 @@ export default function App() {
     }
   };
 
+  // Render based on current screen
+  if (currentScreen === 'home') {
+    return (
+      <View style={styles.container}>
+        <StatusBar style="light" />
+        <HomeScreen
+          onCreateNew={navigateToCalculator}
+          onViewCalculation={viewCalculation}
+        />
+      </View>
+    );
+  }
+
+  // Calculator screen
   return (
     <KeyboardAvoidingView
       style={styles.container}
@@ -2478,7 +2660,15 @@ export default function App() {
         >
           <View style={styles.headerAccent} />
           <View style={styles.headerContent}>
-            <Text style={styles.headerTitle}>Australian Tax Calculator</Text>
+            <TouchableOpacity
+              style={styles.backButton}
+              onPress={navigateToHome}
+            >
+              <Ionicons name="chevron-back" size={24} color="#fff" />
+            </TouchableOpacity>
+            <Text style={styles.headerTitle}>
+              {viewingCalculation ? 'Saved Calculation' : 'Australian Tax Calculator'}
+            </Text>
           </View>
         </LinearGradient>
       </Animated.View>
