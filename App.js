@@ -209,6 +209,13 @@ const styles = StyleSheet.create({
     color: '#4A90E2',
     fontWeight: '600',
   },
+  toggleSubtext: {
+    fontSize: 13,
+    color: '#9CA3AF',
+    marginLeft: 38,
+    marginTop: 4,
+    lineHeight: 18,
+  },
   wfhInfo: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -3007,14 +3014,21 @@ export default function App() {
         style={[styles.toggleButton, medicareExemption && styles.toggleButtonActive]}
         onPress={() => setMedicareExemption(!medicareExemption)}
       >
-        <Ionicons 
-          name={medicareExemption ? "checkbox-outline" : "square-outline"} 
-          size={24} 
-          color={medicareExemption ? "#4A90E2" : "#666"} 
-        />
-        <Text style={[styles.toggleText, medicareExemption && styles.toggleTextActive]}>
-          Apply Medicare Levy (2% of taxable income)
-        </Text>
+        <View style={{ flex: 1 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <Ionicons
+              name={medicareExemption ? "checkbox-outline" : "square-outline"}
+              size={24}
+              color={medicareExemption ? "#4A90E2" : "#666"}
+            />
+            <Text style={[styles.toggleText, medicareExemption && styles.toggleTextActive]}>
+              I am exempt from Medicare Levy
+            </Text>
+          </View>
+          <Text style={styles.toggleSubtext}>
+            Tick this if you're a temporary visa holder, foreign resident, or Norfolk Island resident. Leave unticked if you're an Australian resident for tax purposes.
+          </Text>
+        </View>
       </TouchableOpacity>
 
       <InputField
