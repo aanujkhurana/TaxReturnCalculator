@@ -3248,22 +3248,22 @@ export default function App() {
           </View>
 
           <View style={styles.actionButtons}>
-            {!viewingCalculation && (
-              <TouchableOpacity style={[styles.actionButton, styles.saveButton]} onPress={handleSaveCalculation}>
-                <Ionicons name="bookmark-outline" size={18} color="#fff" />
-                <Text style={styles.actionButtonText}>Save Calculation</Text>
-              </TouchableOpacity>
-            )}
+            <TouchableOpacity style={[styles.actionButton, styles.pdfButton]} onPress={exportPDF}>
+              <Ionicons name="document-outline" size={18} color="#fff" />
+              <Text style={styles.actionButtonText}>Export PDF</Text>
+            </TouchableOpacity>
 
             <TouchableOpacity style={styles.actionButton} onPress={exportCSV}>
               <Ionicons name="download-outline" size={18} color="#fff" />
               <Text style={styles.actionButtonText}>Export CSV</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={[styles.actionButton, styles.pdfButton]} onPress={exportPDF}>
-              <Ionicons name="document-outline" size={18} color="#fff" />
-              <Text style={styles.actionButtonText}>Export PDF</Text>
-            </TouchableOpacity>
+            {!viewingCalculation && (
+              <TouchableOpacity style={[styles.actionButton, styles.saveButton]} onPress={handleSaveCalculation}>
+                <Ionicons name="bookmark-outline" size={18} color="#fff" />
+                <Text style={styles.actionButtonText}>Save Calculation</Text>
+              </TouchableOpacity>
+            )}
           </View>
 
           <View style={styles.fullRowButtonsContainer}>
