@@ -129,13 +129,15 @@ This calculator eliminates the complexity of traditional tax estimation tools by
 - **Field**: `medicareExemption` (Boolean toggle)
 - **Purpose**: Indicates eligibility for Medicare levy exemption
 - **Default**: Medicare levy applied (2% of taxable income)
-- **Exemptions**: Foreign residents, some visa holders, low-income earners
+- **Exemptions**: Foreign residents, temporary visa holders, Norfolk Island residents
+- **Help**: Comprehensive help available explaining eligibility criteria
 
 #### Number of Dependents
 - **Field**: `dependents`
 - **Format**: Numeric value (whole numbers)
 - **Purpose**: Number of dependent children or family members
-- **Impact**: May affect Medicare levy thresholds and family tax benefits
+- **Impact**: Increases Medicare levy threshold by $4,216 per dependent
+- **Thresholds**: Base $27,222, Family starts at $45,907
 - **Validation**: Must be non-negative integer
 
 ## 🧮 Calculation Methods
@@ -173,8 +175,10 @@ Taxable Income = Max(0, Total Income - Total Deductions)
 
 #### 6. Medicare Levy
 - **Rate**: 2% of taxable income
-- **Threshold**: Applies to income over $23,226 (2024-25)
-- **Exemptions**: Applied if Medicare exemption selected
+- **Base Threshold**: $27,222 (2024-25)
+- **Family Threshold**: $45,907 + ($4,216 × dependents)
+- **Phase-in**: Progressive application from threshold to threshold × 1.1
+- **Exemptions**: Available for foreign residents and certain visa holders
 
 #### 7. HECS-HELP Repayment
 Progressive rates based on income:
@@ -305,13 +309,14 @@ expo build:ios
    - Affects repayment calculations
    - Based on income thresholds
 
-2. **Medicare Levy**: Usually applies to all residents
-   - 2% of taxable income
-   - Some exemptions available
+2. **Medicare Levy Exemption**: Check if you qualify for exemption
+   - 2% of taxable income for most residents
+   - Exemptions for foreign residents and certain visa holders
+   - Comprehensive help available explaining eligibility
 
 3. **Dependents**: Enter number of dependent children
-   - May affect Medicare levy thresholds
-   - Used for family-related calculations
+   - Increases Medicare levy threshold by $4,216 per dependent
+   - Family threshold starts at $45,907 for first dependent
 
 #### Step 4: Results
 

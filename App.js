@@ -945,6 +945,38 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
     lineHeight: 20,
   },
+
+  // Deduction category styles
+  deductionCategory: {
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+
+  categoryTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#2D3748',
+    marginBottom: 4,
+  },
+
+  categoryDescription: {
+    fontSize: 14,
+    color: '#718096',
+    marginBottom: 16,
+    lineHeight: 20,
+  },
 });
 
 // Help Modal Component
@@ -1273,6 +1305,265 @@ const HELP_TEXT = {
       "Can increase your tax-free threshold"
     ],
     whereToFind: "Count your dependent children and other dependents you financially support"
+  },
+
+  // Work-Related Deduction Subcategories
+  workRelatedTravel: {
+    title: "Work-Related Travel Expenses",
+    purpose: "Enter costs for travel directly related to your work, excluding normal commuting between home and work.",
+    examples: [
+      "Travel between work sites: 450",
+      "Client visits: 320",
+      "Work conferences travel: 800"
+    ],
+    tips: [
+      "Don't include travel between home and regular workplace",
+      "Include car expenses, public transport, flights for work",
+      "Keep detailed logbooks for car travel",
+      "Must be directly related to earning income"
+    ],
+    whereToFind: "Review travel receipts, logbooks, and work-related trip records"
+  },
+
+  workRelatedEquipment: {
+    title: "Work Equipment & Tools",
+    purpose: "Enter costs for tools, equipment, and technology required for your work that weren't provided by your employer.",
+    examples: [
+      "Professional tools: 600",
+      "Computer equipment: 1200",
+      "Safety equipment: 300"
+    ],
+    tips: [
+      "Only include items used primarily for work",
+      "Equipment over $300 may need to be depreciated",
+      "Don't include items provided by employer",
+      "Keep purchase receipts and warranty information"
+    ],
+    whereToFind: "Check receipts for work tools, equipment, and technology purchases"
+  },
+
+  workRelatedUniforms: {
+    title: "Uniforms & Protective Clothing",
+    purpose: "Enter costs for compulsory work uniforms, protective clothing, and occupation-specific clothing.",
+    examples: [
+      "Company uniform: 250",
+      "Safety boots and gear: 180",
+      "Professional attire: 400"
+    ],
+    tips: [
+      "Must be compulsory uniform or protective clothing",
+      "Include cleaning and maintenance costs",
+      "Regular business attire usually not deductible",
+      "Logo or company-specific clothing qualifies"
+    ],
+    whereToFind: "Review receipts for uniforms, safety gear, and work-specific clothing"
+  },
+
+  workRelatedMemberships: {
+    title: "Professional Memberships & Subscriptions",
+    purpose: "Enter costs for professional memberships, union fees, and work-related subscriptions.",
+    examples: [
+      "Professional association: 350",
+      "Union membership: 200",
+      "Industry publications: 120"
+    ],
+    tips: [
+      "Must be directly related to your work",
+      "Include professional body memberships",
+      "Union fees are generally deductible",
+      "Trade magazines and journals qualify"
+    ],
+    whereToFind: "Check bank statements for membership fees and subscription payments"
+  },
+
+  // Self-Education Deduction Subcategories
+  selfEducationCourseFees: {
+    title: "Course Fees & Tuition",
+    purpose: "Enter tuition fees for courses, training programs, and educational qualifications directly related to your current work.",
+    examples: [
+      "Professional certification course: 1500",
+      "Skills training program: 800",
+      "University subject: 1200"
+    ],
+    tips: [
+      "Course must relate to your current job",
+      "Include tuition fees and compulsory course materials",
+      "Don't include HECS-HELP payments",
+      "Keep course enrollment and payment receipts"
+    ],
+    whereToFind: "Review education provider invoices and payment confirmations"
+  },
+
+  selfEducationTextbooks: {
+    title: "Textbooks & Learning Materials",
+    purpose: "Enter costs for textbooks, study materials, and educational resources required for work-related study.",
+    examples: [
+      "Required textbooks: 300",
+      "Study guides: 150",
+      "Online learning materials: 200"
+    ],
+    tips: [
+      "Must be required for your course or work",
+      "Include digital and physical materials",
+      "Keep receipts for all purchases",
+      "Materials must relate to income-earning activities"
+    ],
+    whereToFind: "Check receipts from bookstores and online educational platforms"
+  },
+
+  selfEducationConferences: {
+    title: "Conferences & Seminars",
+    purpose: "Enter registration fees for work-related conferences, seminars, workshops, and professional development events.",
+    examples: [
+      "Industry conference: 600",
+      "Professional workshop: 350",
+      "Seminar registration: 200"
+    ],
+    tips: [
+      "Must be directly related to your work",
+      "Include registration fees only (not travel/accommodation)",
+      "Keep registration confirmations and receipts",
+      "Networking events may qualify if work-related"
+    ],
+    whereToFind: "Review conference registration emails and payment receipts"
+  },
+
+  selfEducationCertifications: {
+    title: "Professional Certifications",
+    purpose: "Enter costs for obtaining and maintaining professional certifications, licenses, and qualifications required for your work.",
+    examples: [
+      "Professional license renewal: 400",
+      "Certification exam fees: 250",
+      "Continuing education credits: 300"
+    ],
+    tips: [
+      "Must be required for your profession",
+      "Include exam fees and renewal costs",
+      "Continuing education requirements qualify",
+      "Keep certification documentation"
+    ],
+    whereToFind: "Check professional body statements and certification receipts"
+  },
+
+  // Donations Deduction Subcategories
+  donationsCharitable: {
+    title: "Charitable Donations",
+    purpose: "Enter donations to registered charities and deductible gift recipients (DGR) for charitable purposes.",
+    examples: [
+      "Cancer research donation: 200",
+      "Homeless shelter donation: 150",
+      "Environmental charity: 300"
+    ],
+    tips: [
+      "Charity must have DGR status",
+      "Donations over $2 require receipts",
+      "Check DGR status on ATO website",
+      "Don't include raffle tickets or purchases"
+    ],
+    whereToFind: "Review donation receipts and bank statements for charitable giving"
+  },
+
+  donationsDisasterRelief: {
+    title: "Disaster Relief Donations",
+    purpose: "Enter donations to approved disaster relief funds and emergency appeal organizations.",
+    examples: [
+      "Bushfire relief fund: 500",
+      "Flood appeal donation: 250",
+      "Emergency relief charity: 300"
+    ],
+    tips: [
+      "Must be to approved disaster relief funds",
+      "Check ATO list of approved funds",
+      "Keep donation receipts and confirmations",
+      "Some government appeals may qualify"
+    ],
+    whereToFind: "Check receipts from disaster relief organizations and emergency appeals"
+  },
+
+  donationsReligious: {
+    title: "Religious Organization Donations",
+    purpose: "Enter donations to religious organizations that have deductible gift recipient status.",
+    examples: [
+      "Church building fund: 400",
+      "Religious charity: 200",
+      "Faith-based welfare: 300"
+    ],
+    tips: [
+      "Organization must have DGR status",
+      "Not all religious donations are deductible",
+      "Building funds often qualify",
+      "Verify DGR status with the organization"
+    ],
+    whereToFind: "Review religious organization receipts and donation statements"
+  },
+
+  // Other Deductions Subcategories
+  otherInvestment: {
+    title: "Investment Expenses",
+    purpose: "Enter expenses related to managing your taxable investments, including property and share investments.",
+    examples: [
+      "Investment property expenses: 1200",
+      "Share trading platform fees: 150",
+      "Investment advice fees: 500"
+    ],
+    tips: [
+      "Must relate to taxable investments only",
+      "Include property management and maintenance",
+      "Investment advice fees are deductible",
+      "Don't include expenses for tax-free investments"
+    ],
+    whereToFind: "Review investment statements and property expense receipts"
+  },
+
+  otherTaxAgent: {
+    title: "Tax Agent & Accounting Fees",
+    purpose: "Enter fees paid to tax agents, accountants, and other professionals for tax-related services.",
+    examples: [
+      "Tax agent fee: 350",
+      "Accounting services: 500",
+      "Tax advice consultation: 200"
+    ],
+    tips: [
+      "Must be for tax-related services only",
+      "Include tax return preparation fees",
+      "Tax advice and planning fees qualify",
+      "Keep invoices and payment receipts"
+    ],
+    whereToFind: "Check invoices from tax agents and accounting professionals"
+  },
+
+  otherIncomeProtection: {
+    title: "Income Protection Insurance",
+    purpose: "Enter premiums paid for income protection insurance that covers loss of income due to illness or injury.",
+    examples: [
+      "Income protection premium: 800",
+      "Salary continuance insurance: 600",
+      "Professional indemnity: 400"
+    ],
+    tips: [
+      "Must be income protection insurance specifically",
+      "Life insurance premiums are not deductible",
+      "Professional indemnity may qualify",
+      "Keep insurance policy documents and receipts"
+    ],
+    whereToFind: "Review insurance policy statements and premium receipts"
+  },
+
+  otherBankFees: {
+    title: "Bank Fees & Investment Charges",
+    purpose: "Enter bank fees and charges directly related to earning investment income or managing taxable investments.",
+    examples: [
+      "Investment account fees: 120",
+      "Share trading fees: 200",
+      "Investment loan fees: 300"
+    ],
+    tips: [
+      "Must be related to earning taxable income",
+      "Investment account fees qualify",
+      "Personal banking fees don't qualify",
+      "Keep bank statements showing fees"
+    ],
+    whereToFind: "Review bank and investment account statements for fees"
   }
 };
 
@@ -1289,10 +1580,33 @@ export default function App() {
   const [jobIncomes, setJobIncomes] = useState(['']);
   const [taxWithheld, setTaxWithheld] = useState('');
   const [deductions, setDeductions] = useState({
-    workRelated: '',
-    selfEducation: '',
-    donations: '',
-    other: ''
+    workRelated: {
+      travel: '',
+      equipment: '',
+      uniforms: '',
+      memberships: '',
+      other: ''
+    },
+    selfEducation: {
+      courseFees: '',
+      textbooks: '',
+      conferences: '',
+      certifications: '',
+      other: ''
+    },
+    donations: {
+      charitable: '',
+      disasterRelief: '',
+      religious: '',
+      other: ''
+    },
+    other: {
+      investment: '',
+      taxAgent: '',
+      incomeProtection: '',
+      bankFees: '',
+      other: ''
+    }
   });
   const [workFromHomeHours, setWorkFromHomeHours] = useState('');
   const [abnIncome, setAbnIncome] = useState('');
@@ -1335,10 +1649,33 @@ export default function App() {
     setJobIncomes(calculation.formData.jobIncomes || ['']);
     setTaxWithheld(calculation.formData.taxWithheld || '');
     setDeductions(calculation.formData.deductions || {
-      workRelated: '',
-      selfEducation: '',
-      donations: '',
-      other: ''
+      workRelated: {
+        travel: '',
+        equipment: '',
+        uniforms: '',
+        memberships: '',
+        other: ''
+      },
+      selfEducation: {
+        courseFees: '',
+        textbooks: '',
+        conferences: '',
+        certifications: '',
+        other: ''
+      },
+      donations: {
+        charitable: '',
+        disasterRelief: '',
+        religious: '',
+        other: ''
+      },
+      other: {
+        investment: '',
+        taxAgent: '',
+        incomeProtection: '',
+        bankFees: '',
+        other: ''
+      }
     });
     setWorkFromHomeHours(calculation.formData.workFromHomeHours || '');
     setAbnIncome(calculation.formData.abnIncome || '');
@@ -1355,10 +1692,33 @@ export default function App() {
     setJobIncomes(['']);
     setTaxWithheld('');
     setDeductions({
-      workRelated: '',
-      selfEducation: '',
-      donations: '',
-      other: ''
+      workRelated: {
+        travel: '',
+        equipment: '',
+        uniforms: '',
+        memberships: '',
+        other: ''
+      },
+      selfEducation: {
+        courseFees: '',
+        textbooks: '',
+        conferences: '',
+        certifications: '',
+        other: ''
+      },
+      donations: {
+        charitable: '',
+        disasterRelief: '',
+        religious: '',
+        other: ''
+      },
+      other: {
+        investment: '',
+        taxAgent: '',
+        incomeProtection: '',
+        bankFees: '',
+        other: ''
+      }
     });
     setWorkFromHomeHours('');
     setAbnIncome('');
@@ -1595,22 +1955,43 @@ export default function App() {
     });
   }, []);
 
-  // Memoized deduction update functions
-  const updateWorkRelatedDeduction = useCallback((value) => {
-    setDeductions(prev => ({ ...prev, workRelated: value }));
+  // Memoized deduction update functions for subcategories
+  const updateDeductionField = useCallback((category, field, value) => {
+    setDeductions(prev => ({
+      ...prev,
+      [category]: {
+        ...prev[category],
+        [field]: value
+      }
+    }));
   }, []);
 
-  const updateSelfEducationDeduction = useCallback((value) => {
-    setDeductions(prev => ({ ...prev, selfEducation: value }));
-  }, []);
+  // Work-related deduction update functions
+  const updateWorkRelatedTravel = useCallback((value) => updateDeductionField('workRelated', 'travel', value), [updateDeductionField]);
+  const updateWorkRelatedEquipment = useCallback((value) => updateDeductionField('workRelated', 'equipment', value), [updateDeductionField]);
+  const updateWorkRelatedUniforms = useCallback((value) => updateDeductionField('workRelated', 'uniforms', value), [updateDeductionField]);
+  const updateWorkRelatedMemberships = useCallback((value) => updateDeductionField('workRelated', 'memberships', value), [updateDeductionField]);
+  const updateWorkRelatedOther = useCallback((value) => updateDeductionField('workRelated', 'other', value), [updateDeductionField]);
 
-  const updateDonationsDeduction = useCallback((value) => {
-    setDeductions(prev => ({ ...prev, donations: value }));
-  }, []);
+  // Self-education deduction update functions
+  const updateSelfEducationCourseFees = useCallback((value) => updateDeductionField('selfEducation', 'courseFees', value), [updateDeductionField]);
+  const updateSelfEducationTextbooks = useCallback((value) => updateDeductionField('selfEducation', 'textbooks', value), [updateDeductionField]);
+  const updateSelfEducationConferences = useCallback((value) => updateDeductionField('selfEducation', 'conferences', value), [updateDeductionField]);
+  const updateSelfEducationCertifications = useCallback((value) => updateDeductionField('selfEducation', 'certifications', value), [updateDeductionField]);
+  const updateSelfEducationOther = useCallback((value) => updateDeductionField('selfEducation', 'other', value), [updateDeductionField]);
 
-  const updateOtherDeduction = useCallback((value) => {
-    setDeductions(prev => ({ ...prev, other: value }));
-  }, []);
+  // Donations deduction update functions
+  const updateDonationsCharitable = useCallback((value) => updateDeductionField('donations', 'charitable', value), [updateDeductionField]);
+  const updateDonationsDisasterRelief = useCallback((value) => updateDeductionField('donations', 'disasterRelief', value), [updateDeductionField]);
+  const updateDonationsReligious = useCallback((value) => updateDeductionField('donations', 'religious', value), [updateDeductionField]);
+  const updateDonationsOther = useCallback((value) => updateDeductionField('donations', 'other', value), [updateDeductionField]);
+
+  // Other deduction update functions
+  const updateOtherInvestment = useCallback((value) => updateDeductionField('other', 'investment', value), [updateDeductionField]);
+  const updateOtherTaxAgent = useCallback((value) => updateDeductionField('other', 'taxAgent', value), [updateDeductionField]);
+  const updateOtherIncomeProtection = useCallback((value) => updateDeductionField('other', 'incomeProtection', value), [updateDeductionField]);
+  const updateOtherBankFees = useCallback((value) => updateDeductionField('other', 'bankFees', value), [updateDeductionField]);
+  const updateOtherOther = useCallback((value) => updateDeductionField('other', 'other', value), [updateDeductionField]);
 
   // Create stable callback references for job income updates
   const jobIncomeCallbacks = useMemo(() => {
@@ -1875,9 +2256,20 @@ export default function App() {
 
     // Calculate total deductions
     const workFromHomeDeduction = wfhHours * 0.67;
-    const totalManualDeductions = Object.values(deductions).reduce((sum, val) => {
-      return sum + (parseFloat(val || '0'));
+
+    // Calculate total manual deductions from nested structure
+    const totalManualDeductions = Object.values(deductions).reduce((categorySum, category) => {
+      if (typeof category === 'object' && category !== null) {
+        // New nested structure
+        return categorySum + Object.values(category).reduce((subSum, val) => {
+          return subSum + (parseFloat(val || '0'));
+        }, 0);
+      } else {
+        // Backward compatibility for old flat structure
+        return categorySum + (parseFloat(category || '0'));
+      }
     }, 0);
+
     const totalDeductions = totalManualDeductions + workFromHomeDeduction;
 
     const totalIncome = totalTFNIncome + abnIncomeNum;
@@ -2085,13 +2477,44 @@ export default function App() {
           <div class="section">
             <div class="section-title">Deductions Breakdown</div>
             <table class="breakdown-table">
-              <tr><th>Type</th><th>Amount</th></tr>
-              <tr><td>Work-Related Expenses</td><td>${formatCurrency(parseFloat(deductions.workRelated || '0')).replace('$', '$')}</td></tr>
-              <tr><td>Self-Education Expenses</td><td>${formatCurrency(parseFloat(deductions.selfEducation || '0')).replace('$', '$')}</td></tr>
-              <tr><td>Charitable Donations</td><td>${formatCurrency(parseFloat(deductions.donations || '0')).replace('$', '$')}</td></tr>
-              <tr><td>Other Deductions</td><td>${formatCurrency(parseFloat(deductions.other || '0')).replace('$', '$')}</td></tr>
-              <tr><td>Work From Home (${workFromHomeHours || 0} hrs)</td><td>${formatCurrency(result.workFromHomeDeduction).replace('$', '$')}</td></tr>
-              <tr class="total-row"><td>Total Deductions</td><td>${formatCurrency(result.totalDeductions).replace('$', '$')}</td></tr>
+              <tr><th>Category</th><th>Type</th><th>Amount</th></tr>
+
+              <!-- Work-Related Expenses -->
+              <tr class="category-header"><td colspan="3"><strong>Work-Related Expenses</strong></td></tr>
+              <tr><td></td><td>Travel Expenses</td><td>${formatCurrency(parseFloat(deductions.workRelated.travel || '0')).replace('$', '$')}</td></tr>
+              <tr><td></td><td>Equipment & Tools</td><td>${formatCurrency(parseFloat(deductions.workRelated.equipment || '0')).replace('$', '$')}</td></tr>
+              <tr><td></td><td>Uniforms & Protective Clothing</td><td>${formatCurrency(parseFloat(deductions.workRelated.uniforms || '0')).replace('$', '$')}</td></tr>
+              <tr><td></td><td>Professional Memberships</td><td>${formatCurrency(parseFloat(deductions.workRelated.memberships || '0')).replace('$', '$')}</td></tr>
+              <tr><td></td><td>Other Work Expenses</td><td>${formatCurrency(parseFloat(deductions.workRelated.other || '0')).replace('$', '$')}</td></tr>
+
+              <!-- Self-Education Expenses -->
+              <tr class="category-header"><td colspan="3"><strong>Self-Education Expenses</strong></td></tr>
+              <tr><td></td><td>Course Fees & Tuition</td><td>${formatCurrency(parseFloat(deductions.selfEducation.courseFees || '0')).replace('$', '$')}</td></tr>
+              <tr><td></td><td>Textbooks & Materials</td><td>${formatCurrency(parseFloat(deductions.selfEducation.textbooks || '0')).replace('$', '$')}</td></tr>
+              <tr><td></td><td>Conferences & Seminars</td><td>${formatCurrency(parseFloat(deductions.selfEducation.conferences || '0')).replace('$', '$')}</td></tr>
+              <tr><td></td><td>Professional Certifications</td><td>${formatCurrency(parseFloat(deductions.selfEducation.certifications || '0')).replace('$', '$')}</td></tr>
+              <tr><td></td><td>Other Education Expenses</td><td>${formatCurrency(parseFloat(deductions.selfEducation.other || '0')).replace('$', '$')}</td></tr>
+
+              <!-- Charitable Donations -->
+              <tr class="category-header"><td colspan="3"><strong>Charitable Donations</strong></td></tr>
+              <tr><td></td><td>Charitable Donations</td><td>${formatCurrency(parseFloat(deductions.donations.charitable || '0')).replace('$', '$')}</td></tr>
+              <tr><td></td><td>Disaster Relief Donations</td><td>${formatCurrency(parseFloat(deductions.donations.disasterRelief || '0')).replace('$', '$')}</td></tr>
+              <tr><td></td><td>Religious Organization Donations</td><td>${formatCurrency(parseFloat(deductions.donations.religious || '0')).replace('$', '$')}</td></tr>
+              <tr><td></td><td>Other Donations</td><td>${formatCurrency(parseFloat(deductions.donations.other || '0')).replace('$', '$')}</td></tr>
+
+              <!-- Other Deductions -->
+              <tr class="category-header"><td colspan="3"><strong>Other Deductions</strong></td></tr>
+              <tr><td></td><td>Investment Expenses</td><td>${formatCurrency(parseFloat(deductions.other.investment || '0')).replace('$', '$')}</td></tr>
+              <tr><td></td><td>Tax Agent & Accounting Fees</td><td>${formatCurrency(parseFloat(deductions.other.taxAgent || '0')).replace('$', '$')}</td></tr>
+              <tr><td></td><td>Income Protection Insurance</td><td>${formatCurrency(parseFloat(deductions.other.incomeProtection || '0')).replace('$', '$')}</td></tr>
+              <tr><td></td><td>Bank Fees & Investment Charges</td><td>${formatCurrency(parseFloat(deductions.other.bankFees || '0')).replace('$', '$')}</td></tr>
+              <tr><td></td><td>Other Allowable Deductions</td><td>${formatCurrency(parseFloat(deductions.other.other || '0')).replace('$', '$')}</td></tr>
+
+              <!-- Work From Home -->
+              <tr class="category-header"><td colspan="3"><strong>Work From Home</strong></td></tr>
+              <tr><td></td><td>Work From Home (${workFromHomeHours || 0} hrs)</td><td>${formatCurrency(result.workFromHomeDeduction).replace('$', '$')}</td></tr>
+
+              <tr class="total-row"><td colspan="2"><strong>Total Deductions</strong></td><td><strong>${formatCurrency(result.totalDeductions).replace('$', '$')}</strong></td></tr>
             </table>
           </div>
 
@@ -2322,62 +2745,242 @@ export default function App() {
   const renderDeductionsTab = () => (
     <View style={styles.tabContent}>
       <Text style={styles.sectionTitle}>Tax Deductions</Text>
-      
-      <InputField
-        label="Work-Related Expenses"
-        value={deductions.workRelated}
-        onChangeText={updateWorkRelatedDeduction}
-        placeholder="Tools, uniforms, travel (e.g., 2500)"
-        icon="construct-outline"
-        helpKey="workRelated"
-        prefix="$"
-      />
 
-      <InputField
-        label="Self-Education Expenses"
-        value={deductions.selfEducation}
-        onChangeText={updateSelfEducationDeduction}
-        placeholder="Courses, books, conferences (e.g., 1200)"
-        icon="school-outline"
-        helpKey="selfEducation"
-        prefix="$"
-      />
+      {/* Work-Related Expenses Section */}
+      <View style={styles.deductionCategory}>
+        <Text style={styles.categoryTitle}>Work-Related Expenses</Text>
+        <Text style={styles.categoryDescription}>Expenses directly related to earning your employment income</Text>
 
-      <InputField
-        label="Charitable Donations"
-        value={deductions.donations}
-        onChangeText={updateDonationsDeduction}
-        placeholder="Tax-deductible donations (e.g., 500)"
-        icon="heart-outline"
-        helpKey="donations"
-        prefix="$"
-      />
+        <InputField
+          label="Travel Expenses"
+          value={deductions.workRelated.travel}
+          onChangeText={updateWorkRelatedTravel}
+          placeholder="Work travel, client visits (e.g., 450)"
+          icon="car-outline"
+          helpKey="workRelatedTravel"
+          prefix="$"
+        />
 
-      <InputField
-        label="Other Deductions"
-        value={deductions.other}
-        onChangeText={updateOtherDeduction}
-        placeholder="Investment, tax agent fees (e.g., 800)"
-        icon="receipt-outline"
-        helpKey="otherDeductions"
-        prefix="$"
-      />
+        <InputField
+          label="Equipment & Tools"
+          value={deductions.workRelated.equipment}
+          onChangeText={updateWorkRelatedEquipment}
+          placeholder="Tools, computer equipment (e.g., 800)"
+          icon="construct-outline"
+          helpKey="workRelatedEquipment"
+          prefix="$"
+        />
 
-      <InputField
-        label="Work From Home Hours"
-        value={workFromHomeHours}
-        onChangeText={setWorkFromHomeHours}
-        placeholder="Total WFH hours (e.g., 400 = $268 deduction)"
-        icon="home-outline"
-        helpKey="workFromHome"
-        suffix=" hrs"
-      />
+        <InputField
+          label="Uniforms & Protective Clothing"
+          value={deductions.workRelated.uniforms}
+          onChangeText={updateWorkRelatedUniforms}
+          placeholder="Work uniforms, safety gear (e.g., 300)"
+          icon="shirt-outline"
+          helpKey="workRelatedUniforms"
+          prefix="$"
+        />
 
-      <View style={styles.wfhInfo}>
-        <Ionicons name="information-circle-outline" size={16} color="#666" />
-        <Text style={styles.infoText}>
-          Work from home calculated at $0.67/hour (ATO shortcut method)
-        </Text>
+        <InputField
+          label="Professional Memberships"
+          value={deductions.workRelated.memberships}
+          onChangeText={updateWorkRelatedMemberships}
+          placeholder="Union fees, professional bodies (e.g., 350)"
+          icon="people-outline"
+          helpKey="workRelatedMemberships"
+          prefix="$"
+        />
+
+        <InputField
+          label="Other Work Expenses"
+          value={deductions.workRelated.other}
+          onChangeText={updateWorkRelatedOther}
+          placeholder="Other work-related costs (e.g., 200)"
+          icon="ellipsis-horizontal-outline"
+          helpKey="workRelated"
+          prefix="$"
+        />
+      </View>
+
+      {/* Self-Education Expenses Section */}
+      <View style={styles.deductionCategory}>
+        <Text style={styles.categoryTitle}>Self-Education Expenses</Text>
+        <Text style={styles.categoryDescription}>Education costs directly related to your current work</Text>
+
+        <InputField
+          label="Course Fees & Tuition"
+          value={deductions.selfEducation.courseFees}
+          onChangeText={updateSelfEducationCourseFees}
+          placeholder="Professional courses, training (e.g., 1200)"
+          icon="school-outline"
+          helpKey="selfEducationCourseFees"
+          prefix="$"
+        />
+
+        <InputField
+          label="Textbooks & Materials"
+          value={deductions.selfEducation.textbooks}
+          onChangeText={updateSelfEducationTextbooks}
+          placeholder="Study materials, books (e.g., 300)"
+          icon="book-outline"
+          helpKey="selfEducationTextbooks"
+          prefix="$"
+        />
+
+        <InputField
+          label="Conferences & Seminars"
+          value={deductions.selfEducation.conferences}
+          onChangeText={updateSelfEducationConferences}
+          placeholder="Professional events (e.g., 600)"
+          icon="people-circle-outline"
+          helpKey="selfEducationConferences"
+          prefix="$"
+        />
+
+        <InputField
+          label="Professional Certifications"
+          value={deductions.selfEducation.certifications}
+          onChangeText={updateSelfEducationCertifications}
+          placeholder="License renewals, exams (e.g., 400)"
+          icon="ribbon-outline"
+          helpKey="selfEducationCertifications"
+          prefix="$"
+        />
+
+        <InputField
+          label="Other Education Expenses"
+          value={deductions.selfEducation.other}
+          onChangeText={updateSelfEducationOther}
+          placeholder="Other learning costs (e.g., 200)"
+          icon="ellipsis-horizontal-outline"
+          helpKey="selfEducation"
+          prefix="$"
+        />
+      </View>
+
+      {/* Charitable Donations Section */}
+      <View style={styles.deductionCategory}>
+        <Text style={styles.categoryTitle}>Charitable Donations</Text>
+        <Text style={styles.categoryDescription}>Tax-deductible donations to registered charities (DGR status required)</Text>
+
+        <InputField
+          label="Charitable Donations"
+          value={deductions.donations.charitable}
+          onChangeText={updateDonationsCharitable}
+          placeholder="Regular charity donations (e.g., 300)"
+          icon="heart-outline"
+          helpKey="donationsCharitable"
+          prefix="$"
+        />
+
+        <InputField
+          label="Disaster Relief Donations"
+          value={deductions.donations.disasterRelief}
+          onChangeText={updateDonationsDisasterRelief}
+          placeholder="Emergency appeals (e.g., 250)"
+          icon="shield-outline"
+          helpKey="donationsDisasterRelief"
+          prefix="$"
+        />
+
+        <InputField
+          label="Religious Organization Donations"
+          value={deductions.donations.religious}
+          onChangeText={updateDonationsReligious}
+          placeholder="Faith-based charities (e.g., 200)"
+          icon="library-outline"
+          helpKey="donationsReligious"
+          prefix="$"
+        />
+
+        <InputField
+          label="Other Donations"
+          value={deductions.donations.other}
+          onChangeText={updateDonationsOther}
+          placeholder="Other DGR donations (e.g., 150)"
+          icon="ellipsis-horizontal-outline"
+          helpKey="donations"
+          prefix="$"
+        />
+      </View>
+
+      {/* Other Deductions Section */}
+      <View style={styles.deductionCategory}>
+        <Text style={styles.categoryTitle}>Other Deductions</Text>
+        <Text style={styles.categoryDescription}>Other allowable tax deductions not covered above</Text>
+
+        <InputField
+          label="Investment Expenses"
+          value={deductions.other.investment}
+          onChangeText={updateOtherInvestment}
+          placeholder="Property, share expenses (e.g., 800)"
+          icon="trending-up-outline"
+          helpKey="otherInvestment"
+          prefix="$"
+        />
+
+        <InputField
+          label="Tax Agent & Accounting Fees"
+          value={deductions.other.taxAgent}
+          onChangeText={updateOtherTaxAgent}
+          placeholder="Tax preparation fees (e.g., 350)"
+          icon="calculator-outline"
+          helpKey="otherTaxAgent"
+          prefix="$"
+        />
+
+        <InputField
+          label="Income Protection Insurance"
+          value={deductions.other.incomeProtection}
+          onChangeText={updateOtherIncomeProtection}
+          placeholder="Income protection premiums (e.g., 600)"
+          icon="shield-checkmark-outline"
+          helpKey="otherIncomeProtection"
+          prefix="$"
+        />
+
+        <InputField
+          label="Bank Fees & Investment Charges"
+          value={deductions.other.bankFees}
+          onChangeText={updateOtherBankFees}
+          placeholder="Investment account fees (e.g., 150)"
+          icon="card-outline"
+          helpKey="otherBankFees"
+          prefix="$"
+        />
+
+        <InputField
+          label="Other Allowable Deductions"
+          value={deductions.other.other}
+          onChangeText={updateOtherOther}
+          placeholder="Other deductible expenses (e.g., 200)"
+          icon="ellipsis-horizontal-outline"
+          helpKey="otherDeductions"
+          prefix="$"
+        />
+      </View>
+
+      {/* Work From Home Section */}
+      <View style={styles.deductionCategory}>
+        <Text style={styles.categoryTitle}>Work From Home</Text>
+        <Text style={styles.categoryDescription}>Simplified method: $0.67 per hour worked from home</Text>
+
+        <InputField
+          label="Work From Home Hours"
+          value={workFromHomeHours}
+          onChangeText={setWorkFromHomeHours}
+          placeholder="Total WFH hours (e.g., 400 = $268 deduction)"
+          icon="home-outline"
+          helpKey="workFromHome"
+          suffix=" hrs"
+        />
+
+        <View style={styles.wfhInfo}>
+          <Ionicons name="information-circle-outline" size={16} color="#666" />
+          <Text style={styles.infoText}>
+            Work from home calculated at $0.67/hour (ATO shortcut method)
+          </Text>
+        </View>
       </View>
     </View>
   );
