@@ -28,16 +28,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#f8f9fa',
   },
   header: {
-    paddingTop: Platform.OS === 'ios' ? 50 : 40,
-    paddingBottom: 16,
+    paddingTop: Platform.OS === 'ios' ? 60 : 50,
+    paddingBottom: 24,
     paddingHorizontal: 24,
-    borderBottomLeftRadius: 30,
-    borderBottomRightRadius: 30,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.15,
-    shadowRadius: 16,
-    elevation: 12,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 8,
   },
   headerContent: {
     alignItems: 'center',
@@ -3351,7 +3349,7 @@ export default function App() {
         }}
       >
         <LinearGradient
-          colors={['#4A90E2', '#357ABD', '#2C5F8C']}
+          colors={['#000000', '#1a1a1a', '#000000']}
           style={styles.header}
         >
           <View style={styles.headerAccent} />
