@@ -2343,6 +2343,7 @@ export default function App() {
     setResult({
       totalTFNIncome,
       abnIncomeNum,
+      totalIncome, // Add totalIncome for HomeScreen display
       workFromHomeDeduction,
       totalManualDeductions,
       totalDeductions,
@@ -2352,6 +2353,7 @@ export default function App() {
       medicare,
       hecsRepayment,
       finalTax,
+      totalTax: finalTax, // Add totalTax for HomeScreen display
       refund,
       effectiveTaxRate: taxableIncome > 0 ? (finalTax / taxableIncome * 100) : 0
     });

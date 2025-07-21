@@ -105,6 +105,11 @@ const HomeScreen = ({ onCreateNew, onViewCalculation }) => {
     const statusColor = getRefundStatusColor(refund);
     const statusText = getRefundStatusText(refund);
 
+    // Handle backward compatibility for older saved calculations
+    const totalIncome = calculation.result?.totalIncome ||
+                       (calculation.result?.totalTFNIncome || 0) + (calculation.result?.abnIncomeNum || 0);
+    const totalTax = calculation.result?.totalTax || calculation.result?.finalTax || 0;
+
     return (
       <TouchableOpacity
         key={calculation.id}
@@ -130,14 +135,14 @@ const HomeScreen = ({ onCreateNew, onViewCalculation }) => {
           <View style={styles.cardRow}>
             <Text style={styles.cardLabel}>Total Income:</Text>
             <Text style={styles.cardValue}>
-              {formatCurrency(calculation.result?.totalIncome || 0)}
+              {formatCurrency(totalIncome)}
             </Text>
           </View>
-          
+
           <View style={styles.cardRow}>
             <Text style={styles.cardLabel}>Tax Payable:</Text>
             <Text style={styles.cardValue}>
-              {formatCurrency(calculation.result?.totalTax || 0)}
+              {formatCurrency(totalTax)}
             </Text>
           </View>
 
