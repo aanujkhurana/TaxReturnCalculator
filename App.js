@@ -1468,18 +1468,18 @@ export default function App() {
       // 32.5% bracket - withhold around 25-30%
       const baseTax = (45000 - 18200) * 0.17;
       estimatedWithholding = baseTax + (totalIncome - 45000) * 0.28;
-    } else if (totalIncome <= 190000) {
+    } else if (totalIncome <= 180000) {
       // 37% bracket - withhold around 32-35%
       const baseTax = (45000 - 18200) * 0.17 + (120000 - 45000) * 0.28;
       estimatedWithholding = baseTax + (totalIncome - 120000) * 0.34;
     } else {
       // 45% bracket - withhold around 40-42%
-      const baseTax = (45000 - 18200) * 0.17 + (120000 - 45000) * 0.28 + (190000 - 120000) * 0.34;
-      estimatedWithholding = baseTax + (totalIncome - 190000) * 0.42;
+      const baseTax = (45000 - 18200) * 0.17 + (120000 - 45000) * 0.28 + (180000 - 120000) * 0.34;
+      estimatedWithholding = baseTax + (totalIncome - 180000) * 0.42;
     }
 
     // Add Medicare levy estimation (2% of taxable income)
-    if (totalIncome > 23226) { // Medicare levy threshold for 2024-25
+    if (totalIncome > 27222) { // Medicare levy threshold for 2024-25
       estimatedWithholding += totalIncome * 0.02;
     }
 
@@ -1885,10 +1885,10 @@ export default function App() {
 
     // 2024-25 tax brackets
     let tax = 0;
-    if (taxableIncome > 190000) {
-      tax = 29467 + (taxableIncome - 190000) * 0.45;
+    if (taxableIncome > 180000) {
+      tax = 51667 + (taxableIncome - 180000) * 0.45;
     } else if (taxableIncome > 120000) {
-      tax = 22967 + (taxableIncome - 120000) * 0.37;
+      tax = 29467 + (taxableIncome - 120000) * 0.37;
     } else if (taxableIncome > 45000) {
       tax = (45000 - 18200) * 0.19 + (taxableIncome - 45000) * 0.325;
     } else if (taxableIncome > 18200) {
@@ -1906,9 +1906,9 @@ export default function App() {
     }
 
     // Medicare Levy
-    const medicareThreshold = dependentsNum > 0 ? 27355 + (dependentsNum * 4237) : 26000;
+    const medicareThreshold = dependentsNum > 0 ? 45907 + (dependentsNum * 4216) : 27222;
     let medicare = 0;
-    if (medicareExemption && taxableIncome > medicareThreshold) {
+    if (!medicareExemption && taxableIncome > medicareThreshold) {
       if (taxableIncome <= medicareThreshold * 1.1) {
         // Medicare levy reduction
         medicare = (taxableIncome * 0.02) * ((taxableIncome - medicareThreshold) / (medicareThreshold * 0.1));

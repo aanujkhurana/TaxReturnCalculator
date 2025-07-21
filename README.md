@@ -162,8 +162,8 @@ Taxable Income = Max(0, Total Income - Total Deductions)
 - **$0 - $18,200**: 0% (Tax-free threshold)
 - **$18,201 - $45,000**: 19%
 - **$45,001 - $120,000**: 32.5%
-- **$120,001 - $190,000**: 37%
-- **$190,001+**: 45%
+- **$120,001 - $180,000**: 37%
+- **$180,001+**: 45%
 
 #### 5. Low Income Tax Offset (LITO)
 - **Up to $37,500**: $700 offset
@@ -210,8 +210,8 @@ When tax withheld is unknown, the app estimates based on income brackets:
 - **Up to $18,200**: 0% withholding
 - **$18,201 - $45,000**: ~17% withholding
 - **$45,001 - $120,000**: ~28% withholding
-- **$120,001 - $190,000**: ~34% withholding
-- **$190,001+**: ~42% withholding
+- **$120,001 - $180,000**: ~34% withholding
+- **$180,001+**: ~42% withholding
 
 Plus estimated Medicare levy (2% for income over threshold).
 
