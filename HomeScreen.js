@@ -176,31 +176,20 @@ const HomeScreen = ({ onCreateNew, onViewCalculation }) => {
         </View>
       </LinearGradient>
 
-      <View style={styles.actionContainer}>
-        <TouchableOpacity style={styles.createNewButton} onPress={onCreateNew}>
-          <LinearGradient
-            colors={['#4A90E2', '#357ABD']}
-            style={styles.createNewGradient}
-          >
-            <Ionicons name="add-circle" size={24} color="#fff" />
-            <Text style={styles.createNewText}>Create New Calculation</Text>
-          </LinearGradient>
-        </TouchableOpacity>
-      </View>
-
       <ScrollView
         style={styles.scrollContainer}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
         showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
       >
         {savedCalculations.length === 0 ? (
           <View style={styles.emptyState}>
             <Ionicons name="document-outline" size={64} color="#D1D5DB" />
             <Text style={styles.emptyStateTitle}>No Saved Calculations</Text>
             <Text style={styles.emptyStateText}>
-              Start by creating your first tax calculation above
+              Start by creating your first tax calculation using the button below
             </Text>
           </View>
         ) : (
@@ -212,6 +201,19 @@ const HomeScreen = ({ onCreateNew, onViewCalculation }) => {
           </View>
         )}
       </ScrollView>
+
+      {/* Create New Button moved to bottom */}
+      <View style={styles.bottomActionContainer}>
+        <TouchableOpacity style={styles.createNewButton} onPress={onCreateNew}>
+          <LinearGradient
+            colors={['#10B981', '#059669']}
+            style={styles.createNewGradient}
+          >
+            <Ionicons name="add-circle" size={28} color="#fff" />
+            <Text style={styles.createNewText}>Create New</Text>
+          </LinearGradient>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
@@ -240,35 +242,44 @@ const styles = StyleSheet.create({
     color: '#E1E9F4',
     opacity: 0.9,
   },
-  actionContainer: {
+  scrollContainer: {
+    flex: 1,
+    paddingHorizontal: 20,
+  },
+  scrollContent: {
+    paddingTop: 20,
+    paddingBottom: 20,
+  },
+  bottomActionContainer: {
     paddingHorizontal: 20,
     paddingVertical: 20,
+    paddingBottom: 40,
+    backgroundColor: '#F8FAFC',
+    borderTopWidth: 1,
+    borderTopColor: '#E2E8F0',
   },
   createNewButton: {
-    borderRadius: 12,
+    borderRadius: 16,
     overflow: 'hidden',
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    elevation: 8,
+    shadowColor: '#10B981',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
   },
   createNewGradient: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 16,
-    paddingHorizontal: 24,
+    paddingVertical: 20,
+    paddingHorizontal: 32,
   },
   createNewText: {
     color: '#fff',
-    fontSize: 18,
-    fontWeight: '600',
-    marginLeft: 8,
-  },
-  scrollContainer: {
-    flex: 1,
-    paddingHorizontal: 20,
+    fontSize: 20,
+    fontWeight: '700',
+    marginLeft: 12,
+    letterSpacing: 0.5,
   },
   emptyState: {
     alignItems: 'center',

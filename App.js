@@ -982,6 +982,68 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     lineHeight: 20,
   },
+
+  // Collapsible category styles
+  deductionCategoryHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 20,
+    backgroundColor: '#F8FAFC',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E2E8F0',
+    borderTopLeftRadius: 12,
+    borderTopRightRadius: 12,
+  },
+
+  deductionCategoryHeaderCollapsed: {
+    borderBottomWidth: 0,
+    borderRadius: 12,
+  },
+
+  categoryHeaderLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+
+  categoryIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#EBF5FF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+
+  categoryIconActive: {
+    backgroundColor: '#4A90E2',
+  },
+
+  categoryTitleContainer: {
+    flex: 1,
+  },
+
+  categoryToggle: {
+    padding: 8,
+    borderRadius: 20,
+    backgroundColor: '#ffffff',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+
+  categoryContent: {
+    padding: 20,
+    paddingTop: 16,
+  },
+
+  categoryTotal: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#4A90E2',
+    marginTop: 4,
+  },
 });
 
 // Help Modal Component
@@ -1629,6 +1691,15 @@ export default function App() {
 
   // Form validation errors
   const [validationErrors, setValidationErrors] = useState({});
+
+  // Deduction category collapse state
+  const [collapsedCategories, setCollapsedCategories] = useState({
+    workRelated: false,
+    selfEducation: true,
+    donations: true,
+    other: true,
+    workFromHome: true
+  });
 
   // Animation values
   const fadeAnim = new Animated.Value(0);
@@ -2749,248 +2820,364 @@ export default function App() {
     </View>
   );
 
-  const renderDeductionsTab = () => (
+  // Helper function to calculate category totals
+  const calculateCategoryTotal = (categoryData) => {
+    return Object.values(categoryData).reduce((sum, value) => {
+      const num = parseFloat(value || '0');
+      return sum + (isNaN(num) ? 0 : num);
+    }, 0);
+  };
+
+  // Helper function to check if category has any values
+  const categoryHasValues = (categoryData) => {
+    return Object.values(categoryData).some(value => value && value.trim() !== '');
+  };
+
+  // Toggle category collapse state
+  const toggleCategory = (categoryKey) => {
+    setCollapsedCategories(prev => ({
+      ...prev,
+      [categoryKey]: !prev[categoryKey]
+    }));
+  };
+
+  // Render collapsible category header
+  const renderCategoryHeader = (categoryKey, title, description, icon, total) => {
+    const isCollapsed = collapsedCategories[categoryKey];
+    const hasValues = categoryHasValues(deductions[categoryKey] || {});
+
+    return (
+      <TouchableOpacity
+        style={[
+          styles.deductionCategoryHeader,
+          isCollapsed && styles.deductionCategoryHeaderCollapsed
+        ]}
+        onPress={() => toggleCategory(categoryKey)}
+        activeOpacity={0.7}
+      >
+        <View style={styles.categoryHeaderLeft}>
+          <View style={[styles.categoryIcon, hasValues && styles.categoryIconActive]}>
+            <Ionicons
+              name={icon}
+              size={20}
+              color={hasValues ? "#fff" : "#4A90E2"}
+            />
+          </View>
+          <View style={styles.categoryTitleContainer}>
+            <Text style={styles.categoryTitle}>{title}</Text>
+            <Text style={styles.categoryDescription}>{description}</Text>
+            {total > 0 && (
+              <Text style={styles.categoryTotal}>Total: {formatCurrency(total)}</Text>
+            )}
+          </View>
+        </View>
+        <View style={styles.categoryToggle}>
+          <Ionicons
+            name={isCollapsed ? "chevron-down" : "chevron-up"}
+            size={20}
+            color="#64748B"
+          />
+        </View>
+      </TouchableOpacity>
+    );
+  };
+
+  const renderDeductionsTab = () => {
+    const workRelatedTotal = calculateCategoryTotal(deductions.workRelated);
+    const selfEducationTotal = calculateCategoryTotal(deductions.selfEducation);
+    const donationsTotal = calculateCategoryTotal(deductions.donations);
+    const otherTotal = calculateCategoryTotal(deductions.other);
+    const wfhTotal = parseFloat(workFromHomeHours || '0') * 0.67;
+    const grandTotal = workRelatedTotal + selfEducationTotal + donationsTotal + otherTotal + wfhTotal;
+
+    return (
     <View style={styles.tabContent}>
       <Text style={styles.sectionTitle}>Tax Deductions</Text>
 
       {/* Work-Related Expenses Section */}
       <View style={styles.deductionCategory}>
-        <Text style={styles.categoryTitle}>Work-Related Expenses</Text>
-        <Text style={styles.categoryDescription}>Expenses directly related to earning your employment income</Text>
+        {renderCategoryHeader(
+          'workRelated',
+          'Work-Related Expenses',
+          'Most common deductions - expenses directly related to earning income',
+          'briefcase-outline',
+          workRelatedTotal
+        )}
 
-        <InputField
-          label="Travel Expenses"
-          value={deductions.workRelated.travel}
-          onChangeText={updateWorkRelatedTravel}
-          placeholder="Work travel, client visits (e.g., 450)"
-          icon="car-outline"
-          helpKey="workRelatedTravel"
-          prefix="$"
-        />
+        {!collapsedCategories.workRelated && (
+          <View style={styles.categoryContent}>
+            <InputField
+              label="Travel Expenses"
+              value={deductions.workRelated.travel}
+              onChangeText={updateWorkRelatedTravel}
+              placeholder="Work travel, client visits (e.g., 450)"
+              icon="car-outline"
+              helpKey="workRelatedTravel"
+              prefix="$"
+            />
 
-        <InputField
-          label="Equipment & Tools"
-          value={deductions.workRelated.equipment}
-          onChangeText={updateWorkRelatedEquipment}
-          placeholder="Tools, computer equipment (e.g., 800)"
-          icon="construct-outline"
-          helpKey="workRelatedEquipment"
-          prefix="$"
-        />
+            <InputField
+              label="Equipment & Tools"
+              value={deductions.workRelated.equipment}
+              onChangeText={updateWorkRelatedEquipment}
+              placeholder="Tools, computer equipment (e.g., 800)"
+              icon="construct-outline"
+              helpKey="workRelatedEquipment"
+              prefix="$"
+            />
 
-        <InputField
-          label="Uniforms & Protective Clothing"
-          value={deductions.workRelated.uniforms}
-          onChangeText={updateWorkRelatedUniforms}
-          placeholder="Work uniforms, safety gear (e.g., 300)"
-          icon="shirt-outline"
-          helpKey="workRelatedUniforms"
-          prefix="$"
-        />
+            <InputField
+              label="Uniforms & Protective Clothing"
+              value={deductions.workRelated.uniforms}
+              onChangeText={updateWorkRelatedUniforms}
+              placeholder="Work uniforms, safety gear (e.g., 300)"
+              icon="shirt-outline"
+              helpKey="workRelatedUniforms"
+              prefix="$"
+            />
 
-        <InputField
-          label="Professional Memberships"
-          value={deductions.workRelated.memberships}
-          onChangeText={updateWorkRelatedMemberships}
-          placeholder="Union fees, professional bodies (e.g., 350)"
-          icon="people-outline"
-          helpKey="workRelatedMemberships"
-          prefix="$"
-        />
+            <InputField
+              label="Professional Memberships"
+              value={deductions.workRelated.memberships}
+              onChangeText={updateWorkRelatedMemberships}
+              placeholder="Union fees, professional bodies (e.g., 350)"
+              icon="people-outline"
+              helpKey="workRelatedMemberships"
+              prefix="$"
+            />
 
-        <InputField
-          label="Other Work Expenses"
-          value={deductions.workRelated.other}
-          onChangeText={updateWorkRelatedOther}
-          placeholder="Other work-related costs (e.g., 200)"
-          icon="ellipsis-horizontal-outline"
-          helpKey="workRelated"
-          prefix="$"
-        />
+            <InputField
+              label="Other Work Expenses"
+              value={deductions.workRelated.other}
+              onChangeText={updateWorkRelatedOther}
+              placeholder="Other work-related costs (e.g., 200)"
+              icon="ellipsis-horizontal-outline"
+              helpKey="workRelated"
+              prefix="$"
+            />
+          </View>
+        )}
       </View>
 
       {/* Self-Education Expenses Section */}
       <View style={styles.deductionCategory}>
-        <Text style={styles.categoryTitle}>Self-Education Expenses</Text>
-        <Text style={styles.categoryDescription}>Education costs directly related to your current work</Text>
+        {renderCategoryHeader(
+          'selfEducation',
+          'Self-Education Expenses',
+          'Education costs directly related to your current work',
+          'school-outline',
+          selfEducationTotal
+        )}
 
-        <InputField
-          label="Course Fees & Tuition"
-          value={deductions.selfEducation.courseFees}
-          onChangeText={updateSelfEducationCourseFees}
-          placeholder="Professional courses, training (e.g., 1200)"
-          icon="school-outline"
-          helpKey="selfEducationCourseFees"
-          prefix="$"
-        />
+        {!collapsedCategories.selfEducation && (
+          <View style={styles.categoryContent}>
+            <InputField
+              label="Course Fees & Tuition"
+              value={deductions.selfEducation.courseFees}
+              onChangeText={updateSelfEducationCourseFees}
+              placeholder="Professional courses, training (e.g., 1200)"
+              icon="school-outline"
+              helpKey="selfEducationCourseFees"
+              prefix="$"
+            />
 
-        <InputField
-          label="Textbooks & Materials"
-          value={deductions.selfEducation.textbooks}
-          onChangeText={updateSelfEducationTextbooks}
-          placeholder="Study materials, books (e.g., 300)"
-          icon="book-outline"
-          helpKey="selfEducationTextbooks"
-          prefix="$"
-        />
+            <InputField
+              label="Textbooks & Materials"
+              value={deductions.selfEducation.textbooks}
+              onChangeText={updateSelfEducationTextbooks}
+              placeholder="Study materials, books (e.g., 300)"
+              icon="book-outline"
+              helpKey="selfEducationTextbooks"
+              prefix="$"
+            />
 
-        <InputField
-          label="Conferences & Seminars"
-          value={deductions.selfEducation.conferences}
-          onChangeText={updateSelfEducationConferences}
-          placeholder="Professional events (e.g., 600)"
-          icon="people-circle-outline"
-          helpKey="selfEducationConferences"
-          prefix="$"
-        />
+            <InputField
+              label="Conferences & Seminars"
+              value={deductions.selfEducation.conferences}
+              onChangeText={updateSelfEducationConferences}
+              placeholder="Professional events (e.g., 600)"
+              icon="people-circle-outline"
+              helpKey="selfEducationConferences"
+              prefix="$"
+            />
 
-        <InputField
-          label="Professional Certifications"
-          value={deductions.selfEducation.certifications}
-          onChangeText={updateSelfEducationCertifications}
-          placeholder="License renewals, exams (e.g., 400)"
-          icon="ribbon-outline"
-          helpKey="selfEducationCertifications"
-          prefix="$"
-        />
+            <InputField
+              label="Professional Certifications"
+              value={deductions.selfEducation.certifications}
+              onChangeText={updateSelfEducationCertifications}
+              placeholder="License renewals, exams (e.g., 400)"
+              icon="ribbon-outline"
+              helpKey="selfEducationCertifications"
+              prefix="$"
+            />
 
-        <InputField
-          label="Other Education Expenses"
-          value={deductions.selfEducation.other}
-          onChangeText={updateSelfEducationOther}
-          placeholder="Other learning costs (e.g., 200)"
-          icon="ellipsis-horizontal-outline"
-          helpKey="selfEducation"
-          prefix="$"
-        />
+            <InputField
+              label="Other Education Expenses"
+              value={deductions.selfEducation.other}
+              onChangeText={updateSelfEducationOther}
+              placeholder="Other learning costs (e.g., 200)"
+              icon="ellipsis-horizontal-outline"
+              helpKey="selfEducation"
+              prefix="$"
+            />
+          </View>
+        )}
       </View>
 
       {/* Charitable Donations Section */}
       <View style={styles.deductionCategory}>
-        <Text style={styles.categoryTitle}>Charitable Donations</Text>
-        <Text style={styles.categoryDescription}>Tax-deductible donations to registered charities (DGR status required)</Text>
+        {renderCategoryHeader(
+          'donations',
+          'Charitable Donations',
+          'Tax-deductible donations to registered charities (DGR status required)',
+          'heart-outline',
+          donationsTotal
+        )}
 
-        <InputField
-          label="Charitable Donations"
-          value={deductions.donations.charitable}
-          onChangeText={updateDonationsCharitable}
-          placeholder="Regular charity donations (e.g., 300)"
-          icon="heart-outline"
-          helpKey="donationsCharitable"
-          prefix="$"
-        />
+        {!collapsedCategories.donations && (
+          <View style={styles.categoryContent}>
+            <InputField
+              label="Charitable Donations"
+              value={deductions.donations.charitable}
+              onChangeText={updateDonationsCharitable}
+              placeholder="Regular charity donations (e.g., 300)"
+              icon="heart-outline"
+              helpKey="donationsCharitable"
+              prefix="$"
+            />
 
-        <InputField
-          label="Disaster Relief Donations"
-          value={deductions.donations.disasterRelief}
-          onChangeText={updateDonationsDisasterRelief}
-          placeholder="Emergency appeals (e.g., 250)"
-          icon="shield-outline"
-          helpKey="donationsDisasterRelief"
-          prefix="$"
-        />
+            <InputField
+              label="Disaster Relief Donations"
+              value={deductions.donations.disasterRelief}
+              onChangeText={updateDonationsDisasterRelief}
+              placeholder="Emergency appeals (e.g., 250)"
+              icon="shield-outline"
+              helpKey="donationsDisasterRelief"
+              prefix="$"
+            />
 
-        <InputField
-          label="Religious Organization Donations"
-          value={deductions.donations.religious}
-          onChangeText={updateDonationsReligious}
-          placeholder="Faith-based charities (e.g., 200)"
-          icon="library-outline"
-          helpKey="donationsReligious"
-          prefix="$"
-        />
+            <InputField
+              label="Religious Organization Donations"
+              value={deductions.donations.religious}
+              onChangeText={updateDonationsReligious}
+              placeholder="Faith-based charities (e.g., 200)"
+              icon="library-outline"
+              helpKey="donationsReligious"
+              prefix="$"
+            />
 
-        <InputField
-          label="Other Donations"
-          value={deductions.donations.other}
-          onChangeText={updateDonationsOther}
-          placeholder="Other DGR donations (e.g., 150)"
-          icon="ellipsis-horizontal-outline"
-          helpKey="donations"
-          prefix="$"
-        />
+            <InputField
+              label="Other Donations"
+              value={deductions.donations.other}
+              onChangeText={updateDonationsOther}
+              placeholder="Other DGR donations (e.g., 150)"
+              icon="ellipsis-horizontal-outline"
+              helpKey="donations"
+              prefix="$"
+            />
+          </View>
+        )}
       </View>
 
       {/* Other Deductions Section */}
       <View style={styles.deductionCategory}>
-        <Text style={styles.categoryTitle}>Other Deductions</Text>
-        <Text style={styles.categoryDescription}>Other allowable tax deductions not covered above</Text>
+        {renderCategoryHeader(
+          'other',
+          'Other Deductions',
+          'Other allowable tax deductions not covered above',
+          'document-text-outline',
+          otherTotal
+        )}
 
-        <InputField
-          label="Investment Expenses"
-          value={deductions.other.investment}
-          onChangeText={updateOtherInvestment}
-          placeholder="Property, share expenses (e.g., 800)"
-          icon="trending-up-outline"
-          helpKey="otherInvestment"
-          prefix="$"
-        />
+        {!collapsedCategories.other && (
+          <View style={styles.categoryContent}>
+            <InputField
+              label="Investment Expenses"
+              value={deductions.other.investment}
+              onChangeText={updateOtherInvestment}
+              placeholder="Property, share expenses (e.g., 800)"
+              icon="trending-up-outline"
+              helpKey="otherInvestment"
+              prefix="$"
+            />
 
-        <InputField
-          label="Tax Agent & Accounting Fees"
-          value={deductions.other.taxAgent}
-          onChangeText={updateOtherTaxAgent}
-          placeholder="Tax preparation fees (e.g., 350)"
-          icon="calculator-outline"
-          helpKey="otherTaxAgent"
-          prefix="$"
-        />
+            <InputField
+              label="Tax Agent & Accounting Fees"
+              value={deductions.other.taxAgent}
+              onChangeText={updateOtherTaxAgent}
+              placeholder="Tax preparation fees (e.g., 350)"
+              icon="calculator-outline"
+              helpKey="otherTaxAgent"
+              prefix="$"
+            />
 
-        <InputField
-          label="Income Protection Insurance"
-          value={deductions.other.incomeProtection}
-          onChangeText={updateOtherIncomeProtection}
-          placeholder="Income protection premiums (e.g., 600)"
-          icon="shield-checkmark-outline"
-          helpKey="otherIncomeProtection"
-          prefix="$"
-        />
+            <InputField
+              label="Income Protection Insurance"
+              value={deductions.other.incomeProtection}
+              onChangeText={updateOtherIncomeProtection}
+              placeholder="Income protection premiums (e.g., 600)"
+              icon="shield-checkmark-outline"
+              helpKey="otherIncomeProtection"
+              prefix="$"
+            />
 
-        <InputField
-          label="Bank Fees & Investment Charges"
-          value={deductions.other.bankFees}
-          onChangeText={updateOtherBankFees}
-          placeholder="Investment account fees (e.g., 150)"
-          icon="card-outline"
-          helpKey="otherBankFees"
-          prefix="$"
-        />
+            <InputField
+              label="Bank Fees & Investment Charges"
+              value={deductions.other.bankFees}
+              onChangeText={updateOtherBankFees}
+              placeholder="Investment account fees (e.g., 150)"
+              icon="card-outline"
+              helpKey="otherBankFees"
+              prefix="$"
+            />
 
-        <InputField
-          label="Other Allowable Deductions"
-          value={deductions.other.other}
-          onChangeText={updateOtherOther}
-          placeholder="Other deductible expenses (e.g., 200)"
-          icon="ellipsis-horizontal-outline"
-          helpKey="otherDeductions"
-          prefix="$"
-        />
+            <InputField
+              label="Other Allowable Deductions"
+              value={deductions.other.other}
+              onChangeText={updateOtherOther}
+              placeholder="Other deductible expenses (e.g., 200)"
+              icon="ellipsis-horizontal-outline"
+              helpKey="otherDeductions"
+              prefix="$"
+            />
+          </View>
+        )}
       </View>
 
       {/* Work From Home Section */}
       <View style={styles.deductionCategory}>
-        <Text style={styles.categoryTitle}>Work From Home</Text>
-        <Text style={styles.categoryDescription}>Simplified method: $0.67 per hour worked from home</Text>
+        {renderCategoryHeader(
+          'workFromHome',
+          'Work From Home',
+          'Simplified method: $0.67 per hour worked from home',
+          'home-outline',
+          wfhTotal
+        )}
 
-        <InputField
-          label="Work From Home Hours"
-          value={workFromHomeHours}
-          onChangeText={setWorkFromHomeHours}
-          placeholder="Total WFH hours (e.g., 400 = $268 deduction)"
-          icon="home-outline"
-          helpKey="workFromHome"
-          suffix=" hrs"
-        />
+        {!collapsedCategories.workFromHome && (
+          <View style={styles.categoryContent}>
+            <InputField
+              label="Work From Home Hours"
+              value={workFromHomeHours}
+              onChangeText={setWorkFromHomeHours}
+              placeholder="Total WFH hours (e.g., 400 = $268 deduction)"
+              icon="home-outline"
+              helpKey="workFromHome"
+              suffix=" hrs"
+            />
 
-        <View style={styles.wfhInfo}>
-          <Ionicons name="information-circle-outline" size={16} color="#666" />
-          <Text style={styles.infoText}>
-            Work from home calculated at $0.67/hour (ATO shortcut method)
-          </Text>
-        </View>
+            <View style={styles.wfhInfo}>
+              <Ionicons name="information-circle-outline" size={16} color="#666" />
+              <Text style={styles.infoText}>
+                Work from home calculated at $0.67/hour (ATO shortcut method)
+              </Text>
+            </View>
+          </View>
+        )}
       </View>
     </View>
   );
+  };
 
   const renderDetailsTab = () => (
     <View style={styles.tabContent}>
