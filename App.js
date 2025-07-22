@@ -2541,11 +2541,23 @@ export default function App() {
     setJobIncomes(prevIncomes => {
       const newIncomes = [...prevIncomes];
       newIncomes[index] = value;
+
+      // Auto-fill tax withheld based on total income
+      const totalEmploymentIncome = newIncomes.reduce((sum, income) => sum + parseFloat(income || '0'), 0);
+      const abnIncomeValue = parseFloat(abnIncome || '0');
+      const totalIncome = totalEmploymentIncome + abnIncomeValue;
+
+      // Auto-fill tax withheld if not manually set and not unknown
+      if (!paygUnknown && totalIncome > 0) {
+        const estimatedTax = estimateTaxWithheld(totalIncome);
+        setTaxWithheld(estimatedTax.toString());
+      }
+
       return newIncomes;
     });
     // Clear error for this field when user starts typing
     clearFieldError(`jobIncome_${index}`);
-  }, []);
+  }, [abnIncome, paygUnknown, estimateTaxWithheld]);
 
   const addJobIncomeField = useCallback(() => {
     setJobIncomes(prevIncomes => [...prevIncomes, '']);
@@ -3425,67 +3437,7 @@ export default function App() {
           </View>
         )}
 
-        {/* Quick Add Common Income Scenarios */}
-        {totalIncome === 0 && (
-          <View style={styles.quickAddContainer}>
-            <Text style={styles.quickAddTitle}>Quick Add Common Income</Text>
-            <Text style={styles.quickAddSubtitle}>Tap to add typical amounts, then customize as needed</Text>
-            <View style={styles.quickAddGrid}>
-              <TouchableOpacity
-                style={styles.quickAddButton}
-                onPress={() => {
-                  if (jobIncomeCallbacks[0]) jobIncomeCallbacks[0]('65000');
-                  setTaxWithheld('12500');
-                  toggleIncomeCategory('employment');
-                }}
-              >
-                <Ionicons name="briefcase" size={20} color="#4A90E2" />
-                <Text style={styles.quickAddButtonText}>Full-time</Text>
-                <Text style={styles.quickAddButtonAmount}>$65,000</Text>
-              </TouchableOpacity>
 
-              <TouchableOpacity
-                style={styles.quickAddButton}
-                onPress={() => {
-                  if (jobIncomeCallbacks[0]) jobIncomeCallbacks[0]('35000');
-                  setTaxWithheld('4500');
-                  toggleIncomeCategory('employment');
-                }}
-              >
-                <Ionicons name="time" size={20} color="#4A90E2" />
-                <Text style={styles.quickAddButtonText}>Part-time</Text>
-                <Text style={styles.quickAddButtonAmount}>$35,000</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.quickAddButton}
-                onPress={() => {
-                  setAbnIncome('25000');
-                  toggleIncomeCategory('abn');
-                }}
-              >
-                <Ionicons name="business" size={20} color="#10B981" />
-                <Text style={styles.quickAddButtonText}>Freelance</Text>
-                <Text style={styles.quickAddButtonAmount}>$25,000</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.quickAddButton}
-                onPress={() => {
-                  if (jobIncomeCallbacks[0]) jobIncomeCallbacks[0]('85000');
-                  setAbnIncome('15000');
-                  setTaxWithheld('18000');
-                  toggleIncomeCategory('employment');
-                  toggleIncomeCategory('abn');
-                }}
-              >
-                <Ionicons name="layers" size={20} color="#8B5CF6" />
-                <Text style={styles.quickAddButtonText}>Mixed</Text>
-                <Text style={styles.quickAddButtonAmount}>$100,000</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        )}
 
         {/* Employment Income Section */}
         <View style={styles.deductionCategory}>
@@ -3550,6 +3502,17 @@ export default function App() {
                 onChangeText={(value) => {
                   setAbnIncome(value);
                   clearFieldError('abnIncome');
+
+                  // Auto-fill tax withheld based on total income
+                  const totalEmploymentIncome = jobIncomes.reduce((sum, income) => sum + parseFloat(income || '0'), 0);
+                  const abnIncomeValue = parseFloat(value || '0');
+                  const totalIncome = totalEmploymentIncome + abnIncomeValue;
+
+                  // Auto-fill tax withheld if not manually set and not unknown
+                  if (!paygUnknown && totalIncome > 0) {
+                    const estimatedTax = estimateTaxWithheld(totalIncome);
+                    setTaxWithheld(estimatedTax.toString());
+                  }
                 }}
                 placeholder="Self-employed income (e.g., 15000)"
                 icon="business-outline"
@@ -3647,6 +3610,35 @@ export default function App() {
       return sum + (isNaN(num) ? 0 : num);
     }, 0);
   };
+
+  // Helper function to estimate tax withheld based on income
+  const estimateTaxWithheld = (income) => {
+    const annualIncome = parseFloat(income || '0');
+    if (annualIncome <= 0) return 0;
+
+    // Australian tax brackets 2024-25
+    let tax = 0;
+    if (annualIncome > 18200) {
+      if (annualIncome <= 45000) {
+        tax = (annualIncome - 18200) * 0.19;
+      } else if (annualIncome <= 120000) {
+        tax = (45000 - 18200) * 0.19 + (annualIncome - 45000) * 0.325;
+      } else if (annualIncome <= 180000) {
+        tax = (45000 - 18200) * 0.19 + (120000 - 45000) * 0.325 + (annualIncome - 120000) * 0.37;
+      } else {
+        tax = (45000 - 18200) * 0.19 + (120000 - 45000) * 0.325 + (180000 - 120000) * 0.37 + (annualIncome - 180000) * 0.45;
+      }
+    }
+
+    // Add Medicare levy (2%)
+    if (annualIncome > 23226) {
+      tax += annualIncome * 0.02;
+    }
+
+    return Math.round(tax);
+  };
+
+
 
   // Helper function to check if category has any values
   const categoryHasValues = (categoryData) => {
