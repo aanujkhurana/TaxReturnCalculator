@@ -955,35 +955,39 @@ const styles = StyleSheet.create({
   deductionCategory: {
     backgroundColor: '#ffffff',
     borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
+    padding: 0,
+    marginBottom: 20,
     borderWidth: 1,
     borderColor: '#E2E8F0',
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
-      height: 1,
+      height: 3,
     },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
+    shadowOpacity: 0.12,
+    shadowRadius: 6,
+    elevation: 3,
+    overflow: 'hidden',
   },
 
   categoryTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#2D3748',
-    marginBottom: 4,
+    fontSize: 19,
+    fontWeight: '700',
+    color: '#1A202C',
+    marginBottom: 6,
+    letterSpacing: 0.2,
+    lineHeight: 24,
   },
 
   categoryDescription: {
     fontSize: 14,
-    color: '#718096',
-    marginBottom: 16,
+    color: '#4A5568',
+    marginBottom: 0,
     lineHeight: 20,
+    letterSpacing: 0.1,
   },
 
-  // Collapsible category styles
+  // Enhanced collapsible category styles with better visual hierarchy
   deductionCategoryHeader: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -994,11 +998,17 @@ const styles = StyleSheet.create({
     borderBottomColor: '#E2E8F0',
     borderTopLeftRadius: 12,
     borderTopRightRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
   },
 
   deductionCategoryHeaderCollapsed: {
     borderBottomWidth: 0,
     borderRadius: 12,
+    marginBottom: 8,
   },
 
   categoryHeaderLeft: {
@@ -1008,17 +1018,24 @@ const styles = StyleSheet.create({
   },
 
   categoryIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     backgroundColor: '#EBF5FF',
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 12,
+    marginRight: 16,
+    shadowColor: '#4A90E2',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
   },
 
   categoryIconActive: {
-    backgroundColor: '#4A90E2',
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
   },
 
   categoryTitleContainer: {
@@ -1026,23 +1043,35 @@ const styles = StyleSheet.create({
   },
 
   categoryToggle: {
-    padding: 8,
-    borderRadius: 20,
+    padding: 10,
+    borderRadius: 22,
     backgroundColor: '#ffffff',
     borderWidth: 1,
     borderColor: '#E2E8F0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
   },
 
   categoryContent: {
-    padding: 20,
-    paddingTop: 16,
+    padding: 24,
+    paddingTop: 20,
+    backgroundColor: '#FEFEFE',
+    borderBottomLeftRadius: 12,
+    borderBottomRightRadius: 12,
+    borderWidth: 1,
+    borderTopWidth: 0,
+    borderColor: '#E2E8F0',
   },
 
   categoryTotal: {
-    fontSize: 14,
-    fontWeight: '600',
+    fontSize: 15,
+    fontWeight: '700',
     color: '#4A90E2',
-    marginTop: 4,
+    marginTop: 6,
+    letterSpacing: 0.3,
   },
 
   // Enhanced deduction summary styles
@@ -1218,6 +1247,249 @@ const styles = StyleSheet.create({
     backgroundColor: '#4A90E2',
     borderRadius: 3,
   },
+
+  // Smart input feature styles
+  inputFocused: {
+    borderColor: '#4A90E2',
+    borderWidth: 2,
+    shadowColor: '#4A90E2',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+
+  inputWithValue: {
+    backgroundColor: '#F0F9FF',
+    borderColor: '#B3D9FF',
+  },
+
+  suggestionsContainer: {
+    marginTop: 8,
+    padding: 12,
+    backgroundColor: '#F8FAFC',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+
+  suggestionsLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#4A5568',
+    marginBottom: 8,
+  },
+
+  suggestionsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+
+  suggestionChip: {
+    backgroundColor: '#4A90E2',
+    borderRadius: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    marginRight: 8,
+    marginBottom: 4,
+  },
+
+  suggestionText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#ffffff',
+  },
+
+  errorContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 6,
+  },
+
+  validationContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 6,
+  },
+
+  validationText: {
+    fontSize: 12,
+    color: '#10B981',
+    marginLeft: 4,
+    fontWeight: '500',
+  },
+
+  // Quick Add Progressive Disclosure styles
+  quickAddContainer: {
+    backgroundColor: '#F8FAFC',
+    borderRadius: 12,
+    padding: 20,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+
+  quickAddTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#2D3748',
+    marginBottom: 4,
+  },
+
+  quickAddSubtitle: {
+    fontSize: 14,
+    color: '#4A5568',
+    marginBottom: 16,
+  },
+
+  quickAddGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+
+  quickAddButton: {
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    padding: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '48%',
+    minHeight: 100,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+
+  quickAddButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#2D3748',
+    marginTop: 8,
+    textAlign: 'center',
+  },
+
+  quickAddButtonAmount: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#4A90E2',
+    marginTop: 4,
+  },
+
+  // Show All Categories styles
+  showAllContainer: {
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+
+  showAllButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#EBF5FF',
+    borderRadius: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderWidth: 1,
+    borderColor: '#B3D9FF',
+  },
+
+  showAllButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#4A90E2',
+    marginLeft: 6,
+  },
+
+  // Completion indicators styles
+  completionStatus: {
+    marginTop: 16,
+    padding: 12,
+    backgroundColor: '#F0FDF4',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#BBF7D0',
+  },
+
+  completionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+
+  completionTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#059669',
+    marginLeft: 6,
+  },
+
+  completionText: {
+    fontSize: 13,
+    color: '#047857',
+    lineHeight: 18,
+  },
+
+  // Next steps guidance styles
+  nextStepsContainer: {
+    backgroundColor: '#F0F9FF',
+    borderRadius: 12,
+    padding: 20,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: '#B3D9FF',
+  },
+
+  nextStepsHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+
+  nextStepsTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#1E40AF',
+    marginLeft: 8,
+  },
+
+  nextStepsList: {
+    gap: 12,
+  },
+
+  nextStepItem: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+  },
+
+  nextStepNumber: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: '#4A90E2',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+    marginTop: 2,
+  },
+
+  nextStepNumberText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#ffffff',
+  },
+
+  nextStepText: {
+    fontSize: 14,
+    color: '#1E40AF',
+    lineHeight: 20,
+    flex: 1,
+  },
 });
 
 // Help Modal Component
@@ -1298,10 +1570,29 @@ const HelpModal = ({ visible, onClose, helpData }) => {
   );
 };
 
-// Memoized InputField component to prevent unnecessary re-renders
+// Memoized InputField component with smart features
 const InputField = memo(({ label, value, onChangeText, placeholder, keyboardType = 'numeric', multiline = false, icon, helpKey, error, editable = true, prefix = '', suffix = '' }) => {
   const [showHelpModal, setShowHelpModal] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const helpData = helpKey ? HELP_TEXT[helpKey] : null;
+
+  // Smart suggestions based on field type
+  const getSmartSuggestions = (fieldKey) => {
+    const suggestions = {
+      workRelatedTravel: ['450', '800', '1200', '2000'],
+      workRelatedEquipment: ['500', '800', '1500', '3000'],
+      workRelatedUniforms: ['200', '300', '500', '800'],
+      selfEducationCourseFees: ['800', '1200', '2500', '5000'],
+      donationsCharitable: ['100', '250', '500', '1000'],
+      otherInvestment: ['500', '1000', '2000', '5000'],
+    };
+    return suggestions[fieldKey] || [];
+  };
+
+  const suggestions = getSmartSuggestions(helpKey);
+  const hasValue = value && value.trim() !== '';
+  const numericValue = parseFloat(value || '0');
 
   // Format display value with prefix and suffix
   const getDisplayValue = (val) => {
@@ -1376,10 +1667,22 @@ const InputField = memo(({ label, value, onChangeText, placeholder, keyboardType
             styles.input,
             multiline && styles.multilineInput,
             error && styles.inputError,
-            !editable && styles.inputDisabled
+            !editable && styles.inputDisabled,
+            isFocused && styles.inputFocused,
+            hasValue && styles.inputWithValue
           ]}
           value={getDisplayValue(value)}
           onChangeText={handleTextChange}
+          onFocus={() => {
+            setIsFocused(true);
+            if (suggestions.length > 0 && !hasValue) {
+              setShowSuggestions(true);
+            }
+          }}
+          onBlur={() => {
+            setIsFocused(false);
+            setTimeout(() => setShowSuggestions(false), 200);
+          }}
           placeholder={placeholder}
           keyboardType={keyboardType}
           multiline={multiline}
@@ -1387,7 +1690,45 @@ const InputField = memo(({ label, value, onChangeText, placeholder, keyboardType
           returnKeyType="done"
           editable={editable}
         />
-        {error && <Text style={styles.errorText}>{error}</Text>}
+
+        {/* Smart Suggestions */}
+        {showSuggestions && suggestions.length > 0 && (
+          <View style={styles.suggestionsContainer}>
+            <Text style={styles.suggestionsLabel}>Common amounts:</Text>
+            <View style={styles.suggestionsRow}>
+              {suggestions.map((suggestion, index) => (
+                <TouchableOpacity
+                  key={index}
+                  style={styles.suggestionChip}
+                  onPress={() => {
+                    onChangeText(suggestion);
+                    setShowSuggestions(false);
+                  }}
+                >
+                  <Text style={styles.suggestionText}>${suggestion}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+        )}
+
+        {/* Enhanced validation feedback */}
+        {error && (
+          <View style={styles.errorContainer}>
+            <Ionicons name="alert-circle" size={16} color="#FF6B6B" />
+            <Text style={styles.errorText}>{error}</Text>
+          </View>
+        )}
+
+        {/* Smart feedback for valid values */}
+        {hasValue && !error && numericValue > 0 && (
+          <View style={styles.validationContainer}>
+            <Ionicons name="checkmark-circle" size={16} color="#10B981" />
+            <Text style={styles.validationText}>
+              {numericValue > 1000 ? 'High deduction - ensure you have receipts' : 'Valid amount entered'}
+            </Text>
+          </View>
+        )}
       </View>
 
       <HelpModal
@@ -3015,41 +3356,63 @@ export default function App() {
     }));
   };
 
-  // Render collapsible category header
+  // Category color mapping for better visual hierarchy
+  const getCategoryColors = (categoryKey) => {
+    const colorMap = {
+      workRelated: { primary: '#4A90E2', light: '#EBF5FF', accent: '#2563EB' },
+      selfEducation: { primary: '#10B981', light: '#ECFDF5', accent: '#059669' },
+      donations: { primary: '#F59E0B', light: '#FFFBEB', accent: '#D97706' },
+      other: { primary: '#8B5CF6', light: '#F3E8FF', accent: '#7C3AED' },
+      workFromHome: { primary: '#EF4444', light: '#FEF2F2', accent: '#DC2626' }
+    };
+    return colorMap[categoryKey] || colorMap.workRelated;
+  };
+
+  // Render collapsible category header with enhanced visual design
   const renderCategoryHeader = (categoryKey, title, description, icon, total) => {
     const isCollapsed = collapsedCategories[categoryKey];
     const hasValues = categoryHasValues(deductions[categoryKey] || {});
+    const colors = getCategoryColors(categoryKey);
 
     return (
       <TouchableOpacity
         style={[
           styles.deductionCategoryHeader,
-          isCollapsed && styles.deductionCategoryHeaderCollapsed
+          isCollapsed && styles.deductionCategoryHeaderCollapsed,
+          { backgroundColor: hasValues ? colors.light : '#F8FAFC' }
         ]}
         onPress={() => toggleCategory(categoryKey)}
         activeOpacity={0.7}
       >
         <View style={styles.categoryHeaderLeft}>
-          <View style={[styles.categoryIcon, hasValues && styles.categoryIconActive]}>
+          <View style={[
+            styles.categoryIcon,
+            { backgroundColor: hasValues ? colors.primary : colors.light },
+            hasValues && styles.categoryIconActive
+          ]}>
             <Ionicons
               name={icon}
-              size={20}
-              color={hasValues ? "#fff" : "#4A90E2"}
+              size={22}
+              color={hasValues ? "#fff" : colors.primary}
             />
           </View>
           <View style={styles.categoryTitleContainer}>
-            <Text style={styles.categoryTitle}>{title}</Text>
+            <Text style={[styles.categoryTitle, hasValues && { color: colors.accent }]}>
+              {title}
+            </Text>
             <Text style={styles.categoryDescription}>{description}</Text>
             {total > 0 && (
-              <Text style={styles.categoryTotal}>Total: {formatCurrency(total)}</Text>
+              <Text style={[styles.categoryTotal, { color: colors.primary }]}>
+                Total: {formatCurrency(total)}
+              </Text>
             )}
           </View>
         </View>
-        <View style={styles.categoryToggle}>
+        <View style={[styles.categoryToggle, hasValues && { borderColor: colors.primary }]}>
           <Ionicons
             name={isCollapsed ? "chevron-down" : "chevron-up"}
             size={20}
-            color="#64748B"
+            color={hasValues ? colors.primary : "#64748B"}
           />
         </View>
       </TouchableOpacity>
@@ -3085,6 +3448,64 @@ export default function App() {
           />
         </View>
       </View>
+
+      {/* Quick Add Common Deductions */}
+      {grandTotal === 0 && (
+        <View style={styles.quickAddContainer}>
+          <Text style={styles.quickAddTitle}>Quick Add Common Deductions</Text>
+          <Text style={styles.quickAddSubtitle}>Tap to add typical amounts, then customize as needed</Text>
+          <View style={styles.quickAddGrid}>
+            <TouchableOpacity
+              style={styles.quickAddButton}
+              onPress={() => {
+                updateWorkRelatedTravel('450');
+                updateWorkRelatedEquipment('800');
+                toggleCategory('workRelated');
+              }}
+            >
+              <Ionicons name="briefcase" size={20} color="#4A90E2" />
+              <Text style={styles.quickAddButtonText}>Work Basics</Text>
+              <Text style={styles.quickAddButtonAmount}>$1,250</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.quickAddButton}
+              onPress={() => {
+                updateSelfEducationCourseFees('1200');
+                toggleCategory('selfEducation');
+              }}
+            >
+              <Ionicons name="school" size={20} color="#10B981" />
+              <Text style={styles.quickAddButtonText}>Training</Text>
+              <Text style={styles.quickAddButtonAmount}>$1,200</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.quickAddButton}
+              onPress={() => {
+                updateDonationsCharitable('300');
+                toggleCategory('donations');
+              }}
+            >
+              <Ionicons name="heart" size={20} color="#F59E0B" />
+              <Text style={styles.quickAddButtonText}>Donations</Text>
+              <Text style={styles.quickAddButtonAmount}>$300</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.quickAddButton}
+              onPress={() => {
+                setWorkFromHomeHours('400');
+                toggleCategory('workFromHome');
+              }}
+            >
+              <Ionicons name="home" size={20} color="#EF4444" />
+              <Text style={styles.quickAddButtonText}>WFH</Text>
+              <Text style={styles.quickAddButtonAmount}>$268</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
 
       {/* Quick Summary Bar - Always visible when there are deductions */}
       {grandTotal > 0 && (
@@ -3159,6 +3580,71 @@ export default function App() {
               Estimated tax savings: {formatCurrency(grandTotal * 0.325)} (32.5% tax rate)
             </Text>
           </View>
+
+          {/* Completion Status */}
+          <View style={styles.completionStatus}>
+            <View style={styles.completionHeader}>
+              <Ionicons name="checkmark-circle" size={18} color="#10B981" />
+              <Text style={styles.completionTitle}>Deductions Progress</Text>
+            </View>
+            <Text style={styles.completionText}>
+              {[workRelatedTotal, selfEducationTotal, donationsTotal, otherTotal, wfhTotal].filter(t => t > 0).length === 5
+                ? "All categories completed! You're maximizing your deductions."
+                : `${5 - [workRelatedTotal, selfEducationTotal, donationsTotal, otherTotal, wfhTotal].filter(t => t > 0).length} categories remaining to review.`
+              }
+            </Text>
+          </View>
+        </View>
+      )}
+
+      {/* Next Steps Guidance */}
+      {grandTotal > 0 && (
+        <View style={styles.nextStepsContainer}>
+          <View style={styles.nextStepsHeader}>
+            <Ionicons name="compass-outline" size={20} color="#4A90E2" />
+            <Text style={styles.nextStepsTitle}>Next Steps</Text>
+          </View>
+          <View style={styles.nextStepsList}>
+            <View style={styles.nextStepItem}>
+              <View style={styles.nextStepNumber}>
+                <Text style={styles.nextStepNumberText}>1</Text>
+              </View>
+              <Text style={styles.nextStepText}>Review your deduction amounts and ensure accuracy</Text>
+            </View>
+            <View style={styles.nextStepItem}>
+              <View style={styles.nextStepNumber}>
+                <Text style={styles.nextStepNumberText}>2</Text>
+              </View>
+              <Text style={styles.nextStepText}>Keep receipts and documentation for all claimed deductions</Text>
+            </View>
+            <View style={styles.nextStepItem}>
+              <View style={styles.nextStepNumber}>
+                <Text style={styles.nextStepNumberText}>3</Text>
+              </View>
+              <Text style={styles.nextStepText}>Continue to the next step to complete your tax calculation</Text>
+            </View>
+          </View>
+        </View>
+      )}
+
+      {/* Show All Categories Button */}
+      {Object.values(collapsedCategories).some(collapsed => collapsed) && (
+        <View style={styles.showAllContainer}>
+          <TouchableOpacity
+            style={styles.showAllButton}
+            onPress={() => {
+              setCollapsedCategories({
+                workRelated: false,
+                selfEducation: false,
+                donations: false,
+                other: false,
+                workFromHome: false
+              });
+            }}
+          >
+            <Ionicons name="expand-outline" size={20} color="#4A90E2" />
+            <Text style={styles.showAllButtonText}>Show All Categories</Text>
+          </TouchableOpacity>
         </View>
       )}
 
