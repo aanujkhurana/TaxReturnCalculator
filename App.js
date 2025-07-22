@@ -1490,6 +1490,46 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     flex: 1,
   },
+
+  // Enhanced Results Screen styles
+  resultMainCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    padding: 24,
+    marginTop: 16,
+    borderWidth: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+
+  resultMainHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+
+  resultMainLabel: {
+    fontSize: 18,
+    fontWeight: '700',
+    marginLeft: 12,
+  },
+
+  resultMainAmount: {
+    fontSize: 36,
+    fontWeight: '800',
+    textAlign: 'center',
+    marginVertical: 8,
+  },
+
+  resultMainSubtext: {
+    fontSize: 14,
+    color: '#64748B',
+    textAlign: 'center',
+    fontWeight: '500',
+  },
 });
 
 // Help Modal Component
@@ -4575,137 +4615,248 @@ export default function App() {
 
     return (
       <View style={styles.tabContent}>
-        <View style={styles.resultContainer}>
-        <LinearGradient
-          colors={['#4A90E2', '#357ABD']}
-          style={styles.resultHeader}
-        >
-          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
-            <Ionicons name="checkmark-circle" size={24} color="#fff" style={{ marginRight: 8 }} />
-            <Text style={styles.resultTitle}>Tax Estimation Complete</Text>
-          </View>
-          <Text style={styles.resultSubtitle}>
-            Financial Year 2024-25 • Calculated using current ATO rates
-          </Text>
-        </LinearGradient>
+        <Text style={styles.sectionTitle}>Tax Calculation Results</Text>
 
-        <View style={styles.resultContent}>
-          <View style={styles.summaryCards}>
-            <View style={[styles.summaryCard, { backgroundColor: result.refund >= 0 ? '#E8F5E8' : '#FFF0F0' }]}>
-              <Text style={styles.summaryLabel}>
+        {/* Progress Indicator */}
+        <View style={styles.progressContainer}>
+          <View style={styles.progressHeader}>
+            <Text style={styles.progressLabel}>Calculation Complete</Text>
+            <Text style={styles.progressText}>All steps processed successfully</Text>
+          </View>
+          <View style={styles.progressBar}>
+            <View style={[styles.progressFill, { width: '100%' }]} />
+          </View>
+        </View>
+
+        {/* Enhanced Results Summary */}
+        <View style={styles.deductionSummary}>
+          <View style={styles.summaryHeader}>
+            <Ionicons name="checkmark-circle" size={20} color="#10B981" />
+            <Text style={styles.summaryTitle}>Tax Estimation Complete</Text>
+            <View style={styles.summaryBadge}>
+              <Text style={styles.summaryBadgeText}>2024-25</Text>
+            </View>
+          </View>
+
+          {/* Main Result Card */}
+          <View style={[styles.resultMainCard, { backgroundColor: result.refund >= 0 ? '#ECFDF5' : '#FEF2F2' }]}>
+            <View style={styles.resultMainHeader}>
+              <Ionicons
+                name={result.refund >= 0 ? "trending-up" : "trending-down"}
+                size={24}
+                color={result.refund >= 0 ? '#10B981' : '#EF4444'}
+              />
+              <Text style={[styles.resultMainLabel, { color: result.refund >= 0 ? '#059669' : '#DC2626' }]}>
                 {result.refund >= 0 ? 'Estimated Refund' : 'Amount Owing'}
               </Text>
-              <Text style={[styles.summaryAmount, { color: result.refund >= 0 ? '#2E7D2E' : '#D63384' }]}>
-                {formatCurrency(Math.abs(result.refund))}
+            </View>
+            <Text style={[styles.resultMainAmount, { color: result.refund >= 0 ? '#10B981' : '#EF4444' }]}>
+              {formatCurrency(Math.abs(result.refund))}
+            </Text>
+            <Text style={styles.resultMainSubtext}>
+              Effective Tax Rate: {result.effectiveTaxRate.toFixed(1)}% • Financial Year 2024-25
+            </Text>
+          </View>
+        </View>
+
+        {/* Income Breakdown Section */}
+        <View style={styles.deductionCategory}>
+          <View style={[styles.deductionCategoryHeader, { backgroundColor: '#EBF5FF' }]}>
+            <View style={styles.categoryHeaderLeft}>
+              <View style={[styles.categoryIcon, { backgroundColor: '#4A90E2' }]}>
+                <Ionicons name="wallet-outline" size={22} color="#fff" />
+              </View>
+              <View style={styles.categoryTitleContainer}>
+                <Text style={[styles.categoryTitle, { color: '#2563EB' }]}>Income Breakdown</Text>
+                <Text style={styles.categoryDescription}>Total gross income from all sources</Text>
+                <Text style={[styles.categoryTotal, { color: '#4A90E2' }]}>
+                  Total: {formatCurrency(result.totalTFNIncome + result.abnIncomeNum)}
+                </Text>
+              </View>
+            </View>
+          </View>
+
+          <View style={styles.categoryContent}>
+            <View style={styles.summaryBreakdown}>
+              <View style={styles.summaryBreakdownItem}>
+                <View style={[styles.summaryBreakdownDot, { backgroundColor: '#4A90E2' }]} />
+                <Text style={styles.summaryBreakdownLabel}>TFN Employment Income</Text>
+                <Text style={styles.summaryBreakdownValue}>{formatCurrency(result.totalTFNIncome)}</Text>
+              </View>
+              <View style={styles.summaryBreakdownItem}>
+                <View style={[styles.summaryBreakdownDot, { backgroundColor: '#10B981' }]} />
+                <Text style={styles.summaryBreakdownLabel}>ABN/Business Income</Text>
+                <Text style={styles.summaryBreakdownValue}>{formatCurrency(result.abnIncomeNum)}</Text>
+              </View>
+            </View>
+          </View>
+        </View>
+
+        {/* Deductions Breakdown Section */}
+        <View style={styles.deductionCategory}>
+          <View style={[styles.deductionCategoryHeader, { backgroundColor: '#ECFDF5' }]}>
+            <View style={styles.categoryHeaderLeft}>
+              <View style={[styles.categoryIcon, { backgroundColor: '#10B981' }]}>
+                <Ionicons name="receipt-outline" size={22} color="#fff" />
+              </View>
+              <View style={styles.categoryTitleContainer}>
+                <Text style={[styles.categoryTitle, { color: '#059669' }]}>Deductions Breakdown</Text>
+                <Text style={styles.categoryDescription}>Total allowable tax deductions claimed</Text>
+                <Text style={[styles.categoryTotal, { color: '#10B981' }]}>
+                  Total: -{formatCurrency(result.totalDeductions)}
+                </Text>
+              </View>
+            </View>
+          </View>
+
+          <View style={styles.categoryContent}>
+            <View style={styles.summaryBreakdown}>
+              <View style={styles.summaryBreakdownItem}>
+                <View style={[styles.summaryBreakdownDot, { backgroundColor: '#F59E0B' }]} />
+                <Text style={styles.summaryBreakdownLabel}>Manual Deductions</Text>
+                <Text style={styles.summaryBreakdownValue}>-{formatCurrency(result.totalManualDeductions)}</Text>
+              </View>
+              <View style={styles.summaryBreakdownItem}>
+                <View style={[styles.summaryBreakdownDot, { backgroundColor: '#EF4444' }]} />
+                <Text style={styles.summaryBreakdownLabel}>Work From Home</Text>
+                <Text style={styles.summaryBreakdownValue}>-{formatCurrency(result.workFromHomeDeduction)}</Text>
+              </View>
+            </View>
+          </View>
+        </View>
+
+        {/* Tax Calculation Section */}
+        <View style={styles.deductionCategory}>
+          <View style={[styles.deductionCategoryHeader, { backgroundColor: '#FFFBEB' }]}>
+            <View style={styles.categoryHeaderLeft}>
+              <View style={[styles.categoryIcon, { backgroundColor: '#F59E0B' }]}>
+                <Ionicons name="calculator-outline" size={22} color="#fff" />
+              </View>
+              <View style={styles.categoryTitleContainer}>
+                <Text style={[styles.categoryTitle, { color: '#D97706' }]}>Tax Calculation</Text>
+                <Text style={styles.categoryDescription}>Detailed breakdown of tax liability calculation</Text>
+                <Text style={[styles.categoryTotal, { color: '#F59E0B' }]}>
+                  Final Tax: {formatCurrency(result.finalTax)}
+                </Text>
+              </View>
+            </View>
+          </View>
+
+          <View style={styles.categoryContent}>
+            <View style={styles.summaryBreakdown}>
+              <View style={styles.summaryBreakdownItem}>
+                <View style={[styles.summaryBreakdownDot, { backgroundColor: '#8B5CF6' }]} />
+                <Text style={[styles.summaryBreakdownLabel, { fontWeight: '600' }]}>Taxable Income</Text>
+                <Text style={[styles.summaryBreakdownValue, { fontWeight: '600' }]}>{formatCurrency(result.taxableIncome)}</Text>
+              </View>
+              <View style={styles.summaryBreakdownItem}>
+                <View style={[styles.summaryBreakdownDot, { backgroundColor: '#F59E0B' }]} />
+                <Text style={styles.summaryBreakdownLabel}>Gross Tax</Text>
+                <Text style={styles.summaryBreakdownValue}>{formatCurrency(result.tax)}</Text>
+              </View>
+              <View style={styles.summaryBreakdownItem}>
+                <View style={[styles.summaryBreakdownDot, { backgroundColor: '#10B981' }]} />
+                <Text style={styles.summaryBreakdownLabel}>LITO Offset</Text>
+                <Text style={styles.summaryBreakdownValue}>-{formatCurrency(result.lito)}</Text>
+              </View>
+              <View style={styles.summaryBreakdownItem}>
+                <View style={[styles.summaryBreakdownDot, { backgroundColor: '#EF4444' }]} />
+                <Text style={styles.summaryBreakdownLabel}>Medicare Levy</Text>
+                <Text style={styles.summaryBreakdownValue}>+{formatCurrency(result.medicare)}</Text>
+              </View>
+              {result.hecsRepayment > 0 && (
+                <View style={styles.summaryBreakdownItem}>
+                  <View style={[styles.summaryBreakdownDot, { backgroundColor: '#8B5CF6' }]} />
+                  <Text style={styles.summaryBreakdownLabel}>HECS-HELP Repayment</Text>
+                  <Text style={styles.summaryBreakdownValue}>+{formatCurrency(result.hecsRepayment)}</Text>
+                </View>
+              )}
+            </View>
+
+            {/* Tax Estimate */}
+            <View style={styles.taxSavingsEstimate}>
+              <Ionicons name="information-circle" size={16} color="#F59E0B" />
+              <Text style={[styles.taxSavingsText, { color: '#D97706' }]}>
+                Tax withheld: {formatCurrency(parseFloat(taxWithheld || '0'))} • Calculated using 2024-25 ATO rates
               </Text>
             </View>
+          </View>
+        </View>
 
-            <View style={styles.summaryCard}>
-              <Text style={styles.summaryLabel}>Effective Tax Rate</Text>
-              <Text style={styles.summaryAmount}>{result.effectiveTaxRate.toFixed(1)}%</Text>
-            </View>
+        {/* Action Buttons Section */}
+        <View style={styles.nextStepsContainer}>
+          <View style={styles.nextStepsHeader}>
+            <Ionicons name="options-outline" size={20} color="#4A90E2" />
+            <Text style={styles.nextStepsTitle}>Export & Save Options</Text>
           </View>
 
-          <View style={styles.breakdownSection}>
-            <Text style={styles.breakdownTitle}>Income Breakdown</Text>
-            <View style={styles.breakdownItem}>
-              <Text style={styles.breakdownLabel}>TFN Employment Income</Text>
-              <Text style={styles.breakdownValue}>{formatCurrency(result.totalTFNIncome)}</Text>
-            </View>
-            <View style={styles.breakdownItem}>
-              <Text style={styles.breakdownLabel}>ABN/Business Income</Text>
-              <Text style={styles.breakdownValue}>{formatCurrency(result.abnIncomeNum)}</Text>
-            </View>
-            <View style={styles.breakdownItem}>
-              <Text style={styles.breakdownLabel}>Total Gross Income</Text>
-              <Text style={[styles.breakdownValue, styles.boldText]}>{formatCurrency(result.totalTFNIncome + result.abnIncomeNum)}</Text>
-            </View>
-          </View>
-
-          <View style={styles.breakdownSection}>
-            <Text style={styles.breakdownTitle}>Deductions</Text>
-            <View style={styles.breakdownItem}>
-              <Text style={styles.breakdownLabel}>Manual Deductions</Text>
-              <Text style={styles.breakdownValue}>-{formatCurrency(result.totalManualDeductions)}</Text>
-            </View>
-            <View style={styles.breakdownItem}>
-              <Text style={styles.breakdownLabel}>Work From Home</Text>
-              <Text style={styles.breakdownValue}>-{formatCurrency(result.workFromHomeDeduction)}</Text>
-            </View>
-            <View style={styles.breakdownItem}>
-              <Text style={styles.breakdownLabel}>Total Deductions</Text>
-              <Text style={[styles.breakdownValue, styles.boldText]}>-{formatCurrency(result.totalDeductions)}</Text>
-            </View>
-          </View>
-
-          <View style={styles.breakdownSection}>
-            <Text style={styles.breakdownTitle}>Tax Calculation</Text>
-            <View style={styles.breakdownItem}>
-              <Text style={styles.breakdownLabel}>Taxable Income</Text>
-              <Text style={[styles.breakdownValue, styles.boldText]}>{formatCurrency(result.taxableIncome)}</Text>
-            </View>
-            <View style={styles.breakdownItem}>
-              <Text style={styles.breakdownLabel}>Gross Tax</Text>
-              <Text style={styles.breakdownValue}>{formatCurrency(result.tax)}</Text>
-            </View>
-            <View style={styles.breakdownItem}>
-              <Text style={styles.breakdownLabel}>LITO Offset</Text>
-              <Text style={styles.breakdownValue}>-{formatCurrency(result.lito)}</Text>
-            </View>
-            <View style={styles.breakdownItem}>
-              <Text style={styles.breakdownLabel}>Medicare Levy</Text>
-              <Text style={styles.breakdownValue}>+{formatCurrency(result.medicare)}</Text>
-            </View>
-            <View style={styles.breakdownItem}>
-              <Text style={styles.breakdownLabel}>HECS-HELP Repayment</Text>
-              <Text style={styles.breakdownValue}>+{formatCurrency(result.hecsRepayment)}</Text>
-            </View>
-            <View style={[styles.breakdownItem, styles.totalTaxItem]}>
-              <Text style={[styles.breakdownLabel, styles.boldText]}>Total Tax Payable</Text>
-              <Text style={[styles.breakdownValue, styles.boldText]}>{formatCurrency(result.finalTax)}</Text>
-            </View>
-          </View>
-
-          <View style={styles.actionButtons}>
-            <TouchableOpacity style={[styles.actionButton, styles.pdfButton]} onPress={exportPDF}>
-              <Ionicons name="document-outline" size={18} color="#fff" />
-              <Text style={styles.actionButtonText}>Export PDF</Text>
+          <View style={styles.quickAddGrid}>
+            <TouchableOpacity style={[styles.quickAddButton, { backgroundColor: '#EF4444' }]} onPress={exportPDF}>
+              <Ionicons name="document-outline" size={20} color="#fff" />
+              <Text style={[styles.quickAddButtonText, { color: '#fff', marginTop: 8 }]}>Export PDF</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.actionButton} onPress={exportCSV}>
-              <Ionicons name="download-outline" size={18} color="#fff" />
-              <Text style={styles.actionButtonText}>Export CSV</Text>
+            <TouchableOpacity style={[styles.quickAddButton, { backgroundColor: '#10B981' }]} onPress={exportCSV}>
+              <Ionicons name="download-outline" size={20} color="#fff" />
+              <Text style={[styles.quickAddButtonText, { color: '#fff', marginTop: 8 }]}>Export CSV</Text>
             </TouchableOpacity>
 
             {!viewingCalculation && (
-              <TouchableOpacity style={[styles.actionButton, styles.saveButton]} onPress={handleSaveCalculation}>
-                <Ionicons name="bookmark-outline" size={18} color="#fff" />
-                <Text style={styles.actionButtonText}>Save Calculation</Text>
+              <TouchableOpacity style={[styles.quickAddButton, { backgroundColor: '#F59E0B' }]} onPress={handleSaveCalculation}>
+                <Ionicons name="bookmark-outline" size={20} color="#fff" />
+                <Text style={[styles.quickAddButtonText, { color: '#fff', marginTop: 8 }]}>Save Calculation</Text>
               </TouchableOpacity>
             )}
           </View>
+        </View>
 
-          <View style={styles.fullRowButtonsContainer}>
+        {/* Navigation Section */}
+        <View style={styles.nextStepsContainer}>
+          <View style={styles.nextStepsHeader}>
+            <Ionicons name="compass-outline" size={20} color="#4A90E2" />
+            <Text style={styles.nextStepsTitle}>Next Steps</Text>
+          </View>
+          <View style={styles.nextStepsList}>
+            <View style={styles.nextStepItem}>
+              <View style={styles.nextStepNumber}>
+                <Text style={styles.nextStepNumberText}>1</Text>
+              </View>
+              <Text style={styles.nextStepText}>Review your calculation results and save for your records</Text>
+            </View>
+            <View style={styles.nextStepItem}>
+              <View style={styles.nextStepNumber}>
+                <Text style={styles.nextStepNumberText}>2</Text>
+              </View>
+              <Text style={styles.nextStepText}>Export PDF or CSV for tax preparation or professional advice</Text>
+            </View>
+            <View style={styles.nextStepItem}>
+              <View style={styles.nextStepNumber}>
+                <Text style={styles.nextStepNumberText}>3</Text>
+              </View>
+              <Text style={styles.nextStepText}>Keep receipts and documentation for all claimed deductions</Text>
+            </View>
+          </View>
+
+          <View style={[styles.quickAddGrid, { marginTop: 16 }]}>
             <TouchableOpacity
-              style={styles.fullRowHomeButton}
+              style={[styles.quickAddButton, { backgroundColor: '#ffffff', borderWidth: 2, borderColor: '#4A90E2' }]}
               onPress={navigateToHome}
             >
-              <Ionicons name="home-outline" size={18} color="#4A90E2" />
-              <Text style={styles.fullRowButtonText}>Back to Home</Text>
+              <Ionicons name="home-outline" size={20} color="#4A90E2" />
+              <Text style={[styles.quickAddButtonText, { color: '#4A90E2', marginTop: 8 }]}>Back to Home</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={styles.fullRowEditButton}
+              style={[styles.quickAddButton, { backgroundColor: '#4A90E2' }]}
               onPress={() => {
                 setCurrentStep(1);
               }}
             >
-              <Ionicons name="create-outline" size={18} color="#4A90E2" />
-              <Text style={styles.fullRowButtonText}>Edit Calculation</Text>
+              <Ionicons name="create-outline" size={20} color="#fff" />
+              <Text style={[styles.quickAddButtonText, { color: '#fff', marginTop: 8 }]}>Edit Calculation</Text>
             </TouchableOpacity>
           </View>
         </View>
-      </View>
       </View>
     );
   };
