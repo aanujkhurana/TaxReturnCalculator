@@ -2216,6 +2216,20 @@ export default function App() {
     workFromHome: true
   });
 
+  // Income category collapse state - all expanded by default
+  const [incomeCollapsedCategories, setIncomeCollapsedCategories] = useState({
+    employment: false,
+    abn: false,
+    payg: false
+  });
+
+  // Details category collapse state
+  const [detailsCollapsedCategories, setDetailsCollapsedCategories] = useState({
+    taxObligations: false,
+    personalCircumstances: true,
+    disclaimer: true
+  });
+
   // Animation values
   const fadeAnim = new Animated.Value(0);
   const slideAnim = new Animated.Value(50);
@@ -3255,85 +3269,376 @@ export default function App() {
 
 
 
-  const renderIncomeTab = () => (
-    <View style={styles.tabContent}>
-      <Text style={styles.sectionTitle}>Employment Income (TFN Jobs)</Text>
-      {jobIncomes.map((val, idx) => (
-        <View key={idx} style={styles.jobIncomeRow}>
-          <View style={styles.flexInput}>
-            <InputField
-              label={`Job ${idx + 1}`}
-              value={val}
-              onChangeText={jobIncomeCallbacks[idx]}
-              placeholder="Annual salary (e.g., 65000)"
-              icon="briefcase-outline"
-              helpKey="jobIncome"
-              error={validationErrors[`jobIncome_${idx}`]}
-              prefix="$"
+  // Income category color mapping for consistency
+  const getIncomeCategoryColors = (categoryKey) => {
+    const colorMap = {
+      employment: { primary: '#4A90E2', light: '#EBF5FF', accent: '#2563EB' },
+      abn: { primary: '#10B981', light: '#ECFDF5', accent: '#059669' },
+      payg: { primary: '#F59E0B', light: '#FFFBEB', accent: '#D97706' }
+    };
+    return colorMap[categoryKey] || colorMap.employment;
+  };
+
+  // Toggle income category collapse state
+  const toggleIncomeCategory = (categoryKey) => {
+    setIncomeCollapsedCategories(prev => ({
+      ...prev,
+      [categoryKey]: !prev[categoryKey]
+    }));
+  };
+
+  // Render income category header
+  const renderIncomeCategoryHeader = (categoryKey, title, description, icon, total) => {
+    const isCollapsed = incomeCollapsedCategories[categoryKey];
+    const hasValues = total > 0;
+    const colors = getIncomeCategoryColors(categoryKey);
+
+    return (
+      <TouchableOpacity
+        style={[
+          styles.deductionCategoryHeader,
+          isCollapsed && styles.deductionCategoryHeaderCollapsed,
+          { backgroundColor: hasValues ? colors.light : '#F8FAFC' }
+        ]}
+        onPress={() => toggleIncomeCategory(categoryKey)}
+        activeOpacity={0.7}
+      >
+        <View style={styles.categoryHeaderLeft}>
+          <View style={[
+            styles.categoryIcon,
+            { backgroundColor: hasValues ? colors.primary : colors.light },
+            hasValues && styles.categoryIconActive
+          ]}>
+            <Ionicons
+              name={icon}
+              size={22}
+              color={hasValues ? "#fff" : colors.primary}
             />
           </View>
-          {jobIncomes.length > 1 && (
-            <TouchableOpacity
-              style={styles.removeButton}
-              onPress={() => removeJobIncomeField(idx)}
-            >
-              <Ionicons name="close-circle" size={24} color="#FF6B6B" />
-            </TouchableOpacity>
+          <View style={styles.categoryTitleContainer}>
+            <Text style={[styles.categoryTitle, hasValues && { color: colors.accent }]}>
+              {title}
+            </Text>
+            <Text style={styles.categoryDescription}>{description}</Text>
+            {total > 0 && (
+              <Text style={[styles.categoryTotal, { color: colors.primary }]}>
+                Total: {formatCurrency(total)}
+              </Text>
+            )}
+          </View>
+        </View>
+        <View style={[styles.categoryToggle, hasValues && { borderColor: colors.primary }]}>
+          <Ionicons
+            name={isCollapsed ? "chevron-down" : "chevron-up"}
+            size={20}
+            color={hasValues ? colors.primary : "#64748B"}
+          />
+        </View>
+      </TouchableOpacity>
+    );
+  };
+
+  const renderIncomeTab = () => {
+    const employmentTotal = jobIncomes.reduce((sum, income) => sum + parseFloat(income || '0'), 0);
+    const abnTotal = parseFloat(abnIncome || '0');
+    const paygTotal = parseFloat(taxWithheld || '0');
+    const totalIncome = employmentTotal + abnTotal;
+    const estimatedTax = totalIncome * 0.325; // Rough estimate
+    const estimatedRefund = paygTotal - estimatedTax;
+
+    return (
+      <View style={styles.tabContent}>
+        <Text style={styles.sectionTitle}>Income & Tax Withheld</Text>
+
+        {/* Progress Indicator */}
+        <View style={styles.progressContainer}>
+          <View style={styles.progressHeader}>
+            <Text style={styles.progressLabel}>Income Categories</Text>
+            <Text style={styles.progressText}>
+              {[employmentTotal, abnTotal, paygTotal].filter(t => t > 0).length} of 3 completed
+            </Text>
+          </View>
+          <View style={styles.progressBar}>
+            <View
+              style={[
+                styles.progressFill,
+                { width: `${([employmentTotal, abnTotal, paygTotal].filter(t => t > 0).length / 3) * 100}%` }
+              ]}
+            />
+          </View>
+        </View>
+
+        {/* Quick Summary Bar */}
+        {totalIncome > 0 && (
+          <View style={styles.quickSummaryBar}>
+            <View style={styles.quickSummaryLeft}>
+              <Text style={styles.quickSummaryLabel}>Total Income:</Text>
+              <Text style={styles.quickSummaryAmount}>{formatCurrency(totalIncome)}</Text>
+            </View>
+            <View style={styles.quickSummaryRight}>
+              <Text style={styles.quickSummaryTax}>
+                {estimatedRefund > 0 ? `Est. Refund: ${formatCurrency(estimatedRefund)}` : `Est. Tax: ${formatCurrency(Math.abs(estimatedRefund))}`}
+              </Text>
+            </View>
+          </View>
+        )}
+
+        {/* Enhanced Real-time Income Summary */}
+        {totalIncome > 0 && (
+          <View style={styles.deductionSummary}>
+            <View style={styles.summaryHeader}>
+              <Ionicons name="wallet-outline" size={20} color="#4A90E2" />
+              <Text style={styles.summaryTitle}>Income Summary</Text>
+              <View style={styles.summaryBadge}>
+                <Text style={styles.summaryBadgeText}>
+                  {[employmentTotal, abnTotal].filter(t => t > 0).length} sources
+                </Text>
+              </View>
+            </View>
+            <Text style={styles.summaryAmount}>{formatCurrency(totalIncome)}</Text>
+
+            {/* Income Breakdown */}
+            <View style={styles.summaryBreakdown}>
+              {employmentTotal > 0 && (
+                <View style={styles.summaryBreakdownItem}>
+                  <View style={[styles.summaryBreakdownDot, { backgroundColor: '#4A90E2' }]} />
+                  <Text style={styles.summaryBreakdownLabel}>Employment</Text>
+                  <Text style={styles.summaryBreakdownValue}>{formatCurrency(employmentTotal)}</Text>
+                </View>
+              )}
+              {abnTotal > 0 && (
+                <View style={styles.summaryBreakdownItem}>
+                  <View style={[styles.summaryBreakdownDot, { backgroundColor: '#10B981' }]} />
+                  <Text style={styles.summaryBreakdownLabel}>ABN/Freelance</Text>
+                  <Text style={styles.summaryBreakdownValue}>{formatCurrency(abnTotal)}</Text>
+                </View>
+              )}
+            </View>
+
+            {/* Tax Estimate */}
+            <View style={styles.taxSavingsEstimate}>
+              <Ionicons name="calculator" size={16} color="#F59E0B" />
+              <Text style={[styles.taxSavingsText, { color: '#D97706' }]}>
+                Estimated tax liability: {formatCurrency(estimatedTax)}
+              </Text>
+            </View>
+          </View>
+        )}
+
+        {/* Quick Add Common Income Scenarios */}
+        {totalIncome === 0 && (
+          <View style={styles.quickAddContainer}>
+            <Text style={styles.quickAddTitle}>Quick Add Common Income</Text>
+            <Text style={styles.quickAddSubtitle}>Tap to add typical amounts, then customize as needed</Text>
+            <View style={styles.quickAddGrid}>
+              <TouchableOpacity
+                style={styles.quickAddButton}
+                onPress={() => {
+                  if (jobIncomeCallbacks[0]) jobIncomeCallbacks[0]('65000');
+                  setTaxWithheld('12500');
+                  toggleIncomeCategory('employment');
+                }}
+              >
+                <Ionicons name="briefcase" size={20} color="#4A90E2" />
+                <Text style={styles.quickAddButtonText}>Full-time</Text>
+                <Text style={styles.quickAddButtonAmount}>$65,000</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.quickAddButton}
+                onPress={() => {
+                  if (jobIncomeCallbacks[0]) jobIncomeCallbacks[0]('35000');
+                  setTaxWithheld('4500');
+                  toggleIncomeCategory('employment');
+                }}
+              >
+                <Ionicons name="time" size={20} color="#4A90E2" />
+                <Text style={styles.quickAddButtonText}>Part-time</Text>
+                <Text style={styles.quickAddButtonAmount}>$35,000</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.quickAddButton}
+                onPress={() => {
+                  setAbnIncome('25000');
+                  toggleIncomeCategory('abn');
+                }}
+              >
+                <Ionicons name="business" size={20} color="#10B981" />
+                <Text style={styles.quickAddButtonText}>Freelance</Text>
+                <Text style={styles.quickAddButtonAmount}>$25,000</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.quickAddButton}
+                onPress={() => {
+                  if (jobIncomeCallbacks[0]) jobIncomeCallbacks[0]('85000');
+                  setAbnIncome('15000');
+                  setTaxWithheld('18000');
+                  toggleIncomeCategory('employment');
+                  toggleIncomeCategory('abn');
+                }}
+              >
+                <Ionicons name="layers" size={20} color="#8B5CF6" />
+                <Text style={styles.quickAddButtonText}>Mixed</Text>
+                <Text style={styles.quickAddButtonAmount}>$100,000</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
+
+        {/* Employment Income Section */}
+        <View style={styles.deductionCategory}>
+          {renderIncomeCategoryHeader(
+            'employment',
+            'Employment Income (TFN Jobs)',
+            'Salary, wages, and other employment income with tax withheld',
+            'briefcase-outline',
+            employmentTotal
+          )}
+
+          {!incomeCollapsedCategories.employment && (
+            <View style={styles.categoryContent}>
+              {jobIncomes.map((val, idx) => (
+                <View key={idx} style={styles.jobIncomeRow}>
+                  <View style={styles.flexInput}>
+                    <InputField
+                      label={`Job ${idx + 1}`}
+                      value={val}
+                      onChangeText={jobIncomeCallbacks[idx]}
+                      placeholder="Annual salary (e.g., 65000)"
+                      icon="briefcase-outline"
+                      helpKey="jobIncome"
+                      error={validationErrors[`jobIncome_${idx}`]}
+                      prefix="$"
+                    />
+                  </View>
+                  {jobIncomes.length > 1 && (
+                    <TouchableOpacity
+                      style={styles.removeButton}
+                      onPress={() => removeJobIncomeField(idx)}
+                    >
+                      <Ionicons name="close-circle" size={24} color="#FF6B6B" />
+                    </TouchableOpacity>
+                  )}
+                </View>
+              ))}
+
+              <TouchableOpacity style={styles.addButton} onPress={addJobIncomeField}>
+                <Ionicons name="add-circle-outline" size={20} color="#4A90E2" />
+                <Text style={styles.addButtonText}>Add Another Job</Text>
+              </TouchableOpacity>
+            </View>
           )}
         </View>
-      ))}
 
-      <TouchableOpacity style={styles.addButton} onPress={addJobIncomeField}>
-        <Ionicons name="add-circle-outline" size={20} color="#4A90E2" />
-        <Text style={styles.addButtonText}>Add Another Job</Text>
-      </TouchableOpacity>
+        {/* ABN/Freelance Income Section */}
+        <View style={styles.deductionCategory}>
+          {renderIncomeCategoryHeader(
+            'abn',
+            'ABN/Freelance Income',
+            'Self-employed, contractor, or freelance income',
+            'business-outline',
+            abnTotal
+          )}
 
-      <InputField
-        label="ABN/Freelance Income"
-        value={abnIncome}
-        onChangeText={(value) => {
-          setAbnIncome(value);
-          clearFieldError('abnIncome');
-        }}
-        placeholder="Self-employed income (e.g., 15000)"
-        icon="business-outline"
-        helpKey="abnIncome"
-        error={validationErrors.abnIncome}
-        prefix="$"
-      />
+          {!incomeCollapsedCategories.abn && (
+            <View style={styles.categoryContent}>
+              <InputField
+                label="ABN/Freelance Income"
+                value={abnIncome}
+                onChangeText={(value) => {
+                  setAbnIncome(value);
+                  clearFieldError('abnIncome');
+                }}
+                placeholder="Self-employed income (e.g., 15000)"
+                icon="business-outline"
+                helpKey="abnIncome"
+                error={validationErrors.abnIncome}
+                prefix="$"
+              />
+            </View>
+          )}
+        </View>
 
-      <InputField
-        label="Tax Withheld (PAYG)"
-        value={taxWithheld}
-        onChangeText={(value) => {
-          if (!paygUnknown) {
-            setTaxWithheld(value);
-            clearFieldError('taxWithheld');
-          }
-        }}
-        placeholder={paygUnknown ? "Estimated" : "Total tax withheld (e.g., 12500)"}
-        icon="card-outline"
-        helpKey="taxWithheld"
-        error={validationErrors.taxWithheld}
-        editable={!paygUnknown}
-        prefix="$"
-      />
+        {/* Tax Withheld (PAYG) Section */}
+        <View style={styles.deductionCategory}>
+          {renderIncomeCategoryHeader(
+            'payg',
+            'Tax Withheld (PAYG)',
+            'Total tax withheld from your employment income',
+            'card-outline',
+            paygTotal
+          )}
 
-      <TouchableOpacity
-        style={[styles.toggleButton, paygUnknown && styles.toggleButtonActive]}
-        onPress={handlePaygUnknownToggle}
-      >
-        <Ionicons
-          name={paygUnknown ? "checkbox-outline" : "square-outline"}
-          size={24}
-          color={paygUnknown ? "#4A90E2" : "#666"}
-        />
-        <Text style={[styles.toggleText, paygUnknown && styles.toggleTextActive]}>
-          I don't know my PAYG withholding amount
-        </Text>
-      </TouchableOpacity>
-    </View>
-  );
+          {!incomeCollapsedCategories.payg && (
+            <View style={styles.categoryContent}>
+              <InputField
+                label="Tax Withheld (PAYG)"
+                value={taxWithheld}
+                onChangeText={(value) => {
+                  if (!paygUnknown) {
+                    setTaxWithheld(value);
+                    clearFieldError('taxWithheld');
+                  }
+                }}
+                placeholder={paygUnknown ? "Estimated" : "Total tax withheld (e.g., 12500)"}
+                icon="card-outline"
+                helpKey="taxWithheld"
+                error={validationErrors.taxWithheld}
+                editable={!paygUnknown}
+                prefix="$"
+              />
+
+              <TouchableOpacity
+                style={[styles.toggleButton, paygUnknown && styles.toggleButtonActive]}
+                onPress={handlePaygUnknownToggle}
+              >
+                <Ionicons
+                  name={paygUnknown ? "checkbox-outline" : "square-outline"}
+                  size={24}
+                  color={paygUnknown ? "#4A90E2" : "#666"}
+                />
+                <Text style={[styles.toggleText, paygUnknown && styles.toggleTextActive]}>
+                  I don't know my PAYG withholding amount
+                </Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        </View>
+
+        {/* Next Steps Guidance for Income */}
+        {totalIncome > 0 && (
+          <View style={styles.nextStepsContainer}>
+            <View style={styles.nextStepsHeader}>
+              <Ionicons name="compass-outline" size={20} color="#4A90E2" />
+              <Text style={styles.nextStepsTitle}>Next Steps</Text>
+            </View>
+            <View style={styles.nextStepsList}>
+              <View style={styles.nextStepItem}>
+                <View style={styles.nextStepNumber}>
+                  <Text style={styles.nextStepNumberText}>1</Text>
+                </View>
+                <Text style={styles.nextStepText}>Verify all income amounts match your payment summaries</Text>
+              </View>
+              <View style={styles.nextStepItem}>
+                <View style={styles.nextStepNumber}>
+                  <Text style={styles.nextStepNumberText}>2</Text>
+                </View>
+                <Text style={styles.nextStepText}>Check PAYG withholding amounts on your payslips</Text>
+              </View>
+              <View style={styles.nextStepItem}>
+                <View style={styles.nextStepNumber}>
+                  <Text style={styles.nextStepNumberText}>3</Text>
+                </View>
+                <Text style={styles.nextStepText}>Continue to deductions to maximize your refund</Text>
+              </View>
+            </View>
+          </View>
+        )}
+      </View>
+    );
+  };
 
   // Helper function to calculate category totals
   const calculateCategoryTotal = (categoryData) => {
@@ -3933,63 +4238,242 @@ export default function App() {
   );
   };
 
-  const renderDetailsTab = () => (
-    <View style={styles.tabContent}>
-      <Text style={styles.sectionTitle}>Additional Details</Text>
-      
-      <TouchableOpacity
-        style={[styles.toggleButton, hecsDebt && styles.toggleButtonActive]}
-        onPress={() => setHecsDebt(!hecsDebt)}
-      >
-        <Ionicons 
-          name={hecsDebt ? "checkbox-outline" : "square-outline"} 
-          size={24} 
-          color={hecsDebt ? "#4A90E2" : "#666"} 
-        />
-        <Text style={[styles.toggleText, hecsDebt && styles.toggleTextActive]}>
-          I have HECS-HELP debt
-        </Text>
-      </TouchableOpacity>
+  // Additional details category color mapping
+  const getDetailsCategoryColors = (categoryKey) => {
+    const colorMap = {
+      taxObligations: { primary: '#4A90E2', light: '#EBF5FF', accent: '#2563EB' },
+      personalCircumstances: { primary: '#10B981', light: '#ECFDF5', accent: '#059669' },
+      disclaimer: { primary: '#F59E0B', light: '#FFFBEB', accent: '#D97706' }
+    };
+    return colorMap[categoryKey] || colorMap.taxObligations;
+  };
 
+  // Toggle details category collapse state
+  const toggleDetailsCategory = (categoryKey) => {
+    setDetailsCollapsedCategories(prev => ({
+      ...prev,
+      [categoryKey]: !prev[categoryKey]
+    }));
+  };
+
+  // Render details category header
+  const renderDetailsCategoryHeader = (categoryKey, title, description, icon, hasValues) => {
+    const isCollapsed = detailsCollapsedCategories[categoryKey];
+    const colors = getDetailsCategoryColors(categoryKey);
+
+    return (
       <TouchableOpacity
-        style={[styles.toggleButton, medicareExemption && styles.toggleButtonActive]}
-        onPress={() => setMedicareExemption(!medicareExemption)}
+        style={[
+          styles.deductionCategoryHeader,
+          isCollapsed && styles.deductionCategoryHeaderCollapsed,
+          { backgroundColor: hasValues ? colors.light : '#F8FAFC' }
+        ]}
+        onPress={() => toggleDetailsCategory(categoryKey)}
+        activeOpacity={0.7}
       >
-        <View style={{ flex: 1 }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+        <View style={styles.categoryHeaderLeft}>
+          <View style={[
+            styles.categoryIcon,
+            { backgroundColor: hasValues ? colors.primary : colors.light },
+            hasValues && styles.categoryIconActive
+          ]}>
             <Ionicons
-              name={medicareExemption ? "checkbox-outline" : "square-outline"}
-              size={24}
-              color={medicareExemption ? "#4A90E2" : "#666"}
+              name={icon}
+              size={22}
+              color={hasValues ? "#fff" : colors.primary}
             />
-            <Text style={[styles.toggleText, medicareExemption && styles.toggleTextActive]}>
-              I am exempt from Medicare Levy
-            </Text>
           </View>
-          <Text style={styles.toggleSubtext}>
-            Tick this if you're a temporary visa holder, foreign resident, or Norfolk Island resident. Leave unticked if you're an Australian resident for tax purposes.
-          </Text>
+          <View style={styles.categoryTitleContainer}>
+            <Text style={[styles.categoryTitle, hasValues && { color: colors.accent }]}>
+              {title}
+            </Text>
+            <Text style={styles.categoryDescription}>{description}</Text>
+          </View>
+        </View>
+        <View style={[styles.categoryToggle, hasValues && { borderColor: colors.primary }]}>
+          <Ionicons
+            name={isCollapsed ? "chevron-down" : "chevron-up"}
+            size={20}
+            color={hasValues ? colors.primary : "#64748B"}
+          />
         </View>
       </TouchableOpacity>
+    );
+  };
 
-      <InputField
-        label="Number of Dependents"
-        value={dependents}
-        onChangeText={setDependents}
-        placeholder="Number of children/dependents (e.g., 2)"
-        keyboardType="number-pad"
-        icon="people-outline"
-        helpKey="dependents"
-      />
+  const renderDetailsTab = () => {
+    const taxObligationsCompleted = hecsDebt || medicareExemption;
+    const personalCircumstancesCompleted = dependents && dependents.trim() !== '';
+    const completedCategories = [taxObligationsCompleted, personalCircumstancesCompleted].filter(Boolean).length;
 
-      <View style={styles.infoBox}>
-        <Ionicons name="information-circle" size={20} color="#4A90E2" />
-        <Text style={styles.infoBoxText}>
-          This calculator uses 2024-25 tax rates and thresholds. Results are estimates only and should not replace professional tax advice.
-        </Text>
+    return (
+      <View style={styles.tabContent}>
+        <Text style={styles.sectionTitle}>Additional Details</Text>
+
+        {/* Progress Indicator */}
+        <View style={styles.progressContainer}>
+          <View style={styles.progressHeader}>
+            <Text style={styles.progressLabel}>Detail Categories</Text>
+            <Text style={styles.progressText}>
+              {completedCategories} of 2 completed
+            </Text>
+          </View>
+          <View style={styles.progressBar}>
+            <View
+              style={[
+                styles.progressFill,
+                { width: `${(completedCategories / 2) * 100}%` }
+              ]}
+            />
+          </View>
+        </View>
+
+        {/* Quick Summary */}
+        {completedCategories > 0 && (
+          <View style={styles.quickSummaryBar}>
+            <View style={styles.quickSummaryLeft}>
+              <Text style={styles.quickSummaryLabel}>Details Status:</Text>
+              <Text style={styles.quickSummaryAmount}>
+                {completedCategories === 2 ? 'Complete' : 'In Progress'}
+              </Text>
+            </View>
+            <View style={styles.quickSummaryRight}>
+              <Text style={styles.quickSummaryTax}>
+                {hecsDebt && 'HECS debt noted'} {medicareExemption && 'Medicare exempt'}
+              </Text>
+            </View>
+          </View>
+        )}
+
+        {/* Tax Obligations Section */}
+        <View style={styles.deductionCategory}>
+          {renderDetailsCategoryHeader(
+            'taxObligations',
+            'Tax Obligations',
+            'HECS-HELP debt and Medicare levy exemptions',
+            'document-text-outline',
+            taxObligationsCompleted
+          )}
+
+          {!detailsCollapsedCategories.taxObligations && (
+            <View style={styles.categoryContent}>
+              <TouchableOpacity
+                style={[styles.toggleButton, hecsDebt && styles.toggleButtonActive]}
+                onPress={() => setHecsDebt(!hecsDebt)}
+              >
+                <Ionicons
+                  name={hecsDebt ? "checkbox-outline" : "square-outline"}
+                  size={24}
+                  color={hecsDebt ? "#4A90E2" : "#666"}
+                />
+                <Text style={[styles.toggleText, hecsDebt && styles.toggleTextActive]}>
+                  I have HECS-HELP debt
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.toggleButton, medicareExemption && styles.toggleButtonActive]}
+                onPress={() => setMedicareExemption(!medicareExemption)}
+              >
+                <View style={{ flex: 1 }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <Ionicons
+                      name={medicareExemption ? "checkbox-outline" : "square-outline"}
+                      size={24}
+                      color={medicareExemption ? "#4A90E2" : "#666"}
+                    />
+                    <Text style={[styles.toggleText, medicareExemption && styles.toggleTextActive]}>
+                      I am exempt from Medicare Levy
+                    </Text>
+                  </View>
+                  <Text style={styles.toggleSubtext}>
+                    Tick this if you're a temporary visa holder, foreign resident, or Norfolk Island resident. Leave unticked if you're an Australian resident for tax purposes.
+                  </Text>
+                </View>
+              </TouchableOpacity>
+            </View>
+          )}
+        </View>
+
+        {/* Personal Circumstances Section */}
+        <View style={styles.deductionCategory}>
+          {renderDetailsCategoryHeader(
+            'personalCircumstances',
+            'Personal Circumstances',
+            'Dependents and family situation',
+            'people-outline',
+            personalCircumstancesCompleted
+          )}
+
+          {!detailsCollapsedCategories.personalCircumstances && (
+            <View style={styles.categoryContent}>
+              <InputField
+                label="Number of Dependents"
+                value={dependents}
+                onChangeText={setDependents}
+                placeholder="Number of children/dependents (e.g., 2)"
+                keyboardType="number-pad"
+                icon="people-outline"
+                helpKey="dependents"
+              />
+            </View>
+          )}
+        </View>
+
+        {/* Important Information Section */}
+        <View style={styles.deductionCategory}>
+          {renderDetailsCategoryHeader(
+            'disclaimer',
+            'Important Information',
+            'Tax calculator disclaimer and limitations',
+            'information-circle-outline',
+            true
+          )}
+
+          {!detailsCollapsedCategories.disclaimer && (
+            <View style={styles.categoryContent}>
+              <View style={styles.infoBox}>
+                <Ionicons name="information-circle" size={20} color="#4A90E2" />
+                <Text style={styles.infoBoxText}>
+                  This calculator uses 2024-25 tax rates and thresholds. Results are estimates only and should not replace professional tax advice.
+                </Text>
+              </View>
+            </View>
+          )}
+        </View>
+
+        {/* Completion Status and Next Steps */}
+        {completedCategories > 0 && (
+          <View style={styles.nextStepsContainer}>
+            <View style={styles.nextStepsHeader}>
+              <Ionicons name="checkmark-circle-outline" size={20} color="#10B981" />
+              <Text style={styles.nextStepsTitle}>Ready to Calculate</Text>
+            </View>
+            <View style={styles.nextStepsList}>
+              <View style={styles.nextStepItem}>
+                <View style={styles.nextStepNumber}>
+                  <Text style={styles.nextStepNumberText}>1</Text>
+                </View>
+                <Text style={styles.nextStepText}>Review all your entered information for accuracy</Text>
+              </View>
+              <View style={styles.nextStepItem}>
+                <View style={styles.nextStepNumber}>
+                  <Text style={styles.nextStepNumberText}>2</Text>
+                </View>
+                <Text style={styles.nextStepText}>Click "Calculate Tax" to see your estimated refund or liability</Text>
+              </View>
+              <View style={styles.nextStepItem}>
+                <View style={styles.nextStepNumber}>
+                  <Text style={styles.nextStepNumberText}>3</Text>
+                </View>
+                <Text style={styles.nextStepText}>Save or share your results for tax planning</Text>
+              </View>
+            </View>
+          </View>
+        )}
       </View>
-    </View>
-  );
+    );
+  };
 
   const renderResults = () => {
     console.log('renderResults called - isCalculating:', isCalculating, 'result:', !!result);
