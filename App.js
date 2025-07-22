@@ -1044,6 +1044,180 @@ const styles = StyleSheet.create({
     color: '#4A90E2',
     marginTop: 4,
   },
+
+  // Enhanced deduction summary styles
+  deductionSummary: {
+    backgroundColor: '#F0F9FF',
+    borderRadius: 12,
+    padding: 20,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: '#B3D9FF',
+    shadowColor: '#4A90E2',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+
+  summaryHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+
+  summaryTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#2D3748',
+    marginLeft: 8,
+    flex: 1,
+  },
+
+  summaryBadge: {
+    backgroundColor: '#4A90E2',
+    borderRadius: 12,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+
+  summaryBadgeText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#ffffff',
+  },
+
+  summaryAmount: {
+    fontSize: 28,
+    fontWeight: '800',
+    color: '#4A90E2',
+    textAlign: 'center',
+    marginBottom: 16,
+  },
+
+  summaryBreakdown: {
+    marginBottom: 16,
+  },
+
+  summaryBreakdownItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+
+  summaryBreakdownDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginRight: 8,
+  },
+
+  summaryBreakdownLabel: {
+    fontSize: 14,
+    color: '#4A5568',
+    flex: 1,
+  },
+
+  summaryBreakdownValue: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#2D3748',
+  },
+
+  taxSavingsEstimate: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#F0FDF4',
+    borderRadius: 8,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: '#BBF7D0',
+  },
+
+  taxSavingsText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#059669',
+    marginLeft: 6,
+  },
+
+  // Quick summary bar styles
+  quickSummaryBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#EBF5FF',
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#B3D9FF',
+  },
+
+  quickSummaryLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+
+  quickSummaryLabel: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#4A5568',
+    marginRight: 8,
+  },
+
+  quickSummaryAmount: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#4A90E2',
+  },
+
+  quickSummaryRight: {
+    alignItems: 'flex-end',
+  },
+
+  quickSummaryTax: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#059669',
+  },
+
+  // Progress indicator styles
+  progressContainer: {
+    marginBottom: 16,
+  },
+
+  progressHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+
+  progressLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#4A5568',
+  },
+
+  progressText: {
+    fontSize: 12,
+    color: '#718096',
+  },
+
+  progressBar: {
+    height: 6,
+    backgroundColor: '#E2E8F0',
+    borderRadius: 3,
+    overflow: 'hidden',
+  },
+
+  progressFill: {
+    height: '100%',
+    backgroundColor: '#4A90E2',
+    borderRadius: 3,
+  },
 });
 
 // Help Modal Component
@@ -2893,6 +3067,100 @@ export default function App() {
     return (
     <View style={styles.tabContent}>
       <Text style={styles.sectionTitle}>Tax Deductions</Text>
+
+      {/* Progress Indicator */}
+      <View style={styles.progressContainer}>
+        <View style={styles.progressHeader}>
+          <Text style={styles.progressLabel}>Deduction Categories</Text>
+          <Text style={styles.progressText}>
+            {[workRelatedTotal, selfEducationTotal, donationsTotal, otherTotal, wfhTotal].filter(t => t > 0).length} of 5 completed
+          </Text>
+        </View>
+        <View style={styles.progressBar}>
+          <View
+            style={[
+              styles.progressFill,
+              { width: `${([workRelatedTotal, selfEducationTotal, donationsTotal, otherTotal, wfhTotal].filter(t => t > 0).length / 5) * 100}%` }
+            ]}
+          />
+        </View>
+      </View>
+
+      {/* Quick Summary Bar - Always visible when there are deductions */}
+      {grandTotal > 0 && (
+        <View style={styles.quickSummaryBar}>
+          <View style={styles.quickSummaryLeft}>
+            <Text style={styles.quickSummaryLabel}>Total Deductions:</Text>
+            <Text style={styles.quickSummaryAmount}>{formatCurrency(grandTotal)}</Text>
+          </View>
+          <View style={styles.quickSummaryRight}>
+            <Text style={styles.quickSummaryTax}>Tax Savings: {formatCurrency(grandTotal * 0.325)}</Text>
+          </View>
+        </View>
+      )}
+
+      {/* Enhanced Real-time Deduction Summary */}
+      {grandTotal > 0 && (
+        <View style={styles.deductionSummary}>
+          <View style={styles.summaryHeader}>
+            <Ionicons name="calculator-outline" size={20} color="#4A90E2" />
+            <Text style={styles.summaryTitle}>Total Deductions</Text>
+            <View style={styles.summaryBadge}>
+              <Text style={styles.summaryBadgeText}>
+                {[workRelatedTotal, selfEducationTotal, donationsTotal, otherTotal, wfhTotal].filter(t => t > 0).length} categories
+              </Text>
+            </View>
+          </View>
+          <Text style={styles.summaryAmount}>{formatCurrency(grandTotal)}</Text>
+
+          {/* Category Breakdown */}
+          <View style={styles.summaryBreakdown}>
+            {workRelatedTotal > 0 && (
+              <View style={styles.summaryBreakdownItem}>
+                <View style={[styles.summaryBreakdownDot, { backgroundColor: '#4A90E2' }]} />
+                <Text style={styles.summaryBreakdownLabel}>Work-Related</Text>
+                <Text style={styles.summaryBreakdownValue}>{formatCurrency(workRelatedTotal)}</Text>
+              </View>
+            )}
+            {selfEducationTotal > 0 && (
+              <View style={styles.summaryBreakdownItem}>
+                <View style={[styles.summaryBreakdownDot, { backgroundColor: '#10B981' }]} />
+                <Text style={styles.summaryBreakdownLabel}>Self-Education</Text>
+                <Text style={styles.summaryBreakdownValue}>{formatCurrency(selfEducationTotal)}</Text>
+              </View>
+            )}
+            {donationsTotal > 0 && (
+              <View style={styles.summaryBreakdownItem}>
+                <View style={[styles.summaryBreakdownDot, { backgroundColor: '#F59E0B' }]} />
+                <Text style={styles.summaryBreakdownLabel}>Donations</Text>
+                <Text style={styles.summaryBreakdownValue}>{formatCurrency(donationsTotal)}</Text>
+              </View>
+            )}
+            {otherTotal > 0 && (
+              <View style={styles.summaryBreakdownItem}>
+                <View style={[styles.summaryBreakdownDot, { backgroundColor: '#8B5CF6' }]} />
+                <Text style={styles.summaryBreakdownLabel}>Other</Text>
+                <Text style={styles.summaryBreakdownValue}>{formatCurrency(otherTotal)}</Text>
+              </View>
+            )}
+            {wfhTotal > 0 && (
+              <View style={styles.summaryBreakdownItem}>
+                <View style={[styles.summaryBreakdownDot, { backgroundColor: '#EF4444' }]} />
+                <Text style={styles.summaryBreakdownLabel}>Work From Home</Text>
+                <Text style={styles.summaryBreakdownValue}>{formatCurrency(wfhTotal)}</Text>
+              </View>
+            )}
+          </View>
+
+          {/* Tax Savings Estimate */}
+          <View style={styles.taxSavingsEstimate}>
+            <Ionicons name="trending-down" size={16} color="#10B981" />
+            <Text style={styles.taxSavingsText}>
+              Estimated tax savings: {formatCurrency(grandTotal * 0.325)} (32.5% tax rate)
+            </Text>
+          </View>
+        </View>
+      )}
 
       {/* Work-Related Expenses Section */}
       <View style={styles.deductionCategory}>
