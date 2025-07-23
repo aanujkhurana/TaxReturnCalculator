@@ -3729,7 +3729,8 @@ export default function App() {
   // Render collapsible category header with enhanced visual design
   const renderCategoryHeader = (categoryKey, title, description, icon, total) => {
     const isCollapsed = collapsedCategories[categoryKey];
-    const hasValues = categoryHasValues(deductions[categoryKey] || {});
+    // For work from home, use the total parameter; for others, check the deductions object
+    const hasValues = categoryKey === 'workFromHome' ? total > 0 : categoryHasValues(deductions[categoryKey] || {});
     const colors = getCategoryColors(categoryKey);
 
     return (
@@ -3922,7 +3923,7 @@ export default function App() {
 
           {/* Tax Savings Estimate */}
           <View style={styles.taxSavingsEstimate}>
-            <Ionicons name="trending-down" size={16} color="#10B981" />
+            <Ionicons name="cash-outline" size={16} color="#10B981" />
             <Text style={styles.taxSavingsText}>
               Estimated tax savings: {formatCurrency(grandTotal * 0.325)} (32.5% tax rate)
             </Text>
@@ -3931,8 +3932,14 @@ export default function App() {
           {/* Completion Status */}
           <View style={styles.completionStatus}>
             <View style={styles.completionHeader}>
-              <Ionicons name="checkmark-circle" size={18} color="#10B981" />
-              <Text style={styles.completionTitle}>Deductions Progress</Text>
+              <Ionicons
+                name={[workRelatedTotal, selfEducationTotal, donationsTotal, otherTotal, wfhTotal].filter(t => t > 0).length === 5 ? "checkmark-circle" : "time-outline"}
+                size={18}
+                color={[workRelatedTotal, selfEducationTotal, donationsTotal, otherTotal, wfhTotal].filter(t => t > 0).length === 5 ? "#10B981" : "#F59E0B"}
+              />
+              <Text style={[styles.completionTitle, {
+                color: [workRelatedTotal, selfEducationTotal, donationsTotal, otherTotal, wfhTotal].filter(t => t > 0).length === 5 ? "#10B981" : "#F59E0B"
+              }]}>Deductions Progress</Text>
             </View>
             <Text style={styles.completionText}>
               {[workRelatedTotal, selfEducationTotal, donationsTotal, otherTotal, wfhTotal].filter(t => t > 0).length === 5
