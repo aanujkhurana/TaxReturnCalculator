@@ -4247,6 +4247,36 @@ export default function App() {
             </View>
           </View>
         )}
+
+        {/* Next Steps Guidance - Moved to bottom */}
+        {grandTotal > 0 && (
+          <View style={styles.nextStepsContainer}>
+            <View style={styles.nextStepsHeader}>
+              <Ionicons name="compass-outline" size={20} color="#4A90E2" />
+              <Text style={styles.nextStepsTitle}>Next Steps</Text>
+            </View>
+            <View style={styles.nextStepsList}>
+              <View style={styles.nextStepItem}>
+                <View style={styles.nextStepNumber}>
+                  <Text style={styles.nextStepNumberText}>1</Text>
+                </View>
+                <Text style={styles.nextStepText}>Review your deduction amounts and ensure accuracy</Text>
+              </View>
+              <View style={styles.nextStepItem}>
+                <View style={styles.nextStepNumber}>
+                  <Text style={styles.nextStepNumberText}>2</Text>
+                </View>
+                <Text style={styles.nextStepText}>Keep receipts and documentation for all claimed deductions</Text>
+              </View>
+              <View style={styles.nextStepItem}>
+                <View style={styles.nextStepNumber}>
+                  <Text style={styles.nextStepNumberText}>3</Text>
+                </View>
+                <Text style={styles.nextStepText}>Continue to the next step to complete your tax calculation</Text>
+              </View>
+            </View>
+          </View>
+        )}
       </View>
     </View>
   );
@@ -4342,22 +4372,7 @@ export default function App() {
           </View>
         </View>
 
-        {/* Quick Summary */}
-        {completedCategories > 0 && (
-          <View style={styles.quickSummaryBar}>
-            <View style={styles.quickSummaryLeft}>
-              <Text style={styles.quickSummaryLabel}>Details Status:</Text>
-              <Text style={styles.quickSummaryAmount}>
-                {completedCategories === 2 ? 'Complete' : 'In Progress'}
-              </Text>
-            </View>
-            <View style={styles.quickSummaryRight}>
-              <Text style={styles.quickSummaryTax}>
-                {hecsDebt && 'HECS debt noted'} {medicareExemption && 'Medicare exempt'}
-              </Text>
-            </View>
-          </View>
-        )}
+
 
         {/* Tax Obligations Section */}
         <View style={styles.deductionCategory}>
