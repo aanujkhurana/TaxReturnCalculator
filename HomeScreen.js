@@ -166,15 +166,19 @@ const HomeScreen = ({ onCreateNew, onViewCalculation }) => {
 
   return (
     <View style={styles.container}>
-      <LinearGradient
-        colors={['#4A90E2', '#357ABD', '#2C5F8C']}
-        style={styles.header}
-      >
-        <View style={styles.headerContent}>
-          <Text style={styles.headerTitle}>Australia Tax Return</Text>
-          <Text style={styles.headerSubtitle}>Your Tax Calculations</Text>
+      {/* Modern Card-based Header */}
+      <View style={styles.headerContainer}>
+        <View style={styles.headerCard}>
+          <View style={styles.headerIconContainer}>
+            <Ionicons name="calculator" size={24} color="#4A90E2" />
+          </View>
+          <View style={styles.headerTextContainer}>
+            <Text style={styles.headerTitle}>Australia Tax Return</Text>
+            <Text style={styles.headerSubtitle}>Your Tax Calculations</Text>
+          </View>
+          <View style={styles.headerAccent} />
         </View>
-      </LinearGradient>
+      </View>
 
       <ScrollView
         style={styles.scrollContainer}
@@ -223,31 +227,72 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F8FAFC',
   },
-  header: {
+  // Modern Card-based Header Styles
+  headerContainer: {
     paddingTop: 60,
-    paddingBottom: 30,
     paddingHorizontal: 20,
+    paddingBottom: 16,
+    backgroundColor: '#F8FAFC',
   },
-  headerContent: {
+  headerCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 20,
+    flexDirection: 'row',
     alignItems: 'center',
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  headerIconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#F0F7FF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 16,
+    borderWidth: 1,
+    borderColor: '#E1EFFF',
+  },
+  headerTextContainer: {
+    flex: 1,
   },
   headerTitle: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#fff',
-    marginBottom: 4,
+    fontSize: 22,
+    fontWeight: '700',
+    color: '#1E293B',
+    marginBottom: 2,
+    letterSpacing: 0.2,
   },
   headerSubtitle: {
-    fontSize: 16,
-    color: '#E1E9F4',
-    opacity: 0.9,
+    fontSize: 14,
+    color: '#64748B',
+    fontWeight: '500',
+    letterSpacing: 0.1,
+  },
+  headerAccent: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    width: 4,
+    height: '100%',
+    backgroundColor: '#4A90E2',
+    borderTopRightRadius: 16,
+    borderBottomRightRadius: 16,
   },
   scrollContainer: {
     flex: 1,
     paddingHorizontal: 20,
   },
   scrollContent: {
-    paddingTop: 20,
+    paddingTop: 8,
     paddingBottom: 20,
   },
   bottomActionContainer: {
@@ -285,28 +330,33 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 60,
+    paddingHorizontal: 20,
   },
   emptyStateTitle: {
-    fontSize: 20,
+    fontSize: 19,
     fontWeight: '600',
-    color: '#374151',
+    color: '#1E293B',
     marginTop: 16,
     marginBottom: 8,
+    letterSpacing: 0.1,
   },
   emptyStateText: {
-    fontSize: 16,
-    color: '#6B7280',
+    fontSize: 15,
+    color: '#64748B',
     textAlign: 'center',
-    lineHeight: 24,
+    lineHeight: 22,
+    letterSpacing: 0.1,
   },
   calculationsContainer: {
     paddingBottom: 20,
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: '600',
-    color: '#374151',
+    color: '#1E293B',
     marginBottom: 16,
+    marginTop: 8,
+    letterSpacing: 0.1,
   },
   calculationCard: {
     backgroundColor: '#fff',
