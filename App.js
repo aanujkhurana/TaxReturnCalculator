@@ -1530,6 +1530,32 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontWeight: '500',
   },
+
+  // Full width home button styles
+  fullWidthHomeButton: {
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    padding: 16,
+    marginTop: 20,
+    marginBottom: 20,
+    borderWidth: 2,
+    borderColor: '#4A90E2',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+
+  fullWidthHomeButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#4A90E2',
+    marginLeft: 8,
+  },
 });
 
 // Help Modal Component
@@ -4807,10 +4833,20 @@ export default function App() {
                 <Text style={[styles.quickAddButtonText, { color: '#fff', marginTop: 8 }]}>Save Calculation</Text>
               </TouchableOpacity>
             )}
+
+            <TouchableOpacity
+              style={[styles.quickAddButton, { backgroundColor: '#8B5CF6' }]}
+              onPress={() => {
+                setCurrentStep(1);
+              }}
+            >
+              <Ionicons name="create-outline" size={20} color="#fff" />
+              <Text style={[styles.quickAddButtonText, { color: '#fff', marginTop: 8 }]}>Edit Calculation</Text>
+            </TouchableOpacity>
           </View>
         </View>
 
-        {/* Navigation Section */}
+        {/* Next Steps Section */}
         <View style={styles.nextStepsContainer}>
           <View style={styles.nextStepsHeader}>
             <Ionicons name="compass-outline" size={20} color="#4A90E2" />
@@ -4836,27 +4872,16 @@ export default function App() {
               <Text style={styles.nextStepText}>Keep receipts and documentation for all claimed deductions</Text>
             </View>
           </View>
-
-          <View style={[styles.quickAddGrid, { marginTop: 16 }]}>
-            <TouchableOpacity
-              style={[styles.quickAddButton, { backgroundColor: '#ffffff', borderWidth: 2, borderColor: '#4A90E2' }]}
-              onPress={navigateToHome}
-            >
-              <Ionicons name="home-outline" size={20} color="#4A90E2" />
-              <Text style={[styles.quickAddButtonText, { color: '#4A90E2', marginTop: 8 }]}>Back to Home</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.quickAddButton, { backgroundColor: '#4A90E2' }]}
-              onPress={() => {
-                setCurrentStep(1);
-              }}
-            >
-              <Ionicons name="create-outline" size={20} color="#fff" />
-              <Text style={[styles.quickAddButtonText, { color: '#fff', marginTop: 8 }]}>Edit Calculation</Text>
-            </TouchableOpacity>
-          </View>
         </View>
+
+        {/* Full Width Back to Home Button */}
+        <TouchableOpacity
+          style={styles.fullWidthHomeButton}
+          onPress={navigateToHome}
+        >
+          <Ionicons name="home-outline" size={20} color="#4A90E2" />
+          <Text style={styles.fullWidthHomeButtonText}>Back to Home</Text>
+        </TouchableOpacity>
       </View>
     );
   };
