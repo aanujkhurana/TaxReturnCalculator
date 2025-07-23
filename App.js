@@ -3639,27 +3639,7 @@ export default function App() {
           </View>
         )}
 
-        {/* Estimated Tax Display - Moved to bottom */}
-        {totalIncome > 0 && (
-          <View style={styles.deductionSummary}>
-            <View style={styles.summaryHeader}>
-              <Ionicons name="calculator-outline" size={20} color="#4A90E2" />
-              <Text style={styles.summaryTitle}>Tax Estimate</Text>
-              <View style={styles.summaryBadge}>
-                <Text style={styles.summaryBadgeText}>Preliminary</Text>
-              </View>
-            </View>
-            <Text style={styles.summaryAmount}>
-              {estimatedRefund > 0 ? `Est. Refund: ${formatCurrency(estimatedRefund)}` : `Est. Tax: ${formatCurrency(Math.abs(estimatedRefund))}`}
-            </Text>
-            <View style={styles.taxSavingsEstimate}>
-              <Ionicons name="information-circle" size={16} color="#F59E0B" />
-              <Text style={[styles.taxSavingsText, { color: '#D97706' }]}>
-                Based on {formatCurrency(totalIncome)} income and {formatCurrency(paygTotal)} tax withheld
-              </Text>
-            </View>
-          </View>
-        )}
+
       </View>
     );
   };
@@ -3929,25 +3909,7 @@ export default function App() {
             </Text>
           </View>
 
-          {/* Completion Status */}
-          <View style={styles.completionStatus}>
-            <View style={styles.completionHeader}>
-              <Ionicons
-                name={[workRelatedTotal, selfEducationTotal, donationsTotal, otherTotal, wfhTotal].filter(t => t > 0).length === 5 ? "checkmark-circle" : "time-outline"}
-                size={18}
-                color={[workRelatedTotal, selfEducationTotal, donationsTotal, otherTotal, wfhTotal].filter(t => t > 0).length === 5 ? "#10B981" : "#F59E0B"}
-              />
-              <Text style={[styles.completionTitle, {
-                color: [workRelatedTotal, selfEducationTotal, donationsTotal, otherTotal, wfhTotal].filter(t => t > 0).length === 5 ? "#10B981" : "#F59E0B"
-              }]}>Deductions Progress</Text>
-            </View>
-            <Text style={styles.completionText}>
-              {[workRelatedTotal, selfEducationTotal, donationsTotal, otherTotal, wfhTotal].filter(t => t > 0).length === 5
-                ? "All categories completed! You're maximizing your deductions."
-                : `${5 - [workRelatedTotal, selfEducationTotal, donationsTotal, otherTotal, wfhTotal].filter(t => t > 0).length} categories remaining to review.`
-              }
-            </Text>
-          </View>
+
         </View>
       )}
 
@@ -4255,36 +4217,37 @@ export default function App() {
           </View>
         )}
 
-        {/* Next Steps Guidance - Moved to bottom */}
-        {grandTotal > 0 && (
-          <View style={styles.nextStepsContainer}>
-            <View style={styles.nextStepsHeader}>
-              <Ionicons name="compass-outline" size={20} color="#4A90E2" />
-              <Text style={styles.nextStepsTitle}>Next Steps</Text>
+      </View>
+
+      {/* Next Steps Guidance - Separate card at bottom */}
+      {grandTotal > 0 && (
+        <View style={[styles.nextStepsContainer, { marginTop: 24 }]}>
+          <View style={styles.nextStepsHeader}>
+            <Ionicons name="compass-outline" size={20} color="#4A90E2" />
+            <Text style={styles.nextStepsTitle}>Next Steps</Text>
+          </View>
+          <View style={styles.nextStepsList}>
+            <View style={styles.nextStepItem}>
+              <View style={styles.nextStepNumber}>
+                <Text style={styles.nextStepNumberText}>1</Text>
+              </View>
+              <Text style={styles.nextStepText}>Review your deduction amounts and ensure accuracy</Text>
             </View>
-            <View style={styles.nextStepsList}>
-              <View style={styles.nextStepItem}>
-                <View style={styles.nextStepNumber}>
-                  <Text style={styles.nextStepNumberText}>1</Text>
-                </View>
-                <Text style={styles.nextStepText}>Review your deduction amounts and ensure accuracy</Text>
+            <View style={styles.nextStepItem}>
+              <View style={styles.nextStepNumber}>
+                <Text style={styles.nextStepNumberText}>2</Text>
               </View>
-              <View style={styles.nextStepItem}>
-                <View style={styles.nextStepNumber}>
-                  <Text style={styles.nextStepNumberText}>2</Text>
-                </View>
-                <Text style={styles.nextStepText}>Keep receipts and documentation for all claimed deductions</Text>
+              <Text style={styles.nextStepText}>Keep receipts and documentation for all claimed deductions</Text>
+            </View>
+            <View style={styles.nextStepItem}>
+              <View style={styles.nextStepNumber}>
+                <Text style={styles.nextStepNumberText}>3</Text>
               </View>
-              <View style={styles.nextStepItem}>
-                <View style={styles.nextStepNumber}>
-                  <Text style={styles.nextStepNumberText}>3</Text>
-                </View>
-                <Text style={styles.nextStepText}>Continue to the next step to complete your tax calculation</Text>
-              </View>
+              <Text style={styles.nextStepText}>Continue to the next step to complete your tax calculation</Text>
             </View>
           </View>
-        )}
-      </View>
+        </View>
+      )}
     </View>
   );
   };
