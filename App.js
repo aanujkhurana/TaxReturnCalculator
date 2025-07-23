@@ -1766,7 +1766,7 @@ const InputField = memo(({ label, value, onChangeText, placeholder, keyboardType
           <View style={styles.validationContainer}>
             <Ionicons name="checkmark-circle" size={16} color="#10B981" />
             <Text style={styles.validationText}>
-              {numericValue > 1000 ? 'High deduction - ensure you have receipts' : 'Valid amount entered'}
+              Valid amount entered
             </Text>
           </View>
         )}
@@ -3432,20 +3432,7 @@ export default function App() {
           </View>
         </View>
 
-        {/* Quick Summary Bar */}
-        {totalIncome > 0 && (
-          <View style={styles.quickSummaryBar}>
-            <View style={styles.quickSummaryLeft}>
-              <Text style={styles.quickSummaryLabel}>Total Income:</Text>
-              <Text style={styles.quickSummaryAmount}>{formatCurrency(totalIncome)}</Text>
-            </View>
-            <View style={styles.quickSummaryRight}>
-              <Text style={styles.quickSummaryTax}>
-                {estimatedRefund > 0 ? `Est. Refund: ${formatCurrency(estimatedRefund)}` : `Est. Tax: ${formatCurrency(Math.abs(estimatedRefund))}`}
-              </Text>
-            </View>
-          </View>
-        )}
+
 
         {/* Enhanced Real-time Income Summary */}
         {totalIncome > 0 && (
@@ -3648,6 +3635,28 @@ export default function App() {
                 </View>
                 <Text style={styles.nextStepText}>Continue to deductions to maximize your refund</Text>
               </View>
+            </View>
+          </View>
+        )}
+
+        {/* Estimated Tax Display - Moved to bottom */}
+        {totalIncome > 0 && (
+          <View style={styles.deductionSummary}>
+            <View style={styles.summaryHeader}>
+              <Ionicons name="calculator-outline" size={20} color="#4A90E2" />
+              <Text style={styles.summaryTitle}>Tax Estimate</Text>
+              <View style={styles.summaryBadge}>
+                <Text style={styles.summaryBadgeText}>Preliminary</Text>
+              </View>
+            </View>
+            <Text style={styles.summaryAmount}>
+              {estimatedRefund > 0 ? `Est. Refund: ${formatCurrency(estimatedRefund)}` : `Est. Tax: ${formatCurrency(Math.abs(estimatedRefund))}`}
+            </Text>
+            <View style={styles.taxSavingsEstimate}>
+              <Ionicons name="information-circle" size={16} color="#F59E0B" />
+              <Text style={[styles.taxSavingsText, { color: '#D97706' }]}>
+                Based on {formatCurrency(totalIncome)} income and {formatCurrency(paygTotal)} tax withheld
+              </Text>
             </View>
           </View>
         )}
@@ -3856,18 +3865,7 @@ export default function App() {
         </View>
       )}
 
-      {/* Quick Summary Bar - Always visible when there are deductions */}
-      {grandTotal > 0 && (
-        <View style={styles.quickSummaryBar}>
-          <View style={styles.quickSummaryLeft}>
-            <Text style={styles.quickSummaryLabel}>Total Deductions:</Text>
-            <Text style={styles.quickSummaryAmount}>{formatCurrency(grandTotal)}</Text>
-          </View>
-          <View style={styles.quickSummaryRight}>
-            <Text style={styles.quickSummaryTax}>Tax Savings: {formatCurrency(grandTotal * 0.325)}</Text>
-          </View>
-        </View>
-      )}
+
 
       {/* Enhanced Real-time Deduction Summary */}
       {grandTotal > 0 && (
@@ -3946,35 +3944,7 @@ export default function App() {
         </View>
       )}
 
-      {/* Next Steps Guidance */}
-      {grandTotal > 0 && (
-        <View style={styles.nextStepsContainer}>
-          <View style={styles.nextStepsHeader}>
-            <Ionicons name="compass-outline" size={20} color="#4A90E2" />
-            <Text style={styles.nextStepsTitle}>Next Steps</Text>
-          </View>
-          <View style={styles.nextStepsList}>
-            <View style={styles.nextStepItem}>
-              <View style={styles.nextStepNumber}>
-                <Text style={styles.nextStepNumberText}>1</Text>
-              </View>
-              <Text style={styles.nextStepText}>Review your deduction amounts and ensure accuracy</Text>
-            </View>
-            <View style={styles.nextStepItem}>
-              <View style={styles.nextStepNumber}>
-                <Text style={styles.nextStepNumberText}>2</Text>
-              </View>
-              <Text style={styles.nextStepText}>Keep receipts and documentation for all claimed deductions</Text>
-            </View>
-            <View style={styles.nextStepItem}>
-              <View style={styles.nextStepNumber}>
-                <Text style={styles.nextStepNumberText}>3</Text>
-              </View>
-              <Text style={styles.nextStepText}>Continue to the next step to complete your tax calculation</Text>
-            </View>
-          </View>
-        </View>
-      )}
+
 
       {/* Show All Categories Button */}
       {Object.values(collapsedCategories).some(collapsed => collapsed) && (
