@@ -176,6 +176,11 @@ const HomeScreen = ({ onCreateNew, onViewCalculation }) => {
             <Text style={styles.headerTitle}>Australia Tax Return</Text>
             <Text style={styles.headerSubtitle}>Your Tax Calculations</Text>
           </View>
+          <View style={styles.headerStats}>
+            <Text style={styles.headerStatsText}>
+              {savedCalculations.length} saved
+            </Text>
+          </View>
           <View style={styles.headerAccent} />
         </View>
       </View>
@@ -198,9 +203,6 @@ const HomeScreen = ({ onCreateNew, onViewCalculation }) => {
           </View>
         ) : (
           <View style={styles.calculationsContainer}>
-            <Text style={styles.sectionTitle}>
-              Saved Calculations ({savedCalculations.length})
-            </Text>
             {savedCalculations.map(renderCalculationCard)}
           </View>
         )}
@@ -249,6 +251,7 @@ const styles = StyleSheet.create({
     borderColor: '#F1F5F9',
     position: 'relative',
     overflow: 'hidden',
+    minHeight: 80,
   },
   headerIconContainer: {
     width: 48,
@@ -276,6 +279,21 @@ const styles = StyleSheet.create({
     color: '#64748B',
     fontWeight: '500',
     letterSpacing: 0.1,
+  },
+  headerStats: {
+    backgroundColor: '#F0F7FF',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E1EFFF',
+    marginLeft: 12,
+  },
+  headerStatsText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#4A90E2',
+    letterSpacing: 0.2,
   },
   headerAccent: {
     position: 'absolute',
