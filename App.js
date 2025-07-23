@@ -16,7 +16,7 @@ import {
 import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import { StatusBar } from 'expo-status-bar';
-import { LinearGradient } from 'expo-linear-gradient';
+
 import { Ionicons } from '@expo/vector-icons';
 import HomeScreen from './HomeScreen';
 import { saveCalculation } from './storage';
@@ -26,51 +26,14 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f8f9fa',
+    paddingTop: Platform.OS === 'ios' ? 50 : 40,
   },
-  header: {
-    paddingTop: Platform.OS === 'ios' ? 60 : 50,
-    paddingBottom: 24,
-    paddingHorizontal: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 8,
-  },
-  headerContent: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexDirection: 'row',
-    position: 'relative',
-  },
-  backButton: {
-    position: 'absolute',
-    left: 0,
-    padding: 8,
-    zIndex: 1,
-  },
-  headerTitle: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: '#fff',
-    textAlign: 'center',
-    letterSpacing: 0.3,
-    textShadowColor: 'rgba(0,0,0,0.3)',
-    textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 4,
-  },
-  headerAccent: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 4,
-    backgroundColor: 'rgba(255,255,255,0.3)',
-  },
+
 
   scrollContainer: {
     flex: 1,
     paddingHorizontal: 16,
+    paddingTop: 8,
   },
   tabContent: {
     marginTop: 20,
@@ -526,21 +489,40 @@ const styles = StyleSheet.create({
     marginLeft: 10,
     letterSpacing: 0.2,
   },
-  // Step indicator styles
-  stepIndicator: {
+  // Step indicator styles - Compact and contemporary design
+  stepIndicatorContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#fff',
-    marginHorizontal: 16,
-    marginTop: -15,
-    borderRadius: 15,
-    padding: 16,
-    elevation: 3,
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 8,
+  },
+  stepBackButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#F8FAFC',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  stepIndicator: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    elevation: 2,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 3,
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
   },
   stepIndicatorRow: {
     flex: 1,
@@ -548,79 +530,64 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   stepCircle: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: '#F0F4F8',
-    borderWidth: 2,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1.5,
     borderColor: '#E2E8F0',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
+    marginBottom: 6,
   },
   stepCircleActive: {
     backgroundColor: '#4A90E2',
-    borderColor: '#3A7BC2',
-    shadowColor: '#4A90E2',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 3,
+    borderColor: '#4A90E2',
   },
   stepCircleCurrent: {
     backgroundColor: '#357ABD',
-    borderColor: '#2563A8',
-    transform: [{ scale: 1.15 }],
-    shadowColor: '#357ABD',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.25,
-    shadowRadius: 5,
-    elevation: 4,
+    borderColor: '#357ABD',
+    transform: [{ scale: 1.1 }],
   },
   stepCircleDisabled: {
-    backgroundColor: '#f8f8f8',
-    borderColor: '#e0e0e0',
-    opacity: 0.5,
+    backgroundColor: '#F8FAFC',
+    borderColor: '#E5E7EB',
+    opacity: 0.6,
   },
   stepNumber: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: '#999',
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#64748B',
   },
   stepNumberActive: {
-    color: '#fff',
+    color: '#FFFFFF',
+    fontWeight: '700',
   },
   stepNumberDisabled: {
-    color: '#ccc',
+    color: '#9CA3AF',
   },
   stepLabel: {
-    fontSize: 13,
+    fontSize: 11,
     color: '#64748B',
-    fontWeight: '600',
+    fontWeight: '500',
     textAlign: 'center',
-    letterSpacing: 0.2,
+    letterSpacing: 0.1,
   },
   stepLabelActive: {
     color: '#4A90E2',
-    fontWeight: '700',
-    letterSpacing: 0.3,
+    fontWeight: '600',
   },
   stepLabelDisabled: {
-    color: '#ccc',
-    opacity: 0.6,
+    color: '#9CA3AF',
+    opacity: 0.7,
   },
   stepLine: {
     position: 'absolute',
-    top: 16,
-    left: '50%',
-    right: '-50%',
-    height: 2,
-    backgroundColor: '#ddd',
+    top: 14,
+    left: '60%',
+    right: '-40%',
+    height: 1.5,
+    backgroundColor: '#E5E7EB',
     zIndex: -1,
   },
   stepLineActive: {
@@ -3252,7 +3219,7 @@ export default function App() {
     }
   };
 
-  // Step Progress Indicator Component
+  // Step Progress Indicator Component with integrated back button
   const StepIndicator = () => {
     // Check if step 1 is complete for navigation purposes
     const isStep1Complete = () => {
@@ -3272,42 +3239,53 @@ export default function App() {
     const step1Complete = isStep1Complete();
 
     return (
-      <View style={styles.stepIndicator}>
-        {[1, 2, 3, 4].map((step) => {
-          // Determine if step is accessible
-          const isAccessible = step === 1 || (step <= 3 && step1Complete) || (step === 4 && result);
+      <View style={styles.stepIndicatorContainer}>
+        {/* Back button */}
+        <TouchableOpacity
+          style={styles.stepBackButton}
+          onPress={navigateToHome}
+        >
+          <Ionicons name="chevron-back" size={20} color="#64748B" />
+        </TouchableOpacity>
 
-          return (
-            <View key={step} style={styles.stepIndicatorRow}>
-              <TouchableOpacity
-                style={[
-                  styles.stepCircle,
-                  currentStep >= step && styles.stepCircleActive,
-                  currentStep === step && styles.stepCircleCurrent,
-                  !isAccessible && styles.stepCircleDisabled
-                ]}
-                onPress={() => goToStep(step)}
-                disabled={!isAccessible}
-              >
+        {/* Step indicator */}
+        <View style={styles.stepIndicator}>
+          {[1, 2, 3, 4].map((step) => {
+            // Determine if step is accessible
+            const isAccessible = step === 1 || (step <= 3 && step1Complete) || (step === 4 && result);
+
+            return (
+              <View key={step} style={styles.stepIndicatorRow}>
+                <TouchableOpacity
+                  style={[
+                    styles.stepCircle,
+                    currentStep >= step && styles.stepCircleActive,
+                    currentStep === step && styles.stepCircleCurrent,
+                    !isAccessible && styles.stepCircleDisabled
+                  ]}
+                  onPress={() => goToStep(step)}
+                  disabled={!isAccessible}
+                >
+                  <Text style={[
+                    styles.stepNumber,
+                    currentStep >= step && styles.stepNumberActive,
+                    !isAccessible && styles.stepNumberDisabled
+                  ]}>
+                    {step}
+                  </Text>
+                </TouchableOpacity>
                 <Text style={[
-                  styles.stepNumber,
-                  currentStep >= step && styles.stepNumberActive,
-                  !isAccessible && styles.stepNumberDisabled
+                  styles.stepLabel,
+                  currentStep >= step && styles.stepLabelActive,
+                  !isAccessible && styles.stepLabelDisabled
                 ]}>
-                  {step}
+                  {step === 1 ? 'Income' : step === 2 ? 'Deductions' : step === 3 ? 'Details' : 'Results'}
                 </Text>
-              </TouchableOpacity>
-              <Text style={[
-                styles.stepLabel,
-                currentStep >= step && styles.stepLabelActive,
-                !isAccessible && styles.stepLabelDisabled
-              ]}>
-                {step === 1 ? 'Income' : step === 2 ? 'Deductions' : step === 3 ? 'Details' : 'Results'}
-              </Text>
-              {step < 4 && <View style={[styles.stepLine, currentStep > step && styles.stepLineActive]} />}
-            </View>
-          );
-        })}
+                {step < 4 && <View style={[styles.stepLine, currentStep > step && styles.stepLineActive]} />}
+              </View>
+            );
+          })}
+        </View>
       </View>
     );
   };
@@ -4948,30 +4926,6 @@ export default function App() {
           </Text>
         </Animated.View>
       )}
-      <Animated.View
-        style={{
-          opacity: headerOpacityAnim,
-          transform: [{ scale: headerScaleAnim }]
-        }}
-      >
-        <LinearGradient
-          colors={['#000000', '#1a1a1a', '#000000']}
-          style={styles.header}
-        >
-          <View style={styles.headerAccent} />
-          <View style={styles.headerContent}>
-            <TouchableOpacity
-              style={styles.backButton}
-              onPress={navigateToHome}
-            >
-              <Ionicons name="chevron-back" size={24} color="#fff" />
-            </TouchableOpacity>
-            <Text style={styles.headerTitle}>
-              {viewingCalculation ? 'Saved Calculation' : 'Australia Tax Return'}
-            </Text>
-          </View>
-        </LinearGradient>
-      </Animated.View>
 
       <StepIndicator />
 
