@@ -1531,6 +1531,14 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
 
+  resultMainFinancialYear: {
+    fontSize: 12,
+    color: '#94A3B8',
+    textAlign: 'center',
+    fontWeight: '400',
+    marginTop: 2,
+  },
+
   // Full width home button styles
   fullWidthHomeButton: {
     backgroundColor: '#ffffff',
@@ -4680,7 +4688,10 @@ export default function App() {
               {formatCurrency(Math.abs(result.refund))}
             </Text>
             <Text style={styles.resultMainSubtext}>
-              Effective Tax Rate: {result.effectiveTaxRate.toFixed(1)}% • Financial Year 2024-25
+              Effective Tax Rate: {result.effectiveTaxRate.toFixed(1)}%
+            </Text>
+            <Text style={styles.resultMainFinancialYear}>
+              Financial Year 2024-25
             </Text>
           </View>
         </View>
