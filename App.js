@@ -1558,34 +1558,37 @@ const styles = StyleSheet.create({
 
   // ATO Integration Button Styles
   atoFileReturnButton: {
-    backgroundColor: '#10B981',
+    backgroundColor: '#1E40AF', // ATO blue color
     borderRadius: 12,
-    padding: 18,
+    padding: 20,
     marginTop: 16,
     marginBottom: 8,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.15,
-    shadowRadius: 6,
-    elevation: 4,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 6,
+    borderWidth: 2,
+    borderColor: '#1D4ED8',
   },
 
   atoFileReturnButtonText: {
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: '700',
     color: '#ffffff',
     marginLeft: 10,
+    marginRight: 4,
   },
 
   atoFileReturnDescription: {
-    fontSize: 13,
-    color: '#64748B',
+    fontSize: 14,
+    color: '#475569',
     textAlign: 'center',
-    marginBottom: 12,
-    fontStyle: 'italic',
+    marginBottom: 8,
+    fontWeight: '500',
   },
 
   externalLinkIcon: {
