@@ -4825,17 +4825,6 @@ export default function App() {
           </TouchableOpacity>
         </View>
 
-        {/* Progress Indicator */}
-        <View style={styles.progressContainer}>
-          <View style={styles.progressHeader}>
-            <Text style={styles.progressLabel}>Calculation Complete</Text>
-            <Text style={styles.progressText}>All steps processed successfully</Text>
-          </View>
-          <View style={styles.progressBar}>
-            <View style={[styles.progressFill, { width: '100%' }]} />
-          </View>
-        </View>
-
         {/* Conditional View Rendering */}
         {resultsViewMode === 'card' ? (
           <>
