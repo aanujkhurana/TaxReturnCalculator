@@ -33,6 +33,8 @@ const HomeScreen = ({ onCreateNew, onViewCalculation }) => {
         // Sort by date (newest first)
         calculations.sort((a, b) => new Date(b.savedDate) - new Date(a.savedDate));
         setSavedCalculations(calculations);
+      } else {
+        setSavedCalculations([]);
       }
     } catch (error) {
       console.error('Error loading saved calculations:', error);
@@ -86,12 +88,13 @@ const HomeScreen = ({ onCreateNew, onViewCalculation }) => {
   };
 
   const formatCurrency = (amount) => {
+    if (amount === null || amount === undefined || isNaN(amount)) {
+      return '0';
+    }
     return new Intl.NumberFormat('en-AU', {
-      style: 'currency',
-      currency: 'AUD',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
-    }).format(amount);
+    }).format(Math.abs(amount));
   };
 
   const formatDate = (dateString) => {
@@ -162,14 +165,14 @@ const HomeScreen = ({ onCreateNew, onViewCalculation }) => {
             <View style={styles.cardSummaryItem}>
               <Text style={styles.cardSummaryLabel}>Total Income</Text>
               <Text style={styles.cardSummaryValue}>
-                ${formatCurrency(totalIncome).replace('$', '')}
+                ${formatCurrency(totalIncome)}
               </Text>
             </View>
             <View style={styles.cardSummaryDivider} />
             <View style={styles.cardSummaryItem}>
               <Text style={styles.cardSummaryLabel}>Tax Payable</Text>
               <Text style={styles.cardSummaryValue}>
-                ${formatCurrency(totalTax).replace('$', '')}
+                ${formatCurrency(totalTax)}
               </Text>
             </View>
           </View>
@@ -186,7 +189,7 @@ const HomeScreen = ({ onCreateNew, onViewCalculation }) => {
               </Text>
             </View>
             <Text style={[styles.cardRefundAmount, { color: statusColor }]}>
-              ${formatCurrency(Math.abs(refund)).replace('$', '')}
+              ${formatCurrency(Math.abs(refund))}
             </Text>
           </View>
         </View>
@@ -209,93 +212,26 @@ const HomeScreen = ({ onCreateNew, onViewCalculation }) => {
 
   return (
     <View style={styles.container}>
-      {/* Enhanced Professional Header */}
-      <View style={styles.headerContainer}>
-        <View style={styles.headerCard}>
-          <View style={styles.headerMainContent}>
-            <View style={styles.headerIconContainer}>
-              <Ionicons name="calculator" size={28} color="#4A90E2" />
-            </View>
-            <View style={styles.headerTextContainer}>
-              <Text style={styles.headerTitle}>Australia Tax Return</Text>
-              <Text style={styles.headerSubtitle}>Professional Tax Calculator</Text>
-              <Text style={styles.headerDescription}>
-                Calculate your tax return with confidence
-              </Text>
-            </View>
+      {/* Fixed Header at Top */}
+      <View style={styles.fixedHeaderContainer}>
+        <View style={styles.fixedHeaderContent}>
+          <View style={styles.fixedHeaderIconContainer}>
+            <Ionicons name="calculator" size={24} color="#4A90E2" />
           </View>
-          <View style={styles.headerStatsContainer}>
-            <View style={styles.headerStats}>
-              <Ionicons name="document-text-outline" size={16} color="#4A90E2" />
-              <Text style={styles.headerStatsText}>
-                {savedCalculations.length} saved
-              </Text>
-            </View>
-            <View style={styles.headerStatusIndicator}>
-              <View style={styles.statusDot} />
-              <Text style={styles.statusText}>Ready</Text>
-            </View>
+          <View style={styles.fixedHeaderTextContainer}>
+            <Text style={styles.fixedHeaderTitle}>Australia Tax Return</Text>
+            <Text style={styles.fixedHeaderSubtitle}>Professional Tax Calculator</Text>
           </View>
-          <View style={styles.headerAccent} />
+          <View style={styles.fixedHeaderStats}>
+            <Ionicons name="document-text-outline" size={14} color="#4A90E2" />
+            <Text style={styles.fixedHeaderStatsText}>
+              {savedCalculations.length} saved
+            </Text>
+          </View>
         </View>
       </View>
 
-      {/* Enhanced Tax Resources & Guidelines Section */}
-      <View style={styles.resourcesContainer}>
-        <View style={styles.resourcesHeader}>
-          <View style={styles.resourcesIconContainer}>
-            <Ionicons name="information-circle" size={22} color="#4A90E2" />
-          </View>
-          <View style={styles.resourcesTitleContainer}>
-            <Text style={styles.resourcesTitle}>Tax Resources & Guidelines</Text>
-            <Text style={styles.resourcesSubtitle}>Official ATO guidance and tools</Text>
-          </View>
-        </View>
-        <View style={styles.resourcesGrid}>
-          <TouchableOpacity
-            style={[styles.resourceButton, styles.resourceButtonPrimary]}
-            onPress={() => openExternalURL('https://www.ato.gov.au/individuals/income-deductions-offsets-and-records/deductions/')}
-          >
-            <View style={styles.resourceButtonIconContainer}>
-              <Ionicons name="receipt" size={20} color="#059669" />
-            </View>
-            <View style={styles.resourceButtonContent}>
-              <Text style={styles.resourceButtonTitle}>ATO Deduction Guides</Text>
-              <Text style={styles.resourceButtonDescription}>Official deduction rules</Text>
-            </View>
-            <Ionicons name="chevron-forward" size={16} color="#6B7280" />
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.resourceButton, styles.resourceButtonSecondary]}
-            onPress={() => openExternalURL('https://www.ato.gov.au/individuals/lodging-your-tax-return/')}
-          >
-            <View style={styles.resourceButtonIconContainer}>
-              <Ionicons name="checkmark-circle" size={20} color="#4A90E2" />
-            </View>
-            <View style={styles.resourceButtonContent}>
-              <Text style={styles.resourceButtonTitle}>ATO Return Checklist</Text>
-              <Text style={styles.resourceButtonDescription}>Complete your return</Text>
-            </View>
-            <Ionicons name="chevron-forward" size={16} color="#6B7280" />
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.resourceButton, styles.resourceButtonTertiary]}
-            onPress={() => openExternalURL('https://www.ato.gov.au/individuals/income-deductions-offsets-and-records/records-you-need-to-keep/')}
-          >
-            <View style={styles.resourceButtonIconContainer}>
-              <Ionicons name="folder" size={20} color="#F59E0B" />
-            </View>
-            <View style={styles.resourceButtonContent}>
-              <Text style={styles.resourceButtonTitle}>ATO Record Keeping</Text>
-              <Text style={styles.resourceButtonDescription}>What to keep & how long</Text>
-            </View>
-            <Ionicons name="chevron-forward" size={16} color="#6B7280" />
-          </TouchableOpacity>
-        </View>
-      </View>
-
+      {/* Scrollable Content */}
       <ScrollView
         style={styles.scrollContainer}
         refreshControl={
@@ -304,6 +240,63 @@ const HomeScreen = ({ onCreateNew, onViewCalculation }) => {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
+        {/* Enhanced Tax Resources & Guidelines Section */}
+        <View style={styles.resourcesContainer}>
+          <View style={styles.resourcesHeader}>
+            <View style={styles.resourcesIconContainer}>
+              <Ionicons name="information-circle" size={22} color="#4A90E2" />
+            </View>
+            <View style={styles.resourcesTitleContainer}>
+              <Text style={styles.resourcesTitle}>Tax Resources & Guidelines</Text>
+              <Text style={styles.resourcesSubtitle}>Official ATO guidance and tools</Text>
+            </View>
+          </View>
+          <View style={styles.resourcesGrid}>
+            <TouchableOpacity
+              style={[styles.resourceButton, styles.resourceButtonPrimary]}
+              onPress={() => openExternalURL('https://www.ato.gov.au/individuals/income-deductions-offsets-and-records/deductions/')}
+            >
+              <View style={styles.resourceButtonIconContainer}>
+                <Ionicons name="receipt" size={20} color="#059669" />
+              </View>
+              <View style={styles.resourceButtonContent}>
+                <Text style={styles.resourceButtonTitle}>ATO Deduction Guides</Text>
+                <Text style={styles.resourceButtonDescription}>Official deduction rules</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={16} color="#6B7280" />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.resourceButton, styles.resourceButtonSecondary]}
+              onPress={() => openExternalURL('https://www.ato.gov.au/individuals/lodging-your-tax-return/')}
+            >
+              <View style={styles.resourceButtonIconContainer}>
+                <Ionicons name="checkmark-circle" size={20} color="#4A90E2" />
+              </View>
+              <View style={styles.resourceButtonContent}>
+                <Text style={styles.resourceButtonTitle}>ATO Return Checklist</Text>
+                <Text style={styles.resourceButtonDescription}>Complete your return</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={16} color="#6B7280" />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.resourceButton, styles.resourceButtonTertiary]}
+              onPress={() => openExternalURL('https://www.ato.gov.au/individuals/income-deductions-offsets-and-records/records-you-need-to-keep/')}
+            >
+              <View style={styles.resourceButtonIconContainer}>
+                <Ionicons name="folder" size={20} color="#F59E0B" />
+              </View>
+              <View style={styles.resourceButtonContent}>
+                <Text style={styles.resourceButtonTitle}>ATO Record Keeping</Text>
+                <Text style={styles.resourceButtonDescription}>What to keep & how long</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={16} color="#6B7280" />
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* Saved Calculations Section */}
         {savedCalculations.length === 0 ? (
           <View style={styles.emptyState}>
             <View style={styles.emptyStateIconContainer}>
@@ -375,149 +368,93 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F8FAFC',
   },
-  // Enhanced Professional Header Styles
-  headerContainer: {
+  // Fixed Header Styles
+  fixedHeaderContainer: {
     paddingTop: Platform.OS === 'ios' ? 60 : 50,
-    paddingHorizontal: width > 400 ? 24 : 20,
-    paddingBottom: 20,
-    backgroundColor: '#F8FAFC',
-  },
-  headerCard: {
+    paddingHorizontal: 20,
+    paddingBottom: 16,
     backgroundColor: '#FFFFFF',
-    borderRadius: width > 400 ? 20 : 16,
-    padding: width > 400 ? 24 : 20,
-    elevation: 4,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E2E8F0',
+    elevation: 2,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
-    borderWidth: 1,
-    borderColor: '#F1F5F9',
-    position: 'relative',
-    overflow: 'hidden',
-    minHeight: width > 400 ? 120 : 110,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
   },
-  headerMainContent: {
+  fixedHeaderContent: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
-    marginBottom: 16,
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
-  headerIconContainer: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+  fixedHeaderIconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     backgroundColor: '#F0F7FF',
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 20,
-    borderWidth: 2,
-    borderColor: '#E1EFFF',
-    elevation: 2,
-    shadowColor: '#4A90E2',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-  },
-  headerTextContainer: {
-    flex: 1,
-    paddingTop: 2,
-  },
-  headerTitle: {
-    fontSize: 24,
-    fontWeight: '800',
-    color: '#1E293B',
-    marginBottom: 4,
-    letterSpacing: 0.3,
-  },
-  headerSubtitle: {
-    fontSize: 16,
-    color: '#4A90E2',
-    fontWeight: '600',
-    letterSpacing: 0.2,
-    marginBottom: 2,
-  },
-  headerDescription: {
-    fontSize: 13,
-    color: '#64748B',
-    fontWeight: '500',
-    letterSpacing: 0.1,
-    lineHeight: 18,
-  },
-  headerStatsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  headerStats: {
-    backgroundColor: '#F0F7FF',
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 14,
     borderWidth: 1,
     borderColor: '#E1EFFF',
-    flexDirection: 'row',
-    alignItems: 'center',
-    elevation: 1,
-    shadowColor: '#4A90E2',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
   },
-  headerStatsText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#4A90E2',
+  fixedHeaderTextContainer: {
+    flex: 1,
+    marginLeft: 12,
+  },
+  fixedHeaderTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#1E293B',
     letterSpacing: 0.2,
-    marginLeft: 6,
   },
-  headerStatusIndicator: {
+  fixedHeaderSubtitle: {
+    fontSize: 13,
+    color: '#4A90E2',
+    fontWeight: '500',
+    letterSpacing: 0.1,
+  },
+  fixedHeaderStats: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F0FDF4',
-    paddingHorizontal: 12,
+    backgroundColor: '#F0F7FF',
+    paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#BBF7D0',
+    borderColor: '#E1EFFF',
   },
-  statusDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#10B981',
-    marginRight: 6,
-  },
-  statusText: {
-    fontSize: 12,
+  fixedHeaderStatsText: {
+    fontSize: 11,
     fontWeight: '600',
-    color: '#059669',
+    color: '#4A90E2',
+    marginLeft: 4,
     letterSpacing: 0.1,
   },
-  headerAccent: {
-    position: 'absolute',
-    top: 0,
-    right: 0,
-    width: 4,
-    height: '100%',
-    backgroundColor: '#4A90E2',
-    borderTopRightRadius: 16,
-    borderBottomRightRadius: 16,
-  },
+
   scrollContainer: {
     flex: 1,
-    paddingHorizontal: width > 400 ? 24 : 20,
+    backgroundColor: '#F8FAFC',
   },
   scrollContent: {
-    paddingTop: 8,
-    paddingBottom: 20,
+    paddingTop: 16,
+    paddingBottom: 100, // Extra padding for fixed bottom button
   },
   bottomActionContainer: {
-    paddingHorizontal: width > 400 ? 24 : 20,
-    paddingVertical: 24,
-    paddingBottom: Platform.OS === 'ios' ? 54 : 44,
-    backgroundColor: '#F8FAFC',
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    paddingHorizontal: 20,
+    paddingVertical: 20,
+    paddingBottom: Platform.OS === 'ios' ? 40 : 30,
+    backgroundColor: '#FFFFFF',
     borderTopWidth: 1,
     borderTopColor: '#E2E8F0',
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
   },
   createNewButton: {
     borderRadius: 20,
@@ -570,11 +507,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 40,
-    paddingHorizontal: width > 400 ? 32 : 24,
+    paddingHorizontal: 24,
     backgroundColor: '#FFFFFF',
-    marginHorizontal: width > 400 ? 24 : 20,
-    marginTop: 20,
-    borderRadius: width > 400 ? 20 : 16,
+    marginHorizontal: 20,
+    marginTop: 0,
+    marginBottom: 20,
+    borderRadius: 20,
     borderWidth: 1,
     borderColor: '#F1F5F9',
     elevation: 2,
@@ -645,6 +583,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.1,
   },
   calculationsContainer: {
+    paddingHorizontal: 20,
     paddingBottom: 20,
   },
   sectionTitle: {
@@ -657,8 +596,8 @@ const styles = StyleSheet.create({
   },
   calculationCard: {
     backgroundColor: '#fff',
-    borderRadius: width > 400 ? 18 : 16,
-    padding: width > 400 ? 22 : 20,
+    borderRadius: 16,
+    padding: 20,
     marginBottom: 16,
     elevation: 3,
     shadowColor: '#000',
@@ -805,11 +744,11 @@ const styles = StyleSheet.create({
   // Enhanced Tax Resources Section Styles
   resourcesContainer: {
     backgroundColor: '#FFFFFF',
-    marginHorizontal: width > 400 ? 24 : 20,
-    marginTop: 8,
-    marginBottom: 16,
-    borderRadius: width > 400 ? 16 : 12,
-    padding: width > 400 ? 20 : 16,
+    marginHorizontal: 20,
+    marginTop: 0,
+    marginBottom: 20,
+    borderRadius: 16,
+    padding: 20,
     borderWidth: 1,
     borderColor: '#E2E8F0',
     elevation: 2,
