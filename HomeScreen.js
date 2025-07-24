@@ -8,7 +8,8 @@ import {
   Alert,
   RefreshControl,
   Dimensions,
-  Linking
+  Linking,
+  Platform
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -368,7 +369,7 @@ const styles = StyleSheet.create({
   bottomActionContainer: {
     paddingHorizontal: 20,
     paddingVertical: 20,
-    paddingBottom: 40,
+    paddingBottom: Platform.OS === 'ios' ? 50 : 40, // Platform-specific bottom padding
     backgroundColor: '#F8FAFC',
     borderTopWidth: 1,
     borderTopColor: '#E2E8F0',
