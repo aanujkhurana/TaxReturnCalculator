@@ -213,7 +213,7 @@ const HomeScreen = ({ onCreateNew, onViewCalculation }) => {
             onPress={() => openExternalURL('https://www.ato.gov.au/individuals/income-deductions-offsets-and-records/deductions/')}
           >
             <Ionicons name="receipt-outline" size={18} color="#059669" />
-            <Text style={styles.resourceButtonText}>Deduction Guides</Text>
+            <Text style={styles.resourceButtonText}>ATO Deduction Guides</Text>
             <Ionicons name="open-outline" size={12} color="#6B7280" />
           </TouchableOpacity>
 
@@ -222,7 +222,7 @@ const HomeScreen = ({ onCreateNew, onViewCalculation }) => {
             onPress={() => openExternalURL('https://www.ato.gov.au/individuals/lodging-your-tax-return/')}
           >
             <Ionicons name="checkmark-circle-outline" size={18} color="#059669" />
-            <Text style={styles.resourceButtonText}>Tax Return Checklist</Text>
+            <Text style={styles.resourceButtonText}>ATO Return Checklist</Text>
             <Ionicons name="open-outline" size={12} color="#6B7280" />
           </TouchableOpacity>
 
@@ -231,7 +231,7 @@ const HomeScreen = ({ onCreateNew, onViewCalculation }) => {
             onPress={() => openExternalURL('https://www.ato.gov.au/individuals/income-deductions-offsets-and-records/records-you-need-to-keep/')}
           >
             <Ionicons name="folder-outline" size={18} color="#059669" />
-            <Text style={styles.resourceButtonText}>Record Keeping</Text>
+            <Text style={styles.resourceButtonText}>ATO Record Keeping</Text>
             <Ionicons name="open-outline" size={12} color="#6B7280" />
           </TouchableOpacity>
         </View>
