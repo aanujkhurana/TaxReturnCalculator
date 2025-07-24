@@ -7,7 +7,8 @@ import {
   StyleSheet,
   Alert,
   RefreshControl,
-  Dimensions
+  Dimensions,
+  Linking
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -42,6 +43,21 @@ const HomeScreen = ({ onCreateNew, onViewCalculation }) => {
     setRefreshing(true);
     await loadSavedCalculations();
     setRefreshing(false);
+  };
+
+  // Function to handle opening external URLs
+  const openExternalURL = async (url) => {
+    try {
+      const supported = await Linking.canOpenURL(url);
+      if (supported) {
+        await Linking.openURL(url);
+      } else {
+        Alert.alert('Error', 'Unable to open this link on your device');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Failed to open the link');
+      console.error('Error opening URL:', error);
+    }
   };
 
   const deleteCalculation = async (id) => {
@@ -182,6 +198,42 @@ const HomeScreen = ({ onCreateNew, onViewCalculation }) => {
             </Text>
           </View>
           <View style={styles.headerAccent} />
+        </View>
+      </View>
+
+      {/* Tax Resources & Guidelines Section */}
+      <View style={styles.resourcesContainer}>
+        <View style={styles.resourcesHeader}>
+          <Ionicons name="information-circle-outline" size={20} color="#4A90E2" />
+          <Text style={styles.resourcesTitle}>Tax Resources & Guidelines</Text>
+        </View>
+        <View style={styles.resourcesGrid}>
+          <TouchableOpacity
+            style={styles.resourceButton}
+            onPress={() => openExternalURL('https://www.ato.gov.au/individuals/income-deductions-offsets-and-records/deductions/')}
+          >
+            <Ionicons name="receipt-outline" size={18} color="#059669" />
+            <Text style={styles.resourceButtonText}>Deduction Guides</Text>
+            <Ionicons name="open-outline" size={12} color="#6B7280" />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.resourceButton}
+            onPress={() => openExternalURL('https://www.ato.gov.au/individuals/lodging-your-tax-return/')}
+          >
+            <Ionicons name="checkmark-circle-outline" size={18} color="#059669" />
+            <Text style={styles.resourceButtonText}>Tax Return Checklist</Text>
+            <Ionicons name="open-outline" size={12} color="#6B7280" />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.resourceButton}
+            onPress={() => openExternalURL('https://www.ato.gov.au/individuals/income-deductions-offsets-and-records/records-you-need-to-keep/')}
+          >
+            <Ionicons name="folder-outline" size={18} color="#059669" />
+            <Text style={styles.resourceButtonText}>Record Keeping</Text>
+            <Ionicons name="open-outline" size={12} color="#6B7280" />
+          </TouchableOpacity>
         </View>
       </View>
 
@@ -443,6 +495,63 @@ const styles = StyleSheet.create({
   cardDate: {
     fontSize: 12,
     color: '#9CA3AF',
+  },
+
+  // Tax Resources Section Styles
+  resourcesContainer: {
+    backgroundColor: '#F8FAFC',
+    marginHorizontal: 16,
+    marginTop: 8,
+    marginBottom: 12,
+    borderRadius: 12,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+
+  resourcesHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+
+  resourcesTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#374151',
+    marginLeft: 8,
+  },
+
+  resourcesGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+
+  resourceButton: {
+    backgroundColor: '#ffffff',
+    borderRadius: 8,
+    padding: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+    minWidth: '30%',
+    flex: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+
+  resourceButtonText: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: '#374151',
+    marginLeft: 6,
+    marginRight: 4,
+    flex: 1,
   },
 });
 

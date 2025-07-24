@@ -11,7 +11,8 @@ import {
   Platform,
   KeyboardAvoidingView,
   ActivityIndicator,
-  Modal
+  Modal,
+  Linking
 } from 'react-native';
 import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
@@ -1555,6 +1556,42 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
 
+  // ATO Integration Button Styles
+  atoFileReturnButton: {
+    backgroundColor: '#10B981',
+    borderRadius: 12,
+    padding: 18,
+    marginTop: 16,
+    marginBottom: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    elevation: 4,
+  },
+
+  atoFileReturnButtonText: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#ffffff',
+    marginLeft: 10,
+  },
+
+  atoFileReturnDescription: {
+    fontSize: 13,
+    color: '#64748B',
+    textAlign: 'center',
+    marginBottom: 12,
+    fontStyle: 'italic',
+  },
+
+  externalLinkIcon: {
+    marginLeft: 6,
+  },
+
   // Table view styles
   tableContainer: {
     backgroundColor: '#ffffff',
@@ -2499,6 +2536,21 @@ export default function App() {
   const navigateToHome = () => {
     setCurrentScreen('home');
     setViewingCalculation(null);
+  };
+
+  // Function to handle opening external URLs
+  const openExternalURL = async (url) => {
+    try {
+      const supported = await Linking.canOpenURL(url);
+      if (supported) {
+        await Linking.openURL(url);
+      } else {
+        Alert.alert('Error', 'Unable to open this link on your device');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Failed to open the link');
+      console.error('Error opening URL:', error);
+    }
   };
 
   const viewCalculation = async (calculation) => {
@@ -5040,6 +5092,19 @@ export default function App() {
                 </TouchableOpacity>
               </View>
             </View>
+
+            {/* ATO File Tax Return Button - Only in card view */}
+            <Text style={styles.atoFileReturnDescription}>
+              Ready to lodge? File your return with the ATO
+            </Text>
+            <TouchableOpacity
+              style={styles.atoFileReturnButton}
+              onPress={() => openExternalURL('https://www.ato.gov.au/individuals/mytax/')}
+            >
+              <Ionicons name="globe-outline" size={22} color="#ffffff" />
+              <Text style={styles.atoFileReturnButtonText}>Visit ATO myTax Portal</Text>
+              <Ionicons name="open-outline" size={16} color="#ffffff" style={styles.externalLinkIcon} />
+            </TouchableOpacity>
           </>
         ) : (
           /* Compact Table View */
