@@ -378,17 +378,10 @@ const styles = StyleSheet.create({
   },
   // Simple Fixed Header Styles
   fixedHeaderContainer: {
-    paddingTop: Platform.OS === 'ios' ? 60 : 50,
+    paddingTop: Platform.OS === 'ios' ? 44 : 0,
     paddingHorizontal: 20,
     paddingBottom: 16,
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E2E8F0',
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 4,
+    backgroundColor: 'transparent',
   },
   fixedHeaderContent: {
     flexDirection: 'row',
@@ -431,7 +424,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F8FAFC',
   },
   scrollContent: {
-    paddingTop: 16,
+    paddingTop: 8,
     paddingBottom: 80, // Padding to prevent content hiding behind button
   },
   bottomActionContainer: {
