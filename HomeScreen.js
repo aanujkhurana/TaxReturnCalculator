@@ -20,6 +20,7 @@ const { width } = Dimensions.get('window');
 const HomeScreen = ({ onCreateNew, onViewCalculation }) => {
   const [savedCalculations, setSavedCalculations] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
+  const [isResourcesExpanded, setIsResourcesExpanded] = useState(false);
 
   useEffect(() => {
     loadSavedCalculations();
@@ -212,18 +213,14 @@ const HomeScreen = ({ onCreateNew, onViewCalculation }) => {
 
   return (
     <View style={styles.container}>
-      {/* Fixed Header at Top */}
+      {/* Simple Header at Top */}
       <View style={styles.fixedHeaderContainer}>
         <View style={styles.fixedHeaderContent}>
-          <View style={styles.fixedHeaderIconContainer}>
-            <Ionicons name="calculator" size={24} color="#4A90E2" />
-          </View>
           <View style={styles.fixedHeaderTextContainer}>
             <Text style={styles.fixedHeaderTitle}>Australia Tax Return</Text>
             <Text style={styles.fixedHeaderSubtitle}>Professional Tax Calculator</Text>
           </View>
           <View style={styles.fixedHeaderStats}>
-            <Ionicons name="document-text-outline" size={14} color="#4A90E2" />
             <Text style={styles.fixedHeaderStatsText}>
               {savedCalculations.length} saved
             </Text>
@@ -240,9 +237,13 @@ const HomeScreen = ({ onCreateNew, onViewCalculation }) => {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
-        {/* Enhanced Tax Resources & Guidelines Section */}
+        {/* Collapsible Tax Resources & Guidelines Section */}
         <View style={styles.resourcesContainer}>
-          <View style={styles.resourcesHeader}>
+          <TouchableOpacity
+            style={styles.resourcesHeader}
+            onPress={() => setIsResourcesExpanded(!isResourcesExpanded)}
+            activeOpacity={0.7}
+          >
             <View style={styles.resourcesIconContainer}>
               <Ionicons name="information-circle" size={22} color="#4A90E2" />
             </View>
@@ -250,8 +251,14 @@ const HomeScreen = ({ onCreateNew, onViewCalculation }) => {
               <Text style={styles.resourcesTitle}>Tax Resources & Guidelines</Text>
               <Text style={styles.resourcesSubtitle}>Official ATO guidance and tools</Text>
             </View>
-          </View>
-          <View style={styles.resourcesGrid}>
+            <Ionicons
+              name={isResourcesExpanded ? "chevron-up" : "chevron-down"}
+              size={20}
+              color="#4A90E2"
+            />
+          </TouchableOpacity>
+          {isResourcesExpanded && (
+            <View style={styles.resourcesGrid}>
             <TouchableOpacity
               style={[styles.resourceButton, styles.resourceButtonPrimary]}
               onPress={() => openExternalURL('https://www.ato.gov.au/individuals/income-deductions-offsets-and-records/deductions/')}
@@ -293,7 +300,8 @@ const HomeScreen = ({ onCreateNew, onViewCalculation }) => {
               </View>
               <Ionicons name="chevron-forward" size={16} color="#6B7280" />
             </TouchableOpacity>
-          </View>
+            </View>
+          )}
         </View>
 
         {/* Saved Calculations Section */}
@@ -368,7 +376,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F8FAFC',
   },
-  // Fixed Header Styles
+  // Simple Fixed Header Styles
   fixedHeaderContainer: {
     paddingTop: Platform.OS === 'ios' ? 60 : 50,
     paddingHorizontal: 20,
@@ -387,47 +395,34 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
   },
-  fixedHeaderIconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#F0F7FF',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: '#E1EFFF',
-  },
   fixedHeaderTextContainer: {
     flex: 1,
-    marginLeft: 12,
   },
   fixedHeaderTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: '700',
     color: '#1E293B',
     letterSpacing: 0.2,
+    marginBottom: 2,
   },
   fixedHeaderSubtitle: {
-    fontSize: 13,
+    fontSize: 14,
     color: '#4A90E2',
     fontWeight: '500',
     letterSpacing: 0.1,
   },
   fixedHeaderStats: {
-    flexDirection: 'row',
-    alignItems: 'center',
     backgroundColor: '#F0F7FF',
-    paddingHorizontal: 10,
-    paddingVertical: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
     borderRadius: 12,
     borderWidth: 1,
     borderColor: '#E1EFFF',
   },
   fixedHeaderStatsText: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '600',
     color: '#4A90E2',
-    marginLeft: 4,
     letterSpacing: 0.1,
   },
 
@@ -437,7 +432,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingTop: 16,
-    paddingBottom: 100, // Extra padding for fixed bottom button
+    paddingBottom: 80, // Padding to prevent content hiding behind button
   },
   bottomActionContainer: {
     position: 'absolute',
@@ -445,8 +440,8 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     paddingHorizontal: 20,
-    paddingVertical: 20,
-    paddingBottom: Platform.OS === 'ios' ? 40 : 30,
+    paddingVertical: 12,
+    paddingBottom: Platform.OS === 'ios' ? 30 : 20,
     backgroundColor: '#FFFFFF',
     borderTopWidth: 1,
     borderTopColor: '#E2E8F0',
@@ -471,14 +466,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 24,
-    paddingHorizontal: 28,
-    minHeight: 72,
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    minHeight: 56,
   },
   createNewIconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     backgroundColor: 'rgba(255, 255, 255, 0.2)',
     alignItems: 'center',
     justifyContent: 'center',
@@ -487,21 +482,21 @@ const styles = StyleSheet.create({
   },
   createNewTextContainer: {
     flex: 1,
-    marginLeft: 20,
-    marginRight: 16,
+    marginLeft: 16,
+    marginRight: 12,
   },
   createNewText: {
     color: '#fff',
-    fontSize: 20,
-    fontWeight: '800',
-    letterSpacing: 0.4,
-    marginBottom: 2,
+    fontSize: 18,
+    fontWeight: '700',
+    letterSpacing: 0.3,
+    marginBottom: 1,
   },
   createNewSubtext: {
     color: 'rgba(255, 255, 255, 0.9)',
-    fontSize: 14,
-    fontWeight: '600',
-    letterSpacing: 0.2,
+    fontSize: 13,
+    fontWeight: '500',
+    letterSpacing: 0.1,
   },
   emptyState: {
     alignItems: 'center',
@@ -762,6 +757,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 16,
+    paddingVertical: 4,
   },
 
   resourcesIconContainer: {
