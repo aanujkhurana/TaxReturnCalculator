@@ -270,7 +270,7 @@ const HomeScreen = ({ onCreateNew, onViewCalculation }) => {
                 <Text style={styles.resourceButtonTitle}>ATO Deduction Guides</Text>
                 <Text style={styles.resourceButtonDescription}>Official deduction rules</Text>
               </View>
-              <Ionicons name="chevron-forward" size={16} color="#6B7280" />
+              <Ionicons name="open-outline" size={16} color="#6B7280" />
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -284,7 +284,7 @@ const HomeScreen = ({ onCreateNew, onViewCalculation }) => {
                 <Text style={styles.resourceButtonTitle}>ATO Return Checklist</Text>
                 <Text style={styles.resourceButtonDescription}>Complete your return</Text>
               </View>
-              <Ionicons name="chevron-forward" size={16} color="#6B7280" />
+              <Ionicons name="open-outline" size={16} color="#6B7280" />
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -298,7 +298,7 @@ const HomeScreen = ({ onCreateNew, onViewCalculation }) => {
                 <Text style={styles.resourceButtonTitle}>ATO Record Keeping</Text>
                 <Text style={styles.resourceButtonDescription}>What to keep & how long</Text>
               </View>
-              <Ionicons name="chevron-forward" size={16} color="#6B7280" />
+              <Ionicons name="open-outline" size={16} color="#6B7280" />
             </TouchableOpacity>
             </View>
           )}
