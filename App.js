@@ -38,6 +38,7 @@ const styles = StyleSheet.create({
   },
   tabContent: {
     marginTop: 20,
+    paddingBottom: 20, // Additional bottom padding for safe area
   },
   sectionTitle: {
     fontSize: 20,
@@ -1536,7 +1537,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     marginTop: 20,
-    marginBottom: 20,
+    marginBottom: Platform.OS === 'ios' ? 50 : 40, // Platform-specific bottom margin for nav bar
     borderWidth: 2,
     borderColor: '#4A90E2',
     flexDirection: 'row',
