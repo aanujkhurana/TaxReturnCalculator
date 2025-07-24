@@ -1506,6 +1506,27 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
 
+  // Results header styles
+  resultsHeaderContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+
+  tableViewButton: {
+    backgroundColor: '#ffffff',
+    borderRadius: 8,
+    padding: 8,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+
   // View toggle styles
   viewToggleContainer: {
     backgroundColor: '#ffffff',
@@ -1694,6 +1715,79 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
     color: '#334155',
+  },
+
+  // Compact table styles
+  compactTableContainer: {
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    marginTop: 16,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+
+  compactTableContent: {
+    minWidth: 350,
+  },
+
+  compactTableRow: {
+    flexDirection: 'row',
+    borderBottomWidth: 1,
+    borderBottomColor: '#F1F5F9',
+  },
+
+  compactTableHeaderRow: {
+    backgroundColor: '#F8FAFC',
+    borderBottomWidth: 2,
+    borderBottomColor: '#E2E8F0',
+  },
+
+  compactTableFinalRow: {
+    backgroundColor: '#ECFDF5',
+    borderBottomWidth: 0,
+  },
+
+  compactTableCell: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    justifyContent: 'center',
+  },
+
+  compactTableCellLabel: {
+    flex: 2,
+    borderRightWidth: 1,
+    borderRightColor: '#F1F5F9',
+  },
+
+  compactTableCellValue: {
+    flex: 1,
+    alignItems: 'flex-end',
+  },
+
+  compactTableCellText: {
+    fontSize: 14,
+    color: '#475569',
+    fontWeight: '500',
+  },
+
+  compactTableHeaderText: {
+    fontWeight: '700',
+    color: '#1E293B',
+  },
+
+  compactTableFinalText: {
+    fontWeight: '700',
+    color: '#059669',
+  },
+
+  compactTableValueText: {
+    fontWeight: '600',
+    textAlign: 'right',
   },
 });
 
@@ -4591,178 +4685,66 @@ export default function App() {
     );
   };
 
-  // Render view toggle component
-  const renderViewToggle = () => {
-    return (
-      <View style={styles.viewToggleContainer}>
-        <TouchableOpacity
-          style={[
-            styles.viewToggleButton,
-            resultsViewMode === 'card' ? styles.viewToggleButtonActive : styles.viewToggleButtonInactive
-          ]}
-          onPress={() => setResultsViewMode('card')}
-        >
-          <Ionicons
-            name="grid-outline"
-            size={16}
-            color={resultsViewMode === 'card' ? '#ffffff' : '#64748B'}
-          />
-          <Text style={[
-            styles.viewToggleButtonText,
-            resultsViewMode === 'card' ? styles.viewToggleButtonTextActive : styles.viewToggleButtonTextInactive
-          ]}>
-            Card View
-          </Text>
-        </TouchableOpacity>
 
-        <TouchableOpacity
-          style={[
-            styles.viewToggleButton,
-            resultsViewMode === 'table' ? styles.viewToggleButtonActive : styles.viewToggleButtonInactive
-          ]}
-          onPress={() => setResultsViewMode('table')}
-        >
-          <Ionicons
-            name="list-outline"
-            size={16}
-            color={resultsViewMode === 'table' ? '#ffffff' : '#64748B'}
-          />
-          <Text style={[
-            styles.viewToggleButtonText,
-            resultsViewMode === 'table' ? styles.viewToggleButtonTextActive : styles.viewToggleButtonTextInactive
-          ]}>
-            Table View
-          </Text>
-        </TouchableOpacity>
-      </View>
-    );
-  };
 
-  // Render table view component
-  const renderTableView = () => {
+  // Render compact table view component
+  const renderCompactTableView = () => {
     if (!result) return null;
 
     const tableData = [
-      // Income Section
-      { section: 'Income', type: 'TFN Employment Income', value: result.totalTFNIncome, description: 'Income from employment with Tax File Number' },
-      { section: 'Income', type: 'ABN/Business Income', value: result.abnIncomeNum, description: 'Income from ABN or freelance work' },
-      { section: 'Income', type: 'Total Gross Income', value: result.totalTFNIncome + result.abnIncomeNum, description: 'Combined income from all sources', isSubtotal: true },
-
-      // Deductions Section
-      { section: 'Deductions', type: 'Manual Deductions', value: -result.totalManualDeductions, description: 'Manually entered tax deductions' },
-      { section: 'Deductions', type: 'Work From Home', value: -result.workFromHomeDeduction, description: 'Work from home deduction claims' },
-      { section: 'Deductions', type: 'Total Deductions', value: -result.totalDeductions, description: 'Combined allowable tax deductions', isSubtotal: true },
-
-      // Tax Calculation Section
-      { section: 'Tax Calculation', type: 'Taxable Income', value: result.taxableIncome, description: 'Income after deductions (Gross Income - Deductions)', isSubtotal: true },
-      { section: 'Tax Calculation', type: 'Gross Tax', value: result.tax, description: 'Tax calculated using ATO tax brackets' },
-      { section: 'Tax Calculation', type: 'Low Income Tax Offset (LITO)', value: -result.lito, description: 'Tax offset for low income earners' },
-      { section: 'Tax Calculation', type: 'Medicare Levy', value: result.medicare, description: 'Medicare levy (2% of taxable income)' },
+      ['Item', 'Amount'],
+      ['TFN Employment Income', formatCurrency(result.totalTFNIncome)],
+      ['ABN/Business Income', formatCurrency(result.abnIncomeNum)],
+      ['Total Gross Income', formatCurrency(result.totalTFNIncome + result.abnIncomeNum)],
+      ['Manual Deductions', formatCurrency(result.totalManualDeductions)],
+      ['Work From Home Deduction', formatCurrency(result.workFromHomeDeduction)],
+      ['Total Deductions', formatCurrency(result.totalDeductions)],
+      ['Taxable Income', formatCurrency(result.taxableIncome)],
+      ['Gross Tax', formatCurrency(result.tax)],
+      ['LITO Offset', formatCurrency(result.lito)],
+      ['Medicare Levy', formatCurrency(result.medicare)],
     ];
 
     // Add HECS repayment if applicable
     if (result.hecsRepayment > 0) {
-      tableData.push({
-        section: 'Tax Calculation',
-        type: 'HECS-HELP Repayment',
-        value: result.hecsRepayment,
-        description: 'Higher Education Contribution Scheme repayment'
-      });
+      tableData.push(['HECS-HELP Repayment', formatCurrency(result.hecsRepayment)]);
     }
 
     // Add final calculations
     tableData.push(
-      { section: 'Tax Calculation', type: 'Tax Withheld (PAYG)', value: -parseFloat(taxWithheld || '0'), description: 'Tax already withheld from income' },
-      { section: 'Final Result', type: result.refund >= 0 ? 'Tax Refund' : 'Tax Owing', value: result.refund, description: `Final ${result.refund >= 0 ? 'refund' : 'amount owing'} after all calculations`, isFinal: true }
+      ['Tax Withheld (PAYG)', formatCurrency(parseFloat(taxWithheld || '0'))],
+      [result.refund >= 0 ? 'Tax Refund' : 'Tax Owing', formatCurrency(Math.abs(result.refund))]
     );
 
-    let currentSection = '';
-
     return (
-      <View style={styles.tableContainer}>
-        <View style={styles.tableHeader}>
-          <Text style={styles.tableHeaderText}>Tax Calculation Details</Text>
-        </View>
-
+      <View style={styles.compactTableContainer}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          <View style={{ minWidth: 400 }}>
-            {/* Table Header Row */}
-            <View style={[styles.tableRow, styles.tableRowHeader]}>
-              <View style={[styles.tableCell, styles.tableCellType]}>
-                <Text style={styles.tableCellHeaderText}>Calculation Type</Text>
-              </View>
-              <View style={[styles.tableCell, styles.tableCellValue]}>
-                <Text style={styles.tableCellHeaderText}>Amount</Text>
-              </View>
-              <View style={[styles.tableCell, styles.tableCellDescription]}>
-                <Text style={styles.tableCellHeaderText}>Description</Text>
-              </View>
-            </View>
-
-        {tableData.map((item, index) => {
-          const isNewSection = item.section !== currentSection;
-          if (isNewSection) {
-            currentSection = item.section;
-          }
-
-          const isLast = index === tableData.length - 1;
-          const valueColor = item.isFinal
-            ? (item.value >= 0 ? '#10B981' : '#EF4444')
-            : item.isSubtotal
-              ? '#1E293B'
-              : item.value < 0
-                ? '#10B981'
-                : '#475569';
-
-          return (
-            <View key={index}>
-              {isNewSection && (
-                <View style={styles.tableSectionHeader}>
-                  <Text style={styles.tableSectionHeaderText}>{item.section}</Text>
-                </View>
-              )}
-
-              <View style={[
-                styles.tableRow,
-                isLast && styles.tableRowLast,
-                item.isFinal && { backgroundColor: item.value >= 0 ? '#ECFDF5' : '#FEF2F2' }
+          <View style={styles.compactTableContent}>
+            {tableData.map((row, rowIndex) => (
+              <View key={rowIndex} style={[
+                styles.compactTableRow,
+                rowIndex === 0 && styles.compactTableHeaderRow,
+                rowIndex === tableData.length - 1 && styles.compactTableFinalRow
               ]}>
-                <View style={[styles.tableCell, styles.tableCellType]}>
-                  <Text style={[
-                    styles.tableCellText,
-                    (item.isSubtotal || item.isFinal) && { fontWeight: '700', color: '#1E293B' }
+                {row.map((cell, cellIndex) => (
+                  <View key={cellIndex} style={[
+                    styles.compactTableCell,
+                    cellIndex === 0 ? styles.compactTableCellLabel : styles.compactTableCellValue
                   ]}>
-                    {item.type}
-                  </Text>
-                </View>
-                <View style={[styles.tableCell, styles.tableCellValue]}>
-                  <Text style={[
-                    styles.tableCellValueText,
-                    { color: valueColor },
-                    (item.isSubtotal || item.isFinal) && { fontWeight: '700', fontSize: 15 }
-                  ]}>
-                    {formatCurrency(Math.abs(item.value))}
-                  </Text>
-                </View>
-                <View style={[styles.tableCell, styles.tableCellDescription]}>
-                  <Text style={styles.tableCellDescriptionText}>
-                    {item.description}
-                  </Text>
-                </View>
+                    <Text style={[
+                      styles.compactTableCellText,
+                      rowIndex === 0 && styles.compactTableHeaderText,
+                      rowIndex === tableData.length - 1 && styles.compactTableFinalText,
+                      cellIndex === 1 && rowIndex > 0 && styles.compactTableValueText
+                    ]}>
+                      {cell}
+                    </Text>
+                  </View>
+                ))}
               </View>
-            </View>
-          );
-        })}
-
+            ))}
           </View>
         </ScrollView>
-
-        {/* Summary Footer */}
-        <View style={styles.tableSectionHeader}>
-          <Text style={[styles.tableSectionHeaderText, { textAlign: 'center' }]}>
-            Effective Tax Rate: {result.effectiveTaxRate.toFixed(1)}% • Financial Year 2024-25
-          </Text>
-        </View>
       </View>
     );
   };
@@ -5094,8 +5076,8 @@ export default function App() {
 
           </>
         ) : (
-          /* Table View */
-          renderTableView()
+          /* Compact Table View */
+          renderCompactTableView()
         )}
 
         {/* Action Buttons Section - Always visible */}
