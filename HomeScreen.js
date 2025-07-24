@@ -132,50 +132,76 @@ const HomeScreen = ({ onCreateNew, onViewCalculation }) => {
         key={calculation.id}
         style={styles.calculationCard}
         onPress={() => onViewCalculation(calculation)}
+        activeOpacity={0.7}
       >
         <View style={styles.cardHeader}>
           <View style={styles.cardTitleContainer}>
-            <Ionicons name="document-text" size={20} color="#4A90E2" />
-            <Text style={styles.cardTitle}>
-              {calculation.name || `Tax Calculation ${calculation.id.slice(-4)}`}
-            </Text>
+            <View style={styles.cardIconContainer}>
+              <Ionicons name="document-text" size={22} color="#4A90E2" />
+            </View>
+            <View style={styles.cardTitleTextContainer}>
+              <Text style={styles.cardTitle}>
+                {calculation.name || `Tax Calculation ${calculation.id.slice(-4)}`}
+              </Text>
+              <Text style={styles.cardSubtitle}>
+                Financial Year 2024-25
+              </Text>
+            </View>
           </View>
           <TouchableOpacity
             style={styles.deleteButton}
             onPress={() => deleteCalculation(calculation.id)}
+            activeOpacity={0.6}
           >
-            <Ionicons name="trash-outline" size={18} color="#EF4444" />
+            <Ionicons name="trash-outline" size={20} color="#EF4444" />
           </TouchableOpacity>
         </View>
 
         <View style={styles.cardContent}>
-          <View style={styles.cardRow}>
-            <Text style={styles.cardLabel}>Total Income:</Text>
-            <Text style={styles.cardValue}>
-              {formatCurrency(totalIncome)}
-            </Text>
+          <View style={styles.cardFinancialSummary}>
+            <View style={styles.cardSummaryItem}>
+              <Text style={styles.cardSummaryLabel}>Total Income</Text>
+              <Text style={styles.cardSummaryValue}>
+                ${formatCurrency(totalIncome).replace('$', '')}
+              </Text>
+            </View>
+            <View style={styles.cardSummaryDivider} />
+            <View style={styles.cardSummaryItem}>
+              <Text style={styles.cardSummaryLabel}>Tax Payable</Text>
+              <Text style={styles.cardSummaryValue}>
+                ${formatCurrency(totalTax).replace('$', '')}
+              </Text>
+            </View>
           </View>
 
-          <View style={styles.cardRow}>
-            <Text style={styles.cardLabel}>Tax Payable:</Text>
-            <Text style={styles.cardValue}>
-              {formatCurrency(totalTax)}
-            </Text>
-          </View>
-
-          <View style={[styles.cardRow, styles.refundRow]}>
-            <Text style={[styles.cardLabel, { color: statusColor }]}>{statusText}:</Text>
-            <Text style={[styles.cardValue, styles.refundValue, { color: statusColor }]}>
-              {formatCurrency(Math.abs(refund))}
+          <View style={[styles.cardRefundSection, { backgroundColor: statusColor + '10' }]}>
+            <View style={styles.cardRefundHeader}>
+              <Ionicons
+                name={refund >= 0 ? "trending-up" : "trending-down"}
+                size={18}
+                color={statusColor}
+              />
+              <Text style={[styles.cardRefundLabel, { color: statusColor }]}>
+                {statusText}
+              </Text>
+            </View>
+            <Text style={[styles.cardRefundAmount, { color: statusColor }]}>
+              ${formatCurrency(Math.abs(refund)).replace('$', '')}
             </Text>
           </View>
         </View>
 
         <View style={styles.cardFooter}>
-          <Text style={styles.cardDate}>
-            Saved: {formatDate(calculation.savedDate)}
-          </Text>
-          <Ionicons name="chevron-forward" size={16} color="#9CA3AF" />
+          <View style={styles.cardFooterLeft}>
+            <Ionicons name="time-outline" size={14} color="#9CA3AF" />
+            <Text style={styles.cardDate}>
+              Saved {formatDate(calculation.savedDate)}
+            </Text>
+          </View>
+          <View style={styles.cardFooterRight}>
+            <Text style={styles.cardViewText}>View Details</Text>
+            <Ionicons name="chevron-forward" size={16} color="#4A90E2" />
+          </View>
         </View>
       </TouchableOpacity>
     );
@@ -183,57 +209,89 @@ const HomeScreen = ({ onCreateNew, onViewCalculation }) => {
 
   return (
     <View style={styles.container}>
-      {/* Modern Card-based Header */}
+      {/* Enhanced Professional Header */}
       <View style={styles.headerContainer}>
         <View style={styles.headerCard}>
-          <View style={styles.headerIconContainer}>
-            <Ionicons name="calculator" size={24} color="#4A90E2" />
+          <View style={styles.headerMainContent}>
+            <View style={styles.headerIconContainer}>
+              <Ionicons name="calculator" size={28} color="#4A90E2" />
+            </View>
+            <View style={styles.headerTextContainer}>
+              <Text style={styles.headerTitle}>Australia Tax Return</Text>
+              <Text style={styles.headerSubtitle}>Professional Tax Calculator</Text>
+              <Text style={styles.headerDescription}>
+                Calculate your tax return with confidence
+              </Text>
+            </View>
           </View>
-          <View style={styles.headerTextContainer}>
-            <Text style={styles.headerTitle}>Australia Tax Return</Text>
-            <Text style={styles.headerSubtitle}>Your Tax Calculations</Text>
-          </View>
-          <View style={styles.headerStats}>
-            <Text style={styles.headerStatsText}>
-              {savedCalculations.length} saved
-            </Text>
+          <View style={styles.headerStatsContainer}>
+            <View style={styles.headerStats}>
+              <Ionicons name="document-text-outline" size={16} color="#4A90E2" />
+              <Text style={styles.headerStatsText}>
+                {savedCalculations.length} saved
+              </Text>
+            </View>
+            <View style={styles.headerStatusIndicator}>
+              <View style={styles.statusDot} />
+              <Text style={styles.statusText}>Ready</Text>
+            </View>
           </View>
           <View style={styles.headerAccent} />
         </View>
       </View>
 
-      {/* Tax Resources & Guidelines Section */}
+      {/* Enhanced Tax Resources & Guidelines Section */}
       <View style={styles.resourcesContainer}>
         <View style={styles.resourcesHeader}>
-          <Ionicons name="information-circle-outline" size={20} color="#4A90E2" />
-          <Text style={styles.resourcesTitle}>Tax Resources & Guidelines</Text>
+          <View style={styles.resourcesIconContainer}>
+            <Ionicons name="information-circle" size={22} color="#4A90E2" />
+          </View>
+          <View style={styles.resourcesTitleContainer}>
+            <Text style={styles.resourcesTitle}>Tax Resources & Guidelines</Text>
+            <Text style={styles.resourcesSubtitle}>Official ATO guidance and tools</Text>
+          </View>
         </View>
         <View style={styles.resourcesGrid}>
           <TouchableOpacity
-            style={styles.resourceButton}
+            style={[styles.resourceButton, styles.resourceButtonPrimary]}
             onPress={() => openExternalURL('https://www.ato.gov.au/individuals/income-deductions-offsets-and-records/deductions/')}
           >
-            <Ionicons name="receipt-outline" size={18} color="#059669" />
-            <Text style={styles.resourceButtonText}>ATO Deduction Guides</Text>
-            <Ionicons name="open-outline" size={12} color="#6B7280" />
+            <View style={styles.resourceButtonIconContainer}>
+              <Ionicons name="receipt" size={20} color="#059669" />
+            </View>
+            <View style={styles.resourceButtonContent}>
+              <Text style={styles.resourceButtonTitle}>ATO Deduction Guides</Text>
+              <Text style={styles.resourceButtonDescription}>Official deduction rules</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={16} color="#6B7280" />
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={styles.resourceButton}
+            style={[styles.resourceButton, styles.resourceButtonSecondary]}
             onPress={() => openExternalURL('https://www.ato.gov.au/individuals/lodging-your-tax-return/')}
           >
-            <Ionicons name="checkmark-circle-outline" size={18} color="#059669" />
-            <Text style={styles.resourceButtonText}>ATO Return Checklist</Text>
-            <Ionicons name="open-outline" size={12} color="#6B7280" />
+            <View style={styles.resourceButtonIconContainer}>
+              <Ionicons name="checkmark-circle" size={20} color="#4A90E2" />
+            </View>
+            <View style={styles.resourceButtonContent}>
+              <Text style={styles.resourceButtonTitle}>ATO Return Checklist</Text>
+              <Text style={styles.resourceButtonDescription}>Complete your return</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={16} color="#6B7280" />
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={styles.resourceButton}
+            style={[styles.resourceButton, styles.resourceButtonTertiary]}
             onPress={() => openExternalURL('https://www.ato.gov.au/individuals/income-deductions-offsets-and-records/records-you-need-to-keep/')}
           >
-            <Ionicons name="folder-outline" size={18} color="#059669" />
-            <Text style={styles.resourceButtonText}>ATO Record Keeping</Text>
-            <Ionicons name="open-outline" size={12} color="#6B7280" />
+            <View style={styles.resourceButtonIconContainer}>
+              <Ionicons name="folder" size={20} color="#F59E0B" />
+            </View>
+            <View style={styles.resourceButtonContent}>
+              <Text style={styles.resourceButtonTitle}>ATO Record Keeping</Text>
+              <Text style={styles.resourceButtonDescription}>What to keep & how long</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={16} color="#6B7280" />
           </TouchableOpacity>
         </View>
       </View>
@@ -248,28 +306,63 @@ const HomeScreen = ({ onCreateNew, onViewCalculation }) => {
       >
         {savedCalculations.length === 0 ? (
           <View style={styles.emptyState}>
-            <Ionicons name="document-outline" size={64} color="#D1D5DB" />
-            <Text style={styles.emptyStateTitle}>No Saved Calculations</Text>
+            <View style={styles.emptyStateIconContainer}>
+              <Ionicons name="calculator-outline" size={48} color="#4A90E2" />
+            </View>
+            <Text style={styles.emptyStateTitle}>Ready to Calculate Your Tax Return?</Text>
             <Text style={styles.emptyStateText}>
-              Start by creating your first tax calculation using the button below
+              Get started with Australia's most comprehensive tax calculator.
+              We'll guide you through each step to maximize your refund.
             </Text>
+            <View style={styles.emptyStateFeatures}>
+              <View style={styles.emptyStateFeature}>
+                <Ionicons name="checkmark-circle" size={16} color="#10B981" />
+                <Text style={styles.emptyStateFeatureText}>ATO compliant calculations</Text>
+              </View>
+              <View style={styles.emptyStateFeature}>
+                <Ionicons name="checkmark-circle" size={16} color="#10B981" />
+                <Text style={styles.emptyStateFeatureText}>Save and track multiple returns</Text>
+              </View>
+              <View style={styles.emptyStateFeature}>
+                <Ionicons name="checkmark-circle" size={16} color="#10B981" />
+                <Text style={styles.emptyStateFeatureText}>Professional guidance included</Text>
+              </View>
+            </View>
           </View>
         ) : (
           <View style={styles.calculationsContainer}>
+            <View style={styles.calculationsHeader}>
+              <Text style={styles.calculationsTitle}>Your Tax Calculations</Text>
+              <Text style={styles.calculationsSubtitle}>
+                {savedCalculations.length} saved calculation{savedCalculations.length !== 1 ? 's' : ''}
+              </Text>
+            </View>
             {savedCalculations.map(renderCalculationCard)}
           </View>
         )}
       </ScrollView>
 
-      {/* Create New Button moved to bottom */}
+      {/* Enhanced Create New Button */}
       <View style={styles.bottomActionContainer}>
-        <TouchableOpacity style={styles.createNewButton} onPress={onCreateNew}>
+        <TouchableOpacity
+          style={styles.createNewButton}
+          onPress={onCreateNew}
+          activeOpacity={0.8}
+        >
           <LinearGradient
             colors={['#10B981', '#059669']}
             style={styles.createNewGradient}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
           >
-            <Ionicons name="add-circle" size={28} color="#fff" />
-            <Text style={styles.createNewText}>Create New</Text>
+            <View style={styles.createNewIconContainer}>
+              <Ionicons name="add-circle" size={32} color="#fff" />
+            </View>
+            <View style={styles.createNewTextContainer}>
+              <Text style={styles.createNewText}>Create New Calculation</Text>
+              <Text style={styles.createNewSubtext}>Start your tax return</Text>
+            </View>
+            <Ionicons name="arrow-forward" size={24} color="#fff" />
           </LinearGradient>
         </TouchableOpacity>
       </View>
@@ -282,71 +375,123 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F8FAFC',
   },
-  // Modern Card-based Header Styles
+  // Enhanced Professional Header Styles
   headerContainer: {
-    paddingTop: 60,
-    paddingHorizontal: 20,
-    paddingBottom: 16,
+    paddingTop: Platform.OS === 'ios' ? 60 : 50,
+    paddingHorizontal: width > 400 ? 24 : 20,
+    paddingBottom: 20,
     backgroundColor: '#F8FAFC',
   },
   headerCard: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 20,
-    flexDirection: 'row',
-    alignItems: 'center',
-    elevation: 3,
+    borderRadius: width > 400 ? 20 : 16,
+    padding: width > 400 ? 24 : 20,
+    elevation: 4,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
     borderWidth: 1,
     borderColor: '#F1F5F9',
     position: 'relative',
     overflow: 'hidden',
-    minHeight: 80,
+    minHeight: width > 400 ? 120 : 110,
+  },
+  headerMainContent: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: 16,
   },
   headerIconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
     backgroundColor: '#F0F7FF',
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 16,
-    borderWidth: 1,
+    marginRight: 20,
+    borderWidth: 2,
     borderColor: '#E1EFFF',
+    elevation: 2,
+    shadowColor: '#4A90E2',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
   },
   headerTextContainer: {
     flex: 1,
+    paddingTop: 2,
   },
   headerTitle: {
-    fontSize: 22,
-    fontWeight: '700',
+    fontSize: 24,
+    fontWeight: '800',
     color: '#1E293B',
-    marginBottom: 2,
-    letterSpacing: 0.2,
+    marginBottom: 4,
+    letterSpacing: 0.3,
   },
   headerSubtitle: {
-    fontSize: 14,
+    fontSize: 16,
+    color: '#4A90E2',
+    fontWeight: '600',
+    letterSpacing: 0.2,
+    marginBottom: 2,
+  },
+  headerDescription: {
+    fontSize: 13,
     color: '#64748B',
     fontWeight: '500',
     letterSpacing: 0.1,
+    lineHeight: 18,
+  },
+  headerStatsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   headerStats: {
     backgroundColor: '#F0F7FF',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#E1EFFF',
+    flexDirection: 'row',
+    alignItems: 'center',
+    elevation: 1,
+    shadowColor: '#4A90E2',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+  },
+  headerStatsText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#4A90E2',
+    letterSpacing: 0.2,
+    marginLeft: 6,
+  },
+  headerStatusIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F0FDF4',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#E1EFFF',
-    marginLeft: 12,
+    borderColor: '#BBF7D0',
   },
-  headerStatsText: {
+  statusDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#10B981',
+    marginRight: 6,
+  },
+  statusText: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#4A90E2',
-    letterSpacing: 0.2,
+    color: '#059669',
+    letterSpacing: 0.1,
   },
   headerAccent: {
     position: 'absolute',
@@ -360,62 +505,143 @@ const styles = StyleSheet.create({
   },
   scrollContainer: {
     flex: 1,
-    paddingHorizontal: 20,
+    paddingHorizontal: width > 400 ? 24 : 20,
   },
   scrollContent: {
     paddingTop: 8,
     paddingBottom: 20,
   },
   bottomActionContainer: {
-    paddingHorizontal: 20,
-    paddingVertical: 20,
-    paddingBottom: Platform.OS === 'ios' ? 50 : 40, // Platform-specific bottom padding
+    paddingHorizontal: width > 400 ? 24 : 20,
+    paddingVertical: 24,
+    paddingBottom: Platform.OS === 'ios' ? 54 : 44,
     backgroundColor: '#F8FAFC',
     borderTopWidth: 1,
     borderTopColor: '#E2E8F0',
   },
   createNewButton: {
-    borderRadius: 16,
+    borderRadius: 20,
     overflow: 'hidden',
-    elevation: 8,
+    elevation: 10,
     shadowColor: '#10B981',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.25,
+    shadowRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(16, 185, 129, 0.2)',
   },
   createNewGradient: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 24,
+    paddingHorizontal: 28,
+    minHeight: 72,
+  },
+  createNewIconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 20,
-    paddingHorizontal: 32,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+  },
+  createNewTextContainer: {
+    flex: 1,
+    marginLeft: 20,
+    marginRight: 16,
   },
   createNewText: {
     color: '#fff',
     fontSize: 20,
-    fontWeight: '700',
-    marginLeft: 12,
-    letterSpacing: 0.5,
+    fontWeight: '800',
+    letterSpacing: 0.4,
+    marginBottom: 2,
+  },
+  createNewSubtext: {
+    color: 'rgba(255, 255, 255, 0.9)',
+    fontSize: 14,
+    fontWeight: '600',
+    letterSpacing: 0.2,
   },
   emptyState: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 60,
-    paddingHorizontal: 20,
+    paddingVertical: 40,
+    paddingHorizontal: width > 400 ? 32 : 24,
+    backgroundColor: '#FFFFFF',
+    marginHorizontal: width > 400 ? 24 : 20,
+    marginTop: 20,
+    borderRadius: width > 400 ? 20 : 16,
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 6,
+  },
+  emptyStateIconContainer: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#F0F7FF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 20,
+    borderWidth: 2,
+    borderColor: '#E1EFFF',
   },
   emptyStateTitle: {
-    fontSize: 19,
-    fontWeight: '600',
+    fontSize: 22,
+    fontWeight: '700',
     color: '#1E293B',
-    marginTop: 16,
-    marginBottom: 8,
-    letterSpacing: 0.1,
+    marginBottom: 12,
+    letterSpacing: 0.2,
+    textAlign: 'center',
   },
   emptyStateText: {
-    fontSize: 15,
+    fontSize: 16,
     color: '#64748B',
     textAlign: 'center',
-    lineHeight: 22,
+    lineHeight: 24,
+    letterSpacing: 0.1,
+    fontWeight: '500',
+    marginBottom: 24,
+  },
+  emptyStateFeatures: {
+    alignSelf: 'stretch',
+  },
+  emptyStateFeature: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+    paddingHorizontal: 16,
+  },
+  emptyStateFeatureText: {
+    fontSize: 14,
+    color: '#374151',
+    fontWeight: '500',
+    marginLeft: 10,
+    letterSpacing: 0.1,
+  },
+  calculationsHeader: {
+    marginBottom: 20,
+    paddingHorizontal: 4,
+  },
+  calculationsTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#1E293B',
+    marginBottom: 4,
+    letterSpacing: 0.2,
+  },
+  calculationsSubtitle: {
+    fontSize: 14,
+    color: '#64748B',
+    fontWeight: '500',
     letterSpacing: 0.1,
   },
   calculationsContainer: {
@@ -431,128 +657,273 @@ const styles = StyleSheet.create({
   },
   calculationCard: {
     backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-    elevation: 2,
+    borderRadius: width > 400 ? 18 : 16,
+    padding: width > 400 ? 22 : 20,
+    marginBottom: 16,
+    elevation: 3,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
   },
   cardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
+    alignItems: 'flex-start',
+    marginBottom: 16,
   },
   cardTitleContainer: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     flex: 1,
   },
+  cardIconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#F0F7FF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+    borderWidth: 1,
+    borderColor: '#E1EFFF',
+  },
+  cardTitleTextContainer: {
+    flex: 1,
+    paddingTop: 2,
+  },
   cardTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#374151',
-    marginLeft: 8,
+    fontSize: 17,
+    fontWeight: '700',
+    color: '#1E293B',
+    marginBottom: 2,
+    letterSpacing: 0.2,
+  },
+  cardSubtitle: {
+    fontSize: 13,
+    color: '#64748B',
+    fontWeight: '500',
+    letterSpacing: 0.1,
   },
   deleteButton: {
-    padding: 4,
+    padding: 8,
+    borderRadius: 8,
+    backgroundColor: '#FEF2F2',
+    borderWidth: 1,
+    borderColor: '#FECACA',
   },
   cardContent: {
-    marginBottom: 12,
+    marginBottom: 16,
   },
-  cardRow: {
+  cardFinancialSummary: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    backgroundColor: '#F8FAFC',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  cardSummaryItem: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  cardSummaryDivider: {
+    width: 1,
+    backgroundColor: '#E2E8F0',
+    marginHorizontal: 16,
+  },
+  cardSummaryLabel: {
+    fontSize: 12,
+    color: '#64748B',
+    fontWeight: '500',
+    marginBottom: 4,
+    letterSpacing: 0.1,
+  },
+  cardSummaryValue: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#1E293B',
+    letterSpacing: 0.2,
+  },
+  cardRefundSection: {
+    borderRadius: 12,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.05)',
+  },
+  cardRefundHeader: {
+    flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 6,
   },
-  refundRow: {
-    marginTop: 8,
-    paddingTop: 8,
-    borderTopWidth: 1,
-    borderTopColor: '#E5E7EB',
-  },
-  cardLabel: {
-    fontSize: 14,
-    color: '#6B7280',
-  },
-  cardValue: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#374151',
-  },
-  refundValue: {
-    fontSize: 16,
+  cardRefundLabel: {
+    fontSize: 13,
     fontWeight: '600',
+    marginLeft: 6,
+    letterSpacing: 0.1,
+  },
+  cardRefundAmount: {
+    fontSize: 20,
+    fontWeight: '800',
+    letterSpacing: 0.3,
+    textAlign: 'center',
   },
   cardFooter: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#F1F5F9',
+  },
+  cardFooterLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   cardDate: {
     fontSize: 12,
     color: '#9CA3AF',
+    fontWeight: '500',
+    marginLeft: 6,
+    letterSpacing: 0.1,
+  },
+  cardFooterRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  cardViewText: {
+    fontSize: 13,
+    color: '#4A90E2',
+    fontWeight: '600',
+    marginRight: 4,
+    letterSpacing: 0.1,
   },
 
-  // Tax Resources Section Styles
+  // Enhanced Tax Resources Section Styles
   resourcesContainer: {
-    backgroundColor: '#F8FAFC',
-    marginHorizontal: 16,
+    backgroundColor: '#FFFFFF',
+    marginHorizontal: width > 400 ? 24 : 20,
     marginTop: 8,
-    marginBottom: 12,
-    borderRadius: 12,
-    padding: 16,
+    marginBottom: 16,
+    borderRadius: width > 400 ? 16 : 12,
+    padding: width > 400 ? 20 : 16,
     borderWidth: 1,
     borderColor: '#E2E8F0',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
   },
 
   resourcesHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 16,
+  },
+
+  resourcesIconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#F0F7FF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+    borderWidth: 1,
+    borderColor: '#E1EFFF',
+  },
+
+  resourcesTitleContainer: {
+    flex: 1,
   },
 
   resourcesTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#374151',
-    marginLeft: 8,
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#1E293B',
+    marginBottom: 2,
+    letterSpacing: 0.2,
+  },
+
+  resourcesSubtitle: {
+    fontSize: 13,
+    color: '#64748B',
+    fontWeight: '500',
+    letterSpacing: 0.1,
   },
 
   resourcesGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
+    gap: 12,
   },
 
   resourceButton: {
     backgroundColor: '#ffffff',
-    borderRadius: 8,
-    padding: 12,
+    borderRadius: 12,
+    padding: 16,
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#D1D5DB',
-    minWidth: '30%',
-    flex: 1,
+    borderColor: '#E2E8F0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+
+  resourceButtonPrimary: {
+    borderColor: '#BBF7D0',
+    backgroundColor: '#F0FDF4',
+  },
+
+  resourceButtonSecondary: {
+    borderColor: '#DBEAFE',
+    backgroundColor: '#F0F9FF',
+  },
+
+  resourceButtonTertiary: {
+    borderColor: '#FEF3C7',
+    backgroundColor: '#FFFBEB',
+  },
+
+  resourceButtonIconContainer: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#ffffff',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
+    elevation: 1,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
     shadowRadius: 2,
-    elevation: 1,
   },
 
-  resourceButtonText: {
-    fontSize: 13,
-    fontWeight: '500',
-    color: '#374151',
-    marginLeft: 6,
-    marginRight: 4,
+  resourceButtonContent: {
     flex: 1,
+  },
+
+  resourceButtonTitle: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#1E293B',
+    marginBottom: 2,
+    letterSpacing: 0.1,
+  },
+
+  resourceButtonDescription: {
+    fontSize: 12,
+    color: '#64748B',
+    fontWeight: '500',
+    letterSpacing: 0.1,
   },
 });
 
