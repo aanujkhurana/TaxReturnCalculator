@@ -1506,6 +1506,55 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
 
+  // View toggle styles
+  viewToggleContainer: {
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    padding: 4,
+    marginTop: 16,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    flexDirection: 'row',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+
+  viewToggleButton: {
+    flex: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  viewToggleButtonActive: {
+    backgroundColor: '#4A90E2',
+  },
+
+  viewToggleButtonInactive: {
+    backgroundColor: 'transparent',
+  },
+
+  viewToggleButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    marginLeft: 6,
+  },
+
+  viewToggleButtonTextActive: {
+    color: '#ffffff',
+  },
+
+  viewToggleButtonTextInactive: {
+    color: '#64748B',
+  },
+
   // Full width home button styles
   fullWidthHomeButton: {
     backgroundColor: '#ffffff',
@@ -1530,6 +1579,121 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#4A90E2',
     marginLeft: 8,
+  },
+
+  // Table view styles
+  tableContainer: {
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    marginTop: 16,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+
+  tableHeader: {
+    backgroundColor: '#F8FAFC',
+    borderTopLeftRadius: 12,
+    borderTopRightRadius: 12,
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E2E8F0',
+  },
+
+  tableHeaderText: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#1E293B',
+    textAlign: 'center',
+  },
+
+  tableRow: {
+    flexDirection: 'row',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F1F5F9',
+    alignItems: 'center',
+    minHeight: 50,
+  },
+
+  tableRowLast: {
+    borderBottomWidth: 0,
+  },
+
+  tableRowHeader: {
+    backgroundColor: '#F8FAFC',
+    borderBottomWidth: 2,
+    borderBottomColor: '#E2E8F0',
+  },
+
+  tableCell: {
+    flex: 1,
+    paddingRight: 12,
+  },
+
+  tableCellType: {
+    flex: 2,
+    minWidth: 120,
+  },
+
+  tableCellValue: {
+    flex: 1,
+    alignItems: 'flex-end',
+    minWidth: 80,
+  },
+
+  tableCellDescription: {
+    flex: 2,
+    minWidth: 150,
+  },
+
+  tableCellText: {
+    fontSize: 14,
+    color: '#475569',
+    fontWeight: '500',
+  },
+
+  tableCellHeaderText: {
+    fontSize: 14,
+    color: '#1E293B',
+    fontWeight: '700',
+  },
+
+  tableCellValueText: {
+    fontSize: 14,
+    fontWeight: '600',
+    textAlign: 'right',
+  },
+
+  tableCellDescriptionText: {
+    fontSize: 13,
+    color: '#64748B',
+    lineHeight: 18,
+    flexWrap: 'wrap',
+  },
+
+  tableSection: {
+    marginBottom: 0,
+  },
+
+  tableSectionHeader: {
+    backgroundColor: '#F1F5F9',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E2E8F0',
+  },
+
+  tableSectionHeaderText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#334155',
   },
 });
 
@@ -2244,6 +2408,7 @@ export default function App() {
   const [isCalculating, setIsCalculating] = useState(false);
   const [loadingStep, setLoadingStep] = useState(0);
   const [showSuccessAnimation, setShowSuccessAnimation] = useState(false);
+  const [resultsViewMode, setResultsViewMode] = useState('card'); // 'card' or 'table'
 
   // Form validation errors
   const [validationErrors, setValidationErrors] = useState({});
@@ -4426,6 +4591,182 @@ export default function App() {
     );
   };
 
+  // Render view toggle component
+  const renderViewToggle = () => {
+    return (
+      <View style={styles.viewToggleContainer}>
+        <TouchableOpacity
+          style={[
+            styles.viewToggleButton,
+            resultsViewMode === 'card' ? styles.viewToggleButtonActive : styles.viewToggleButtonInactive
+          ]}
+          onPress={() => setResultsViewMode('card')}
+        >
+          <Ionicons
+            name="grid-outline"
+            size={16}
+            color={resultsViewMode === 'card' ? '#ffffff' : '#64748B'}
+          />
+          <Text style={[
+            styles.viewToggleButtonText,
+            resultsViewMode === 'card' ? styles.viewToggleButtonTextActive : styles.viewToggleButtonTextInactive
+          ]}>
+            Card View
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[
+            styles.viewToggleButton,
+            resultsViewMode === 'table' ? styles.viewToggleButtonActive : styles.viewToggleButtonInactive
+          ]}
+          onPress={() => setResultsViewMode('table')}
+        >
+          <Ionicons
+            name="list-outline"
+            size={16}
+            color={resultsViewMode === 'table' ? '#ffffff' : '#64748B'}
+          />
+          <Text style={[
+            styles.viewToggleButtonText,
+            resultsViewMode === 'table' ? styles.viewToggleButtonTextActive : styles.viewToggleButtonTextInactive
+          ]}>
+            Table View
+          </Text>
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
+  // Render table view component
+  const renderTableView = () => {
+    if (!result) return null;
+
+    const tableData = [
+      // Income Section
+      { section: 'Income', type: 'TFN Employment Income', value: result.totalTFNIncome, description: 'Income from employment with Tax File Number' },
+      { section: 'Income', type: 'ABN/Business Income', value: result.abnIncomeNum, description: 'Income from ABN or freelance work' },
+      { section: 'Income', type: 'Total Gross Income', value: result.totalTFNIncome + result.abnIncomeNum, description: 'Combined income from all sources', isSubtotal: true },
+
+      // Deductions Section
+      { section: 'Deductions', type: 'Manual Deductions', value: -result.totalManualDeductions, description: 'Manually entered tax deductions' },
+      { section: 'Deductions', type: 'Work From Home', value: -result.workFromHomeDeduction, description: 'Work from home deduction claims' },
+      { section: 'Deductions', type: 'Total Deductions', value: -result.totalDeductions, description: 'Combined allowable tax deductions', isSubtotal: true },
+
+      // Tax Calculation Section
+      { section: 'Tax Calculation', type: 'Taxable Income', value: result.taxableIncome, description: 'Income after deductions (Gross Income - Deductions)', isSubtotal: true },
+      { section: 'Tax Calculation', type: 'Gross Tax', value: result.tax, description: 'Tax calculated using ATO tax brackets' },
+      { section: 'Tax Calculation', type: 'Low Income Tax Offset (LITO)', value: -result.lito, description: 'Tax offset for low income earners' },
+      { section: 'Tax Calculation', type: 'Medicare Levy', value: result.medicare, description: 'Medicare levy (2% of taxable income)' },
+    ];
+
+    // Add HECS repayment if applicable
+    if (result.hecsRepayment > 0) {
+      tableData.push({
+        section: 'Tax Calculation',
+        type: 'HECS-HELP Repayment',
+        value: result.hecsRepayment,
+        description: 'Higher Education Contribution Scheme repayment'
+      });
+    }
+
+    // Add final calculations
+    tableData.push(
+      { section: 'Tax Calculation', type: 'Tax Withheld (PAYG)', value: -parseFloat(taxWithheld || '0'), description: 'Tax already withheld from income' },
+      { section: 'Final Result', type: result.refund >= 0 ? 'Tax Refund' : 'Tax Owing', value: result.refund, description: `Final ${result.refund >= 0 ? 'refund' : 'amount owing'} after all calculations`, isFinal: true }
+    );
+
+    let currentSection = '';
+
+    return (
+      <View style={styles.tableContainer}>
+        <View style={styles.tableHeader}>
+          <Text style={styles.tableHeaderText}>Tax Calculation Details</Text>
+        </View>
+
+        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+          <View style={{ minWidth: 400 }}>
+            {/* Table Header Row */}
+            <View style={[styles.tableRow, styles.tableRowHeader]}>
+              <View style={[styles.tableCell, styles.tableCellType]}>
+                <Text style={styles.tableCellHeaderText}>Calculation Type</Text>
+              </View>
+              <View style={[styles.tableCell, styles.tableCellValue]}>
+                <Text style={styles.tableCellHeaderText}>Amount</Text>
+              </View>
+              <View style={[styles.tableCell, styles.tableCellDescription]}>
+                <Text style={styles.tableCellHeaderText}>Description</Text>
+              </View>
+            </View>
+
+        {tableData.map((item, index) => {
+          const isNewSection = item.section !== currentSection;
+          if (isNewSection) {
+            currentSection = item.section;
+          }
+
+          const isLast = index === tableData.length - 1;
+          const valueColor = item.isFinal
+            ? (item.value >= 0 ? '#10B981' : '#EF4444')
+            : item.isSubtotal
+              ? '#1E293B'
+              : item.value < 0
+                ? '#10B981'
+                : '#475569';
+
+          return (
+            <View key={index}>
+              {isNewSection && (
+                <View style={styles.tableSectionHeader}>
+                  <Text style={styles.tableSectionHeaderText}>{item.section}</Text>
+                </View>
+              )}
+
+              <View style={[
+                styles.tableRow,
+                isLast && styles.tableRowLast,
+                item.isFinal && { backgroundColor: item.value >= 0 ? '#ECFDF5' : '#FEF2F2' }
+              ]}>
+                <View style={[styles.tableCell, styles.tableCellType]}>
+                  <Text style={[
+                    styles.tableCellText,
+                    (item.isSubtotal || item.isFinal) && { fontWeight: '700', color: '#1E293B' }
+                  ]}>
+                    {item.type}
+                  </Text>
+                </View>
+                <View style={[styles.tableCell, styles.tableCellValue]}>
+                  <Text style={[
+                    styles.tableCellValueText,
+                    { color: valueColor },
+                    (item.isSubtotal || item.isFinal) && { fontWeight: '700', fontSize: 15 }
+                  ]}>
+                    {formatCurrency(Math.abs(item.value))}
+                  </Text>
+                </View>
+                <View style={[styles.tableCell, styles.tableCellDescription]}>
+                  <Text style={styles.tableCellDescriptionText}>
+                    {item.description}
+                  </Text>
+                </View>
+              </View>
+            </View>
+          );
+        })}
+
+          </View>
+        </ScrollView>
+
+        {/* Summary Footer */}
+        <View style={styles.tableSectionHeader}>
+          <Text style={[styles.tableSectionHeaderText, { textAlign: 'center' }]}>
+            Effective Tax Rate: {result.effectiveTaxRate.toFixed(1)}% • Financial Year 2024-25
+          </Text>
+        </View>
+      </View>
+    );
+  };
+
   const renderResults = () => {
     console.log('renderResults called - isCalculating:', isCalculating, 'result:', !!result);
 
@@ -4534,7 +4875,20 @@ export default function App() {
 
     return (
       <View style={styles.tabContent}>
-        <Text style={styles.sectionTitle}>Tax Calculation Results</Text>
+        {/* Header with Table View Button */}
+        <View style={styles.resultsHeaderContainer}>
+          <Text style={styles.sectionTitle}>Tax Calculation Results</Text>
+          <TouchableOpacity
+            style={styles.tableViewButton}
+            onPress={() => setResultsViewMode(resultsViewMode === 'table' ? 'card' : 'table')}
+          >
+            <Ionicons
+              name={resultsViewMode === 'table' ? "grid-outline" : "list-outline"}
+              size={20}
+              color="#4A90E2"
+            />
+          </TouchableOpacity>
+        </View>
 
         {/* Progress Indicator */}
         <View style={styles.progressContainer}>
@@ -4547,8 +4901,11 @@ export default function App() {
           </View>
         </View>
 
-        {/* Enhanced Results Summary */}
-        <View style={styles.deductionSummary}>
+        {/* Conditional View Rendering */}
+        {resultsViewMode === 'card' ? (
+          <>
+            {/* Enhanced Results Summary */}
+            <View style={styles.deductionSummary}>
           <View style={styles.summaryHeader}>
             <Ionicons name="checkmark-circle" size={20} color="#10B981" />
             <Text style={styles.summaryTitle}>Tax Estimation Complete</Text>
@@ -4705,7 +5062,43 @@ export default function App() {
           </View>
         </View>
 
-        {/* Action Buttons Section */}
+
+
+        {/* Next Steps Section */}
+        <View style={styles.nextStepsContainer}>
+          <View style={styles.nextStepsHeader}>
+            <Ionicons name="compass-outline" size={20} color="#4A90E2" />
+            <Text style={styles.nextStepsTitle}>Next Steps</Text>
+          </View>
+          <View style={styles.nextStepsList}>
+            <View style={styles.nextStepItem}>
+              <View style={styles.nextStepNumber}>
+                <Text style={styles.nextStepNumberText}>1</Text>
+              </View>
+              <Text style={styles.nextStepText}>Review your calculation results and save for your records</Text>
+            </View>
+            <View style={styles.nextStepItem}>
+              <View style={styles.nextStepNumber}>
+                <Text style={styles.nextStepNumberText}>2</Text>
+              </View>
+              <Text style={styles.nextStepText}>Export PDF or CSV for tax preparation or professional advice</Text>
+            </View>
+            <View style={styles.nextStepItem}>
+              <View style={styles.nextStepNumber}>
+                <Text style={styles.nextStepNumberText}>3</Text>
+              </View>
+              <Text style={styles.nextStepText}>Keep receipts and documentation for all claimed deductions</Text>
+            </View>
+          </View>
+        </View>
+
+          </>
+        ) : (
+          /* Table View */
+          renderTableView()
+        )}
+
+        {/* Action Buttons Section - Always visible */}
         <View style={styles.nextStepsContainer}>
           <View style={styles.nextStepsHeader}>
             <Ionicons name="options-outline" size={20} color="#4A90E2" />
@@ -4739,34 +5132,6 @@ export default function App() {
               <Ionicons name="create-outline" size={20} color="#fff" />
               <Text style={[styles.quickAddButtonText, { color: '#fff', marginTop: 8 }]}>Edit Calculation</Text>
             </TouchableOpacity>
-          </View>
-        </View>
-
-        {/* Next Steps Section */}
-        <View style={styles.nextStepsContainer}>
-          <View style={styles.nextStepsHeader}>
-            <Ionicons name="compass-outline" size={20} color="#4A90E2" />
-            <Text style={styles.nextStepsTitle}>Next Steps</Text>
-          </View>
-          <View style={styles.nextStepsList}>
-            <View style={styles.nextStepItem}>
-              <View style={styles.nextStepNumber}>
-                <Text style={styles.nextStepNumberText}>1</Text>
-              </View>
-              <Text style={styles.nextStepText}>Review your calculation results and save for your records</Text>
-            </View>
-            <View style={styles.nextStepItem}>
-              <View style={styles.nextStepNumber}>
-                <Text style={styles.nextStepNumberText}>2</Text>
-              </View>
-              <Text style={styles.nextStepText}>Export PDF or CSV for tax preparation or professional advice</Text>
-            </View>
-            <View style={styles.nextStepItem}>
-              <View style={styles.nextStepNumber}>
-                <Text style={styles.nextStepNumberText}>3</Text>
-              </View>
-              <Text style={styles.nextStepText}>Keep receipts and documentation for all claimed deductions</Text>
-            </View>
           </View>
         </View>
 
