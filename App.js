@@ -3414,23 +3414,7 @@ export default function App() {
       <View style={styles.tabContent}>
         <Text style={styles.sectionTitle}>Income & Tax Withheld</Text>
 
-        {/* Progress Indicator */}
-        <View style={styles.progressContainer}>
-          <View style={styles.progressHeader}>
-            <Text style={styles.progressLabel}>Income Categories</Text>
-            <Text style={styles.progressText}>
-              {[employmentTotal, abnTotal, paygTotal].filter(t => t > 0).length} of 3 completed
-            </Text>
-          </View>
-          <View style={styles.progressBar}>
-            <View
-              style={[
-                styles.progressFill,
-                { width: `${([employmentTotal, abnTotal, paygTotal].filter(t => t > 0).length / 3) * 100}%` }
-              ]}
-            />
-          </View>
-        </View>
+
 
 
 
@@ -3770,23 +3754,7 @@ export default function App() {
     <View style={styles.tabContent}>
       <Text style={styles.sectionTitle}>Tax Deductions</Text>
 
-      {/* Progress Indicator */}
-      <View style={styles.progressContainer}>
-        <View style={styles.progressHeader}>
-          <Text style={styles.progressLabel}>Deduction Categories</Text>
-          <Text style={styles.progressText}>
-            {[workRelatedTotal, selfEducationTotal, donationsTotal, otherTotal, wfhTotal].filter(t => t > 0).length} of 5 completed
-          </Text>
-        </View>
-        <View style={styles.progressBar}>
-          <View
-            style={[
-              styles.progressFill,
-              { width: `${([workRelatedTotal, selfEducationTotal, donationsTotal, otherTotal, wfhTotal].filter(t => t > 0).length / 5) * 100}%` }
-            ]}
-          />
-        </View>
-      </View>
+
 
       {/* Quick Add Common Deductions */}
       {grandTotal === 0 && (
@@ -4324,23 +4292,7 @@ export default function App() {
       <View style={styles.tabContent}>
         <Text style={styles.sectionTitle}>Additional Details</Text>
 
-        {/* Progress Indicator */}
-        <View style={styles.progressContainer}>
-          <View style={styles.progressHeader}>
-            <Text style={styles.progressLabel}>Detail Categories</Text>
-            <Text style={styles.progressText}>
-              {completedCategories} of 2 completed
-            </Text>
-          </View>
-          <View style={styles.progressBar}>
-            <View
-              style={[
-                styles.progressFill,
-                { width: `${(completedCategories / 2) * 100}%` }
-              ]}
-            />
-          </View>
-        </View>
+
 
 
 
