@@ -1527,54 +1527,7 @@ const styles = StyleSheet.create({
     elevation: 1,
   },
 
-  // View toggle styles
-  viewToggleContainer: {
-    backgroundColor: '#ffffff',
-    borderRadius: 12,
-    padding: 4,
-    marginTop: 16,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    flexDirection: 'row',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
-  },
 
-  viewToggleButton: {
-    flex: 1,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-
-  viewToggleButtonActive: {
-    backgroundColor: '#4A90E2',
-  },
-
-  viewToggleButtonInactive: {
-    backgroundColor: 'transparent',
-  },
-
-  viewToggleButtonText: {
-    fontSize: 14,
-    fontWeight: '600',
-    marginLeft: 6,
-  },
-
-  viewToggleButtonTextActive: {
-    color: '#ffffff',
-  },
-
-  viewToggleButtonTextInactive: {
-    color: '#64748B',
-  },
 
   // Full width home button styles
   fullWidthHomeButton: {
@@ -5074,48 +5027,47 @@ export default function App() {
           </View>
         </View>
 
+            {/* Action Buttons Section - Only visible in card view */}
+            <View style={styles.nextStepsContainer}>
+              <View style={styles.nextStepsHeader}>
+                <Ionicons name="options-outline" size={20} color="#4A90E2" />
+                <Text style={styles.nextStepsTitle}>Export & Save Options</Text>
+              </View>
+
+              <View style={styles.quickAddGrid}>
+                <TouchableOpacity style={[styles.quickAddButton, { backgroundColor: '#EF4444' }]} onPress={exportPDF}>
+                  <Ionicons name="document-outline" size={20} color="#fff" />
+                  <Text style={[styles.quickAddButtonText, { color: '#fff', marginTop: 8 }]}>Export PDF</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity style={[styles.quickAddButton, { backgroundColor: '#10B981' }]} onPress={exportCSV}>
+                  <Ionicons name="download-outline" size={20} color="#fff" />
+                  <Text style={[styles.quickAddButtonText, { color: '#fff', marginTop: 8 }]}>Export CSV</Text>
+                </TouchableOpacity>
+
+                {!viewingCalculation && (
+                  <TouchableOpacity style={[styles.quickAddButton, { backgroundColor: '#F59E0B' }]} onPress={handleSaveCalculation}>
+                    <Ionicons name="bookmark-outline" size={20} color="#fff" />
+                    <Text style={[styles.quickAddButtonText, { color: '#fff', marginTop: 8 }]}>Save Calculation</Text>
+                  </TouchableOpacity>
+                )}
+
+                <TouchableOpacity
+                  style={[styles.quickAddButton, { backgroundColor: '#8B5CF6' }]}
+                  onPress={() => {
+                    setCurrentStep(1);
+                  }}
+                >
+                  <Ionicons name="create-outline" size={20} color="#fff" />
+                  <Text style={[styles.quickAddButtonText, { color: '#fff', marginTop: 8 }]}>Edit Calculation</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
           </>
         ) : (
           /* Compact Table View */
           renderCompactTableView()
         )}
-
-        {/* Action Buttons Section - Always visible */}
-        <View style={styles.nextStepsContainer}>
-          <View style={styles.nextStepsHeader}>
-            <Ionicons name="options-outline" size={20} color="#4A90E2" />
-            <Text style={styles.nextStepsTitle}>Export & Save Options</Text>
-          </View>
-
-          <View style={styles.quickAddGrid}>
-            <TouchableOpacity style={[styles.quickAddButton, { backgroundColor: '#EF4444' }]} onPress={exportPDF}>
-              <Ionicons name="document-outline" size={20} color="#fff" />
-              <Text style={[styles.quickAddButtonText, { color: '#fff', marginTop: 8 }]}>Export PDF</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={[styles.quickAddButton, { backgroundColor: '#10B981' }]} onPress={exportCSV}>
-              <Ionicons name="download-outline" size={20} color="#fff" />
-              <Text style={[styles.quickAddButtonText, { color: '#fff', marginTop: 8 }]}>Export CSV</Text>
-            </TouchableOpacity>
-
-            {!viewingCalculation && (
-              <TouchableOpacity style={[styles.quickAddButton, { backgroundColor: '#F59E0B' }]} onPress={handleSaveCalculation}>
-                <Ionicons name="bookmark-outline" size={20} color="#fff" />
-                <Text style={[styles.quickAddButtonText, { color: '#fff', marginTop: 8 }]}>Save Calculation</Text>
-              </TouchableOpacity>
-            )}
-
-            <TouchableOpacity
-              style={[styles.quickAddButton, { backgroundColor: '#8B5CF6' }]}
-              onPress={() => {
-                setCurrentStep(1);
-              }}
-            >
-              <Ionicons name="create-outline" size={20} color="#fff" />
-              <Text style={[styles.quickAddButtonText, { color: '#fff', marginTop: 8 }]}>Edit Calculation</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
 
         {/* Full Width Back to Home Button */}
         <TouchableOpacity
