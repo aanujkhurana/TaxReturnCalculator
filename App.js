@@ -4991,25 +4991,13 @@ export default function App() {
         {/* Next Steps Section */}
         <View style={styles.nextStepsContainer}>
           <View style={styles.nextStepsHeader}>
-            <Ionicons name="compass-outline" size={20} color="#4A90E2" />
-            <Text style={styles.nextStepsTitle}>Next Steps</Text>
+            <Ionicons name="information-circle-outline" size={20} color="#4A90E2" />
+            <Text style={styles.nextStepsTitle}>Important Reminder</Text>
           </View>
           <View style={styles.nextStepsList}>
             <View style={styles.nextStepItem}>
               <View style={styles.nextStepNumber}>
-                <Text style={styles.nextStepNumberText}>1</Text>
-              </View>
-              <Text style={styles.nextStepText}>Review your calculation results and save for your records</Text>
-            </View>
-            <View style={styles.nextStepItem}>
-              <View style={styles.nextStepNumber}>
-                <Text style={styles.nextStepNumberText}>2</Text>
-              </View>
-              <Text style={styles.nextStepText}>Export PDF or CSV for tax preparation or professional advice</Text>
-            </View>
-            <View style={styles.nextStepItem}>
-              <View style={styles.nextStepNumber}>
-                <Text style={styles.nextStepNumberText}>3</Text>
+                <Text style={styles.nextStepNumberText}>!</Text>
               </View>
               <Text style={styles.nextStepText}>Keep receipts and documentation for all claimed deductions</Text>
             </View>
