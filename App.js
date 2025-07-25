@@ -20,6 +20,7 @@ import { StatusBar } from 'expo-status-bar';
 
 import { Ionicons } from '@expo/vector-icons';
 import HomeScreen from './HomeScreen';
+import SplashScreen from './SplashScreen';
 import { saveCalculation } from './storage';
 import { ThemeProvider, useTheme } from './ThemeContext';
 
@@ -2200,8 +2201,11 @@ const HELP_TEXT = {
 
 function AppContent() {
   // Theme hook
-  const { theme, isDark } = useTheme();
+  const { theme, isDark, isLoading: themeLoading } = useTheme();
   const styles = getStyles(theme);
+
+  // Show splash screen while theme is loading or during initial splash
+  const [showSplash, setShowSplash] = useState(true);
 
   // Memoized InputField component with smart features
   const InputField = memo(({ label, value, onChangeText, placeholder, keyboardType = 'numeric', multiline = false, icon, helpKey, error, editable = true, prefix = '', suffix = '' }) => {
@@ -2454,7 +2458,7 @@ function AppContent() {
   };
 
   // Navigation state
-  const [currentScreen, setCurrentScreen] = useState('home'); // 'home' or 'calculator'
+  const [currentScreen, setCurrentScreen] = useState('splash'); // 'splash', 'home' or 'calculator'
   const [viewingCalculation, setViewingCalculation] = useState(null);
 
   // Step management
@@ -2542,6 +2546,11 @@ function AppContent() {
   const headerOpacityAnim = new Animated.Value(0);
 
   // Navigation functions
+  const handleSplashFinish = () => {
+    setShowSplash(false);
+    setCurrentScreen('home');
+  };
+
   const navigateToCalculator = () => {
     setCurrentScreen('calculator');
     resetForm();
@@ -5153,7 +5162,11 @@ function AppContent() {
     }
   };
 
-  // Render based on current screen
+  // Show splash screen while theme is loading or during initial splash
+  if (themeLoading || showSplash) {
+    return <SplashScreen onFinish={handleSplashFinish} />;
+  }
+
   if (currentScreen === 'home') {
     return (
       <View style={styles.container}>
