@@ -126,20 +126,20 @@ const getStyles = (theme) => StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: theme.primaryLight,
+    backgroundColor: theme.buttonBack,
     padding: 14,
     borderRadius: 14,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: theme.primaryBorder,
-    shadowColor: theme.primary,
+    borderColor: theme.buttonBackBorder,
+    shadowColor: theme.shadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
     shadowRadius: 3,
     elevation: 1,
   },
   addButtonText: {
-    color: theme.text,
+    color: '#ffffff',
     fontWeight: '600',
     marginLeft: 10,
     fontSize: 15,
@@ -209,6 +209,28 @@ const getStyles = (theme) => StyleSheet.create({
     borderLeftColor: theme.primary,
   },
   infoBoxText: {
+    fontSize: 14,
+    color: theme.text,
+    marginLeft: 12,
+    flex: 1,
+    lineHeight: 20,
+  },
+
+  // Warning card styles
+  warningCard: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    backgroundColor: theme.warningLight,
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 20,
+    borderLeftWidth: 4,
+    borderLeftColor: theme.warning,
+    borderWidth: 1,
+    borderColor: theme.warning,
+  },
+
+  warningCardText: {
     fontSize: 14,
     color: theme.text,
     marginLeft: 12,
@@ -1050,13 +1072,13 @@ const getStyles = (theme) => StyleSheet.create({
 
   // Enhanced deduction summary styles
   deductionSummary: {
-    backgroundColor: theme.primaryLight,
+    backgroundColor: theme.surface,
     borderRadius: 12,
     padding: 20,
     marginBottom: 20,
     borderWidth: 1,
-    borderColor: theme.primaryBorder,
-    shadowColor: theme.primary,
+    borderColor: theme.border,
+    shadowColor: theme.shadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -1072,7 +1094,7 @@ const getStyles = (theme) => StyleSheet.create({
   summaryTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: theme.text,
+    color: theme.primary,
     marginLeft: 8,
     flex: 1,
   },
@@ -1409,7 +1431,7 @@ const getStyles = (theme) => StyleSheet.create({
     lineHeight: 18,
   },
 
-  // Next steps guidance styles
+  // Tips guidance styles
   nextStepsContainer: {
     backgroundColor: theme.primaryLight,
     borderRadius: 12,
@@ -3822,7 +3844,7 @@ function AppContent() {
               ))}
 
               <TouchableOpacity style={styles.addButton} onPress={addJobIncomeField}>
-                <Ionicons name="add-circle-outline" size={20} color={theme.primary} />
+                <Ionicons name="add-circle-outline" size={20} color="#ffffff" />
                 <Text style={styles.addButtonText}>Add Another Job</Text>
               </TouchableOpacity>
             </View>
@@ -3915,12 +3937,12 @@ function AppContent() {
           )}
         </View>
 
-        {/* Next Steps Guidance for Income */}
+        {/* Tips Guidance for Income */}
         {totalIncome > 0 && (
           <View style={styles.nextStepsContainer}>
             <View style={styles.nextStepsHeader}>
               <Ionicons name="compass-outline" size={20} color={theme.primary} />
-              <Text style={styles.nextStepsTitle}>Next Steps</Text>
+              <Text style={styles.nextStepsTitle}>Tips</Text>
             </View>
             <View style={styles.nextStepsList}>
               <View style={styles.nextStepItem}>
@@ -4509,12 +4531,12 @@ function AppContent() {
 
       </View>
 
-      {/* Next Steps Guidance - Separate card at bottom */}
+      {/* Tips Guidance - Separate card at bottom */}
       {grandTotal > 0 && (
         <View style={[styles.nextStepsContainer, { marginTop: 24 }]}>
           <View style={styles.nextStepsHeader}>
             <Ionicons name="compass-outline" size={20} color={theme.primary} />
-            <Text style={styles.nextStepsTitle}>Next Steps</Text>
+            <Text style={styles.nextStepsTitle}>Tips</Text>
           </View>
           <View style={styles.nextStepsList}>
             <View style={styles.nextStepItem}>
@@ -4693,29 +4715,15 @@ function AppContent() {
           )}
         </View>
 
-        {/* Important Information Section */}
-        <View style={styles.deductionCategory}>
-          {renderDetailsCategoryHeader(
-            'disclaimer',
-            'Important Information',
-            'Tax calculator disclaimer and limitations',
-            'information-circle-outline',
-            true
-          )}
-
-          {!detailsCollapsedCategories.disclaimer && (
-            <View style={styles.categoryContent}>
-              <View style={styles.infoBox}>
-                <Ionicons name="information-circle" size={20} color={theme.primary} />
-                <Text style={styles.infoBoxText}>
-                  This calculator uses 2024-25 tax rates and thresholds. Results are estimates only and should not replace professional tax advice.
-                </Text>
-              </View>
-            </View>
-          )}
+        {/* Important Information Warning Card */}
+        <View style={styles.warningCard}>
+          <Ionicons name="warning" size={20} color={theme.warning} />
+          <Text style={styles.warningCardText}>
+            This calculator uses 2024-25 tax rates and thresholds. Results are estimates only and should not replace professional tax advice.
+          </Text>
         </View>
 
-        {/* Completion Status and Next Steps */}
+        {/* Completion Status and Tips */}
         {completedCategories > 0 && (
           <View style={styles.nextStepsContainer}>
             <View style={styles.nextStepsHeader}>
@@ -4887,33 +4895,9 @@ function AppContent() {
     if (!result) {
       return (
         <View style={styles.tabContent}>
-          <View style={styles.loadingContainer}>
-            <View style={styles.loadingCard}>
-              <View style={styles.loadingIconContainer}>
-                <Ionicons name="document-text-outline" size={32} color={theme.primary} />
-              </View>
-
-              <Text style={styles.loadingTitle}>Ready to Calculate</Text>
-              <Text style={styles.loadingSubtitle}>
-                Complete your tax information in the previous steps to generate your comprehensive tax estimation report
-              </Text>
-
-              <TouchableOpacity
-                style={[styles.navButton, styles.navButtonCalculate, { marginTop: 16 }]}
-                onPress={() => setCurrentStep(3)}
-              >
-                <Ionicons name="chevron-back" size={20} color="#fff" />
-                <Text style={styles.navButtonTextPrimary}>Complete Calculation</Text>
-              </TouchableOpacity>
-
-              <View style={styles.loadingFooter}>
-                <Text style={styles.loadingFooterText}>
-                  Ensure all income sources and deductions are entered{'\n'}
-                  for the most accurate tax estimation
-                </Text>
-              </View>
-            </View>
-          </View>
+          <Text style={[styles.sectionTitle, { textAlign: 'center', marginTop: 40 }]}>
+            Complete the calculation in step 3 to view your tax estimation results
+          </Text>
         </View>
       );
     }
@@ -5098,7 +5082,7 @@ function AppContent() {
 
 
 
-        {/* Next Steps Section */}
+        {/* Tips Section */}
         <View style={styles.nextStepsContainer}>
           <View style={styles.nextStepsHeader}>
             <Ionicons name="information-circle-outline" size={20} color={theme.primary} />
