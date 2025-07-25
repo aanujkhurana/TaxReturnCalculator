@@ -117,6 +117,8 @@ const darkTheme = {
   // Category colors (adapted for dark mode)
   categoryWork: '#60A5FA',
   categoryWorkLight: '#1E3A8A',
+    // categoryWork: '#818CF8',
+  // categoryWorkLight: '#312E81',
   categoryEducation: '#34D399',
   categoryEducationLight: '#064E3B',
   categoryDonations: '#FBBF24',

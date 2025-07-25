@@ -266,7 +266,7 @@ const getStyles = (theme) => StyleSheet.create({
   },
   loadingProgressText: {
     fontSize: 14,
-    color: '#4A90E2',
+    color: theme.primary,
     fontWeight: '500',
   },
   loadingSteps: {
