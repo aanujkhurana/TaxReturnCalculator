@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Appearance } from 'react-native';
 
@@ -38,10 +38,13 @@ const lightTheme = {
   // Status colors
   success: '#10B981',
   successLight: '#ECFDF5',
+  successBorder: '#BBF7D0',
   error: '#EF4444',
   errorLight: '#FEF2F2',
+  errorBorder: '#FECACA',
   warning: '#F59E0B',
   warningLight: '#FFFBEB',
+  warningBorder: '#FDE68A',
   
   // Border and divider colors
   border: '#E2E8F0',
@@ -101,10 +104,13 @@ const darkTheme = {
   // Status colors
   success: '#34D399',
   successLight: '#064E3B',
+  successBorder: '#10B981',
   error: '#F87171',
   errorLight: '#7F1D1D',
+  errorBorder: '#DC2626',
   warning: '#FBBF24',
   warningLight: '#92400E',
+  warningBorder: '#F59E0B',
   
   // Border and divider colors
   border: '#475569',

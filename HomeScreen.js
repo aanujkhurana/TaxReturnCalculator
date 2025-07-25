@@ -812,7 +812,7 @@ const getStyles = (theme) => StyleSheet.create({
   },
 
   resourceButtonTertiary: {
-    borderColor: theme.warningLight,
+    borderColor: theme.warningBorder,
     backgroundColor: theme.warningLight,
   },
 
