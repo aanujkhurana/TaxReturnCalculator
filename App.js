@@ -3730,7 +3730,7 @@ function AppContent() {
 
             {/* Tax Estimate */}
             <View style={styles.taxSavingsEstimate}>
-              <Ionicons name="calculator" size={16} color="#F59E0B" />
+              <Ionicons name="calculator" size={16} color={theme.warning} />
               <Text style={[styles.taxSavingsText, { color: '#D97706' }]}>
                 Estimated tax liability: {formatCurrency(estimatedTax)}
               </Text>
@@ -3771,7 +3771,7 @@ function AppContent() {
                       style={styles.removeButton}
                       onPress={() => removeJobIncomeField(idx)}
                     >
-                      <Ionicons name="close-circle" size={24} color="#FF6B6B" />
+                      <Ionicons name="close-circle" size={24} color={theme.error} />
                     </TouchableOpacity>
                   )}
                 </View>
@@ -4048,7 +4048,7 @@ function AppContent() {
                 toggleCategory('workRelated');
               }}
             >
-              <Ionicons name="briefcase" size={20} color="#4A90E2" />
+              <Ionicons name="briefcase" size={20} color={theme.primary} />
               <Text style={styles.quickAddButtonText}>Work Basics</Text>
               <Text style={styles.quickAddButtonAmount}>$1,250</Text>
             </TouchableOpacity>
@@ -4060,7 +4060,7 @@ function AppContent() {
                 toggleCategory('selfEducation');
               }}
             >
-              <Ionicons name="school" size={20} color="#10B981" />
+              <Ionicons name="school" size={20} color={theme.success} />
               <Text style={styles.quickAddButtonText}>Training</Text>
               <Text style={styles.quickAddButtonAmount}>$1,200</Text>
             </TouchableOpacity>
@@ -4072,7 +4072,7 @@ function AppContent() {
                 toggleCategory('donations');
               }}
             >
-              <Ionicons name="heart" size={20} color="#F59E0B" />
+              <Ionicons name="heart" size={20} color={theme.warning} />
               <Text style={styles.quickAddButtonText}>Donations</Text>
               <Text style={styles.quickAddButtonAmount}>$300</Text>
             </TouchableOpacity>
@@ -4084,7 +4084,7 @@ function AppContent() {
                 toggleCategory('workFromHome');
               }}
             >
-              <Ionicons name="home" size={20} color="#EF4444" />
+              <Ionicons name="home" size={20} color={theme.error} />
               <Text style={styles.quickAddButtonText}>WFH</Text>
               <Text style={styles.quickAddButtonAmount}>$268</Text>
             </TouchableOpacity>
@@ -4149,7 +4149,7 @@ function AppContent() {
 
           {/* Tax Savings Estimate */}
           <View style={styles.taxSavingsEstimate}>
-            <Ionicons name="cash-outline" size={16} color="#10B981" />
+            <Ionicons name="cash-outline" size={16} color={theme.success} />
             <Text style={styles.taxSavingsText}>
               Estimated tax savings: {formatCurrency(grandTotal * 0.325)} (32.5% tax rate)
             </Text>
@@ -4662,7 +4662,7 @@ function AppContent() {
           {!detailsCollapsedCategories.disclaimer && (
             <View style={styles.categoryContent}>
               <View style={styles.infoBox}>
-                <Ionicons name="information-circle" size={20} color="#4A90E2" />
+                <Ionicons name="information-circle" size={20} color={theme.primary} />
                 <Text style={styles.infoBoxText}>
                   This calculator uses 2024-25 tax rates and thresholds. Results are estimates only and should not replace professional tax advice.
                 </Text>
@@ -4675,7 +4675,7 @@ function AppContent() {
         {completedCategories > 0 && (
           <View style={styles.nextStepsContainer}>
             <View style={styles.nextStepsHeader}>
-              <Ionicons name="checkmark-circle-outline" size={20} color="#10B981" />
+              <Ionicons name="checkmark-circle-outline" size={20} color={theme.success} />
               <Text style={styles.nextStepsTitle}>Ready to Calculate</Text>
             </View>
             <View style={styles.nextStepsList}>
@@ -4777,7 +4777,7 @@ function AppContent() {
           <View style={styles.loadingContainer}>
             <View style={styles.loadingCard}>
               <View style={styles.loadingIconContainer}>
-                <Ionicons name="calculator" size={32} color="#4A90E2" />
+                <Ionicons name="calculator" size={32} color={theme.primary} />
               </View>
 
               <Text style={styles.loadingTitle}>Processing Your Tax Return</Text>
@@ -4788,7 +4788,7 @@ function AppContent() {
               <View style={styles.loadingProgressContainer}>
                 <ActivityIndicator
                   size="small"
-                  color="#4A90E2"
+                  color={theme.primary}
                   style={styles.loadingSpinner}
                 />
                 <Text style={styles.loadingProgressText}>Calculating...</Text>
@@ -4814,7 +4814,7 @@ function AppContent() {
                         {isCompleted ? (
                           <Ionicons name="checkmark" size={10} color="#fff" />
                         ) : isActive ? (
-                          <ActivityIndicator size={8} color="#4A90E2" />
+                          <ActivityIndicator size={8} color={theme.primary} />
                         ) : null}
                       </View>
                       <Text style={[
@@ -4846,7 +4846,7 @@ function AppContent() {
           <View style={styles.loadingContainer}>
             <View style={styles.loadingCard}>
               <View style={styles.loadingIconContainer}>
-                <Ionicons name="document-text-outline" size={32} color="#4A90E2" />
+                <Ionicons name="document-text-outline" size={32} color={theme.primary} />
               </View>
 
               <Text style={styles.loadingTitle}>Ready to Calculate</Text>
@@ -4886,7 +4886,7 @@ function AppContent() {
             <Ionicons
               name={resultsViewMode === 'table' ? "grid-outline" : "list-outline"}
               size={20}
-              color="#4A90E2"
+              color={theme.primary}
             />
           </TouchableOpacity>
         </View>
@@ -4897,7 +4897,7 @@ function AppContent() {
             {/* Enhanced Results Summary */}
             <View style={styles.deductionSummary}>
           <View style={styles.summaryHeader}>
-            <Ionicons name="checkmark-circle" size={20} color="#10B981" />
+            <Ionicons name="checkmark-circle" size={20} color={theme.success} />
             <Text style={styles.summaryTitle}>Tax Estimation Complete</Text>
             <View style={styles.summaryBadge}>
               <Text style={styles.summaryBadgeText}>2024-25</Text>
@@ -5044,7 +5044,7 @@ function AppContent() {
 
             {/* Tax Estimate */}
             <View style={styles.taxSavingsEstimate}>
-              <Ionicons name="information-circle" size={16} color="#F59E0B" />
+              <Ionicons name="information-circle" size={16} color={theme.warning} />
               <Text style={[styles.taxSavingsText, { color: '#D97706' }]}>
                 Tax withheld: {formatCurrency(parseFloat(taxWithheld || '0'))} • Calculated using 2024-25 ATO rates
               </Text>
