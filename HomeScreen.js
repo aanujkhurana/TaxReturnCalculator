@@ -407,14 +407,14 @@ const getStyles = (theme) => StyleSheet.create({
     marginRight: 4,
   },
   fixedHeaderTitle: {
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: '700',
     color: theme.text,
     letterSpacing: 0.2,
     marginBottom: 2,
   },
   fixedHeaderSubtitle: {
-    fontSize: 14,
+    fontSize: 16,
     color: theme.primary,
     fontWeight: '500',
     letterSpacing: 0.1,
