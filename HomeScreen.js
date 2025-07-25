@@ -512,7 +512,7 @@ const getStyles = (theme) => StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: 40,
     paddingHorizontal: 24,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.surface,
     marginHorizontal: 20,
     marginTop: 0,
     marginBottom: 20,
@@ -529,24 +529,24 @@ const getStyles = (theme) => StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: '#F0F7FF',
+    backgroundColor: theme.primaryLight,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 20,
     borderWidth: 2,
-    borderColor: '#E1EFFF',
+    borderColor: theme.primaryBorder,
   },
   emptyStateTitle: {
     fontSize: 22,
     fontWeight: '700',
-    color: '#1E293B',
+    color: theme.text,
     marginBottom: 12,
     letterSpacing: 0.2,
     textAlign: 'center',
   },
   emptyStateText: {
     fontSize: 16,
-    color: '#64748B',
+    color: theme.textSecondary,
     textAlign: 'center',
     lineHeight: 24,
     letterSpacing: 0.1,
@@ -564,7 +564,7 @@ const getStyles = (theme) => StyleSheet.create({
   },
   emptyStateFeatureText: {
     fontSize: 14,
-    color: '#374151',
+    color: theme.textSecondary,
     fontWeight: '500',
     marginLeft: 10,
     letterSpacing: 0.1,
@@ -576,13 +576,13 @@ const getStyles = (theme) => StyleSheet.create({
   calculationsTitle: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#1E293B',
+    color: theme.text,
     marginBottom: 4,
     letterSpacing: 0.2,
   },
   calculationsSubtitle: {
     fontSize: 14,
-    color: '#64748B',
+    color: theme.textSecondary,
     fontWeight: '500',
     letterSpacing: 0.1,
   },
@@ -593,13 +593,13 @@ const getStyles = (theme) => StyleSheet.create({
   sectionTitle: {
     fontSize: 17,
     fontWeight: '600',
-    color: '#1E293B',
+    color: theme.text,
     marginBottom: 16,
     marginTop: 8,
     letterSpacing: 0.1,
   },
   calculationCard: {
-    backgroundColor: '#fff',
+    backgroundColor: theme.surface,
     borderRadius: 16,
     padding: 20,
     marginBottom: 16,
@@ -626,12 +626,12 @@ const getStyles = (theme) => StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#F0F7FF',
+    backgroundColor: theme.primaryLight,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
     borderWidth: 1,
-    borderColor: '#E1EFFF',
+    borderColor: theme.primaryBorder,
   },
   cardTitleTextContainer: {
     flex: 1,
@@ -640,34 +640,34 @@ const getStyles = (theme) => StyleSheet.create({
   cardTitle: {
     fontSize: 17,
     fontWeight: '700',
-    color: '#1E293B',
+    color: theme.text,
     marginBottom: 2,
     letterSpacing: 0.2,
   },
   cardSubtitle: {
     fontSize: 13,
-    color: '#64748B',
+    color: theme.textSecondary,
     fontWeight: '500',
     letterSpacing: 0.1,
   },
   deleteButton: {
     padding: 8,
     borderRadius: 8,
-    backgroundColor: '#FEF2F2',
+    backgroundColor: theme.errorLight,
     borderWidth: 1,
-    borderColor: '#FECACA',
+    borderColor: theme.errorBorder,
   },
   cardContent: {
     marginBottom: 16,
   },
   cardFinancialSummary: {
     flexDirection: 'row',
-    backgroundColor: '#F8FAFC',
+    backgroundColor: theme.surfaceSecondary,
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: theme.border,
   },
   cardSummaryItem: {
     flex: 1,
@@ -720,7 +720,7 @@ const getStyles = (theme) => StyleSheet.create({
     alignItems: 'center',
     paddingTop: 12,
     borderTopWidth: 1,
-    borderTopColor: '#F1F5F9',
+    borderTopColor: theme.borderLight,
   },
   cardFooterLeft: {
     flexDirection: 'row',
@@ -728,7 +728,7 @@ const getStyles = (theme) => StyleSheet.create({
   },
   cardDate: {
     fontSize: 12,
-    color: '#9CA3AF',
+    color: theme.textTertiary,
     fontWeight: '500',
     marginLeft: 6,
     letterSpacing: 0.1,
@@ -739,7 +739,7 @@ const getStyles = (theme) => StyleSheet.create({
   },
   cardViewText: {
     fontSize: 13,
-    color: '#4A90E2',
+    color: theme.primary,
     fontWeight: '600',
     marginRight: 4,
     letterSpacing: 0.1,
@@ -747,7 +747,7 @@ const getStyles = (theme) => StyleSheet.create({
 
   // Enhanced Tax Resources Section Styles
   resourcesContainer: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.surface,
     marginHorizontal: 20,
     marginTop: 0,
     marginBottom: 20,
@@ -773,12 +773,12 @@ const getStyles = (theme) => StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#F0F7FF',
+    backgroundColor: theme.primaryLight,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
     borderWidth: 1,
-    borderColor: '#E1EFFF',
+    borderColor: theme.primaryBorder,
   },
 
   resourcesTitleContainer: {
@@ -788,14 +788,14 @@ const getStyles = (theme) => StyleSheet.create({
   resourcesTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#1E293B',
+    color: theme.text,
     marginBottom: 2,
     letterSpacing: 0.2,
   },
 
   resourcesSubtitle: {
     fontSize: 13,
-    color: '#64748B',
+    color: theme.textSecondary,
     fontWeight: '500',
     letterSpacing: 0.1,
   },
@@ -805,7 +805,7 @@ const getStyles = (theme) => StyleSheet.create({
   },
 
   resourceButton: {
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.surface,
     borderRadius: 12,
     padding: 16,
     flexDirection: 'row',
@@ -820,30 +820,30 @@ const getStyles = (theme) => StyleSheet.create({
   },
 
   resourceButtonPrimary: {
-    borderColor: '#BBF7D0',
-    backgroundColor: '#F0FDF4',
+    borderColor: theme.successBorder,
+    backgroundColor: theme.successLight,
   },
 
   resourceButtonSecondary: {
-    borderColor: '#DBEAFE',
-    backgroundColor: '#F0F9FF',
+    borderColor: theme.primaryBorder,
+    backgroundColor: theme.primaryLight,
   },
 
   resourceButtonTertiary: {
-    borderColor: '#FEF3C7',
-    backgroundColor: '#FFFBEB',
+    borderColor: theme.warningLight,
+    backgroundColor: theme.warningLight,
   },
 
   resourceButtonIconContainer: {
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.surface,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
     borderWidth: 1,
-    borderColor: '#F1F5F9',
+    borderColor: theme.borderLight,
     elevation: 1,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
@@ -858,14 +858,14 @@ const getStyles = (theme) => StyleSheet.create({
   resourceButtonTitle: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#1E293B',
+    color: theme.text,
     marginBottom: 2,
     letterSpacing: 0.1,
   },
 
   resourceButtonDescription: {
     fontSize: 12,
-    color: '#64748B',
+    color: theme.textSecondary,
     fontWeight: '500',
     letterSpacing: 0.1,
   },

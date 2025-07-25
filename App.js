@@ -136,7 +136,7 @@ const getStyles = (theme) => StyleSheet.create({
     elevation: 1,
   },
   addButtonText: {
-    color: theme.primary,
+    color: theme.text,
     fontWeight: '600',
     marginLeft: 10,
     fontSize: 15,
@@ -171,7 +171,7 @@ const getStyles = (theme) => StyleSheet.create({
     letterSpacing: 0.2,
   },
   toggleTextActive: {
-    color: theme.primary,
+    color: theme.text,
     fontWeight: '600',
   },
   toggleSubtext: {
@@ -198,16 +198,16 @@ const getStyles = (theme) => StyleSheet.create({
   infoBox: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    backgroundColor: '#f0f8ff',
+    backgroundColor: theme.primaryLight,
     padding: 16,
     borderRadius: 12,
     marginTop: 16,
     borderLeftWidth: 4,
-    borderLeftColor: '#4A90E2',
+    borderLeftColor: theme.primary,
   },
   infoBoxText: {
     fontSize: 14,
-    color: '#333',
+    color: theme.text,
     marginLeft: 12,
     flex: 1,
     lineHeight: 20,
@@ -222,36 +222,36 @@ const getStyles = (theme) => StyleSheet.create({
     paddingHorizontal: 24,
   },
   loadingCard: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.surface,
     borderRadius: 24,
     padding: 36,
     alignItems: 'center',
     elevation: 10,
-    shadowColor: '#000',
+    shadowColor: theme.shadow,
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.18,
     shadowRadius: 16,
     minWidth: 300,
     maxWidth: 340,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: theme.border,
   },
   loadingIconContainer: {
     marginBottom: 24,
     padding: 16,
     borderRadius: 50,
-    backgroundColor: '#f8f9ff',
+    backgroundColor: theme.primaryLight,
   },
   loadingTitle: {
     fontSize: 20,
     fontWeight: '600',
-    color: '#1a1a1a',
+    color: theme.text,
     textAlign: 'center',
     marginBottom: 8,
   },
   loadingSubtitle: {
     fontSize: 15,
-    color: '#666',
+    color: theme.textSecondary,
     textAlign: 'center',
     marginBottom: 24,
     lineHeight: 22,
@@ -282,33 +282,33 @@ const getStyles = (theme) => StyleSheet.create({
     width: 16,
     height: 16,
     borderRadius: 8,
-    backgroundColor: '#e8f4fd',
+    backgroundColor: theme.primaryLight,
     marginRight: 12,
     alignItems: 'center',
     justifyContent: 'center',
   },
   loadingStepIconActive: {
-    backgroundColor: '#4A90E2',
+    backgroundColor: theme.primary,
   },
   loadingStepText: {
     fontSize: 13,
-    color: '#666',
+    color: theme.textSecondary,
     flex: 1,
   },
   loadingStepTextActive: {
-    color: '#4A90E2',
+    color: theme.text,
     fontWeight: '500',
   },
   loadingFooter: {
     marginTop: 20,
     paddingTop: 16,
     borderTopWidth: 1,
-    borderTopColor: '#f0f0f0',
+    borderTopColor: theme.borderLight,
     alignSelf: 'stretch',
   },
   loadingFooterText: {
     fontSize: 12,
-    color: '#999',
+    color: theme.textTertiary,
     textAlign: 'center',
     lineHeight: 18,
   },
@@ -347,7 +347,7 @@ const getStyles = (theme) => StyleSheet.create({
     shadowRadius: 8,
     borderWidth: 1,
     borderColor: '#E2E8F0',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.surface,
   },
   resultHeader: {
     paddingVertical: 20,
@@ -367,7 +367,7 @@ const getStyles = (theme) => StyleSheet.create({
     marginTop: 4,
   },
   resultContent: {
-    backgroundColor: '#fff',
+    backgroundColor: theme.surface,
     padding: 20,
   },
   summaryCards: {
@@ -377,14 +377,14 @@ const getStyles = (theme) => StyleSheet.create({
   },
   summaryCard: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.surface,
     padding: 16,
     borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: '#E2E8F0',
-    shadowColor: '#000',
+    borderColor: theme.border,
+    shadowColor: theme.shadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
     shadowRadius: 4,
@@ -393,7 +393,7 @@ const getStyles = (theme) => StyleSheet.create({
   },
   summaryLabel: {
     fontSize: 13,
-    color: '#64748B',
+    color: theme.textSecondary,
     textAlign: 'center',
     marginBottom: 10,
     fontWeight: '600',
@@ -403,27 +403,27 @@ const getStyles = (theme) => StyleSheet.create({
   summaryAmount: {
     fontSize: 22,
     fontWeight: '800',
-    color: '#2D3748',
+    color: theme.text,
     textAlign: 'center',
     letterSpacing: 0.3,
     lineHeight: 26,
   },
   breakdownSection: {
     marginBottom: 24,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: theme.surfaceSecondary,
     padding: 16,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: theme.border,
   },
   breakdownTitle: {
     fontSize: 17,
     fontWeight: '700',
-    color: '#2D3748',
+    color: theme.text,
     marginBottom: 14,
     paddingBottom: 10,
     borderBottomWidth: 1,
-    borderBottomColor: '#E2E8F0',
+    borderBottomColor: theme.border,
     letterSpacing: 0.3,
   },
   breakdownItem: {
@@ -432,28 +432,28 @@ const getStyles = (theme) => StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#E2E8F0',
+    borderBottomColor: theme.border,
     marginBottom: 2,
   },
   breakdownLabel: {
     fontSize: 15,
-    color: '#64748B',
+    color: theme.textSecondary,
     flex: 1,
     letterSpacing: 0.2,
   },
   breakdownValue: {
     fontSize: 15,
-    color: '#2D3748',
+    color: theme.text,
     fontWeight: '600',
     letterSpacing: 0.2,
   },
   boldText: {
     fontWeight: 'bold',
-    color: '#333',
+    color: theme.text,
   },
   totalTaxItem: {
     borderTopWidth: 1,
-    borderTopColor: '#eee',
+    borderTopColor: theme.borderLight,
     marginTop: 8,
     paddingTop: 12,
   },
@@ -505,18 +505,18 @@ const getStyles = (theme) => StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: theme.surfaceSecondary,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: theme.border,
   },
   stepIndicator: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.surface,
     borderRadius: 12,
     paddingVertical: 12,
     paddingHorizontal: 16,
@@ -537,52 +537,52 @@ const getStyles = (theme) => StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: theme.surfaceSecondary,
     borderWidth: 1.5,
-    borderColor: '#E2E8F0',
+    borderColor: theme.border,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 6,
   },
   stepCircleActive: {
-    backgroundColor: '#4A90E2',
-    borderColor: '#4A90E2',
+    backgroundColor: theme.primary,
+    borderColor: theme.primary,
   },
   stepCircleCurrent: {
-    backgroundColor: '#357ABD',
-    borderColor: '#357ABD',
+    backgroundColor: theme.primary,
+    borderColor: theme.primary,
     transform: [{ scale: 1.1 }],
   },
   stepCircleDisabled: {
-    backgroundColor: '#F8FAFC',
-    borderColor: '#E5E7EB',
+    backgroundColor: theme.surfaceSecondary,
+    borderColor: theme.borderLight,
     opacity: 0.6,
   },
   stepNumber: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#64748B',
+    color: theme.textSecondary,
   },
   stepNumberActive: {
     color: '#FFFFFF',
     fontWeight: '700',
   },
   stepNumberDisabled: {
-    color: '#9CA3AF',
+    color: theme.textTertiary,
   },
   stepLabel: {
     fontSize: 11,
-    color: '#64748B',
+    color: theme.textSecondary,
     fontWeight: '500',
     textAlign: 'center',
     letterSpacing: 0.1,
   },
   stepLabelActive: {
-    color: '#4A90E2',
+    color: theme.text,
     fontWeight: '600',
   },
   stepLabelDisabled: {
-    color: '#9CA3AF',
+    color: theme.textTertiary,
     opacity: 0.7,
   },
   stepLine: {
@@ -591,11 +591,11 @@ const getStyles = (theme) => StyleSheet.create({
     left: '60%',
     right: '-40%',
     height: 1.5,
-    backgroundColor: '#E5E7EB',
+    backgroundColor: theme.borderLight,
     zIndex: -1,
   },
   stepLineActive: {
-    backgroundColor: '#4A90E2',
+    backgroundColor: theme.primary,
   },
   // Bottom button container styles
   bottomButtonContainer: {
@@ -627,10 +627,10 @@ const getStyles = (theme) => StyleSheet.create({
     paddingVertical: 14,
     paddingHorizontal: 24,
     borderRadius: 16,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: theme.surfaceSecondary,
     borderWidth: 1.5,
-    borderColor: '#4A90E2',
-    shadowColor: '#000',
+    borderColor: theme.primary,
+    shadowColor: theme.shadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
     shadowRadius: 3,
@@ -704,7 +704,7 @@ const getStyles = (theme) => StyleSheet.create({
   },
   navButtonText: {
     fontSize: 16,
-    color: theme.primary,
+    color: theme.text,
     fontWeight: '600',
     marginLeft: 8,
   },
@@ -737,10 +737,10 @@ const getStyles = (theme) => StyleSheet.create({
     paddingVertical: 14,
     paddingHorizontal: 24,
     borderRadius: 12,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: theme.surfaceSecondary,
     borderWidth: 1.5,
-    borderColor: '#4A90E2',
-    shadowColor: '#000',
+    borderColor: theme.primary,
+    shadowColor: theme.shadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
     shadowRadius: 3,
@@ -749,7 +749,7 @@ const getStyles = (theme) => StyleSheet.create({
   },
   startOverButtonText: {
     fontSize: 16,
-    color: '#4A90E2',
+    color: theme.primary,
     fontWeight: '600',
     marginLeft: 10,
     letterSpacing: 0.2,
@@ -766,10 +766,10 @@ const getStyles = (theme) => StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: 14,
     paddingHorizontal: 20,
-    backgroundColor: '#fff',
+    backgroundColor: theme.surface,
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: '#4A90E2',
+    borderColor: theme.primary,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
@@ -779,7 +779,7 @@ const getStyles = (theme) => StyleSheet.create({
   },
   homeButtonText: {
     fontSize: 16,
-    color: '#4A90E2',
+    color: theme.primary,
     fontWeight: '600',
     marginLeft: 10,
     letterSpacing: 0.2,
@@ -794,11 +794,11 @@ const getStyles = (theme) => StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: 16,
     paddingHorizontal: 20,
-    backgroundColor: '#fff',
+    backgroundColor: theme.surface,
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: '#4A90E2',
-    shadowColor: '#000',
+    borderColor: theme.primary,
+    shadowColor: theme.shadow,
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
     shadowRadius: 3,
@@ -812,10 +812,10 @@ const getStyles = (theme) => StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: 16,
     paddingHorizontal: 20,
-    backgroundColor: '#fff',
+    backgroundColor: theme.surface,
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: '#4A90E2',
+    borderColor: theme.primary,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
@@ -826,7 +826,7 @@ const getStyles = (theme) => StyleSheet.create({
   },
   fullRowButtonText: {
     fontSize: 16,
-    color: '#4A90E2',
+    color: theme.primary,
     fontWeight: '600',
     marginLeft: 10,
     letterSpacing: 0.2,
@@ -840,14 +840,14 @@ const getStyles = (theme) => StyleSheet.create({
     padding: 20,
   },
   helpModalContent: {
-    backgroundColor: '#fff',
+    backgroundColor: theme.surface,
     borderRadius: 16,
     padding: 24,
     maxWidth: '100%',
     width: '100%',
     maxHeight: '80%',
     elevation: 10,
-    shadowColor: '#000',
+    shadowColor: theme.shadow,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.25,
     shadowRadius: 8,
@@ -859,12 +859,12 @@ const getStyles = (theme) => StyleSheet.create({
     marginBottom: 16,
     paddingBottom: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#E2E8F0',
+    borderBottomColor: theme.border,
   },
   helpModalTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#2D3748',
+    color: theme.text,
     flex: 1,
   },
   helpModalCloseButton: {
@@ -879,14 +879,14 @@ const getStyles = (theme) => StyleSheet.create({
   helpSectionTitle: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#4A90E2',
+    color: theme.text,
     marginBottom: 6,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
   helpSectionText: {
     fontSize: 15,
-    color: '#4A5568',
+    color: theme.textSecondary,
     lineHeight: 22,
     marginBottom: 8,
   },
@@ -895,7 +895,7 @@ const getStyles = (theme) => StyleSheet.create({
   },
   helpExampleItem: {
     fontSize: 14,
-    color: '#718096',
+    color: theme.textSecondary,
     marginBottom: 4,
     lineHeight: 20,
   },
@@ -904,32 +904,32 @@ const getStyles = (theme) => StyleSheet.create({
   },
   helpTipItem: {
     fontSize: 14,
-    color: '#718096',
+    color: theme.textSecondary,
     marginBottom: 6,
     lineHeight: 20,
   },
   helpWhereToFind: {
-    backgroundColor: '#F7FAFC',
+    backgroundColor: theme.primaryLight,
     padding: 12,
     borderRadius: 8,
     borderLeftWidth: 3,
-    borderLeftColor: '#4A90E2',
+    borderLeftColor: theme.primary,
   },
   helpWhereToFindText: {
     fontSize: 14,
-    color: '#2D3748',
+    color: theme.text,
     fontStyle: 'italic',
     lineHeight: 20,
   },
 
   // Deduction category styles
   deductionCategory: {
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.surface,
     borderRadius: 12,
     padding: 0,
     marginBottom: 20,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: theme.border,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -944,7 +944,7 @@ const getStyles = (theme) => StyleSheet.create({
   categoryTitle: {
     fontSize: 19,
     fontWeight: '700',
-    color: '#1A202C',
+    color: theme.text,
     marginBottom: 6,
     letterSpacing: 0.2,
     lineHeight: 24,
@@ -952,7 +952,7 @@ const getStyles = (theme) => StyleSheet.create({
 
   categoryDescription: {
     fontSize: 14,
-    color: '#4A5568',
+    color: theme.textSecondary,
     marginBottom: 0,
     lineHeight: 20,
     letterSpacing: 0.1,
@@ -964,12 +964,12 @@ const getStyles = (theme) => StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: 20,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: theme.surfaceSecondary,
     borderBottomWidth: 1,
-    borderBottomColor: '#E2E8F0',
+    borderBottomColor: theme.border,
     borderTopLeftRadius: 12,
     borderTopRightRadius: 12,
-    shadowColor: '#000',
+    shadowColor: theme.shadow,
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
     shadowRadius: 2,
@@ -992,11 +992,11 @@ const getStyles = (theme) => StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#EBF5FF',
+    backgroundColor: theme.primaryLight,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 16,
-    shadowColor: '#4A90E2',
+    shadowColor: theme.primary,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 3,
@@ -1016,10 +1016,10 @@ const getStyles = (theme) => StyleSheet.create({
   categoryToggle: {
     padding: 10,
     borderRadius: 22,
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.surface,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
-    shadowColor: '#000',
+    borderColor: theme.border,
+    shadowColor: theme.shadow,
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
     shadowRadius: 2,
@@ -1029,31 +1029,31 @@ const getStyles = (theme) => StyleSheet.create({
   categoryContent: {
     padding: 24,
     paddingTop: 20,
-    backgroundColor: '#FEFEFE',
+    backgroundColor: theme.surface,
     borderBottomLeftRadius: 12,
     borderBottomRightRadius: 12,
     borderWidth: 1,
     borderTopWidth: 0,
-    borderColor: '#E2E8F0',
+    borderColor: theme.border,
   },
 
   categoryTotal: {
     fontSize: 15,
     fontWeight: '700',
-    color: '#4A90E2',
+    color: theme.text,
     marginTop: 6,
     letterSpacing: 0.3,
   },
 
   // Enhanced deduction summary styles
   deductionSummary: {
-    backgroundColor: '#F0F9FF',
+    backgroundColor: theme.primaryLight,
     borderRadius: 12,
     padding: 20,
     marginBottom: 20,
     borderWidth: 1,
-    borderColor: '#B3D9FF',
-    shadowColor: '#4A90E2',
+    borderColor: theme.primaryBorder,
+    shadowColor: theme.primary,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -1069,13 +1069,13 @@ const getStyles = (theme) => StyleSheet.create({
   summaryTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#2D3748',
+    color: theme.text,
     marginLeft: 8,
     flex: 1,
   },
 
   summaryBadge: {
-    backgroundColor: '#4A90E2',
+    backgroundColor: theme.primary,
     borderRadius: 12,
     paddingHorizontal: 8,
     paddingVertical: 4,
@@ -1090,7 +1090,7 @@ const getStyles = (theme) => StyleSheet.create({
   summaryAmount: {
     fontSize: 28,
     fontWeight: '800',
-    color: '#4A90E2',
+    color: theme.text,
     textAlign: 'center',
     marginBottom: 16,
   },
@@ -1114,31 +1114,31 @@ const getStyles = (theme) => StyleSheet.create({
 
   summaryBreakdownLabel: {
     fontSize: 14,
-    color: '#4A5568',
+    color: theme.textSecondary,
     flex: 1,
   },
 
   summaryBreakdownValue: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#2D3748',
+    color: theme.text,
   },
 
   taxSavingsEstimate: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#F0FDF4',
+    backgroundColor: theme.successLight,
     borderRadius: 8,
     padding: 12,
     borderWidth: 1,
-    borderColor: '#BBF7D0',
+    borderColor: theme.successBorder,
   },
 
   taxSavingsText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#059669',
+    color: theme.success,
     marginLeft: 6,
   },
 
@@ -1147,12 +1147,12 @@ const getStyles = (theme) => StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#EBF5FF',
+    backgroundColor: theme.primaryLight,
     borderRadius: 8,
     padding: 12,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: '#B3D9FF',
+    borderColor: theme.primaryBorder,
   },
 
   quickSummaryLeft: {
@@ -1163,14 +1163,14 @@ const getStyles = (theme) => StyleSheet.create({
   quickSummaryLabel: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#4A5568',
+    color: theme.textSecondary,
     marginRight: 8,
   },
 
   quickSummaryAmount: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#4A90E2',
+    color: theme.text,
   },
 
   quickSummaryRight: {
@@ -1180,7 +1180,7 @@ const getStyles = (theme) => StyleSheet.create({
   quickSummaryTax: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#059669',
+    color: theme.success,
   },
 
   // Progress indicator styles
@@ -1198,24 +1198,24 @@ const getStyles = (theme) => StyleSheet.create({
   progressLabel: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#4A5568',
+    color: theme.textSecondary,
   },
 
   progressText: {
     fontSize: 12,
-    color: '#718096',
+    color: theme.textSecondary,
   },
 
   progressBar: {
     height: 6,
-    backgroundColor: '#E2E8F0',
+    backgroundColor: theme.borderLight,
     borderRadius: 3,
     overflow: 'hidden',
   },
 
   progressFill: {
     height: '100%',
-    backgroundColor: '#4A90E2',
+    backgroundColor: theme.primary,
     borderRadius: 3,
   },
 
@@ -1293,24 +1293,24 @@ const getStyles = (theme) => StyleSheet.create({
 
   // Quick Add Progressive Disclosure styles
   quickAddContainer: {
-    backgroundColor: '#F8FAFC',
+    backgroundColor: theme.surfaceSecondary,
     borderRadius: 12,
     padding: 20,
     marginBottom: 20,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: theme.border,
   },
 
   quickAddTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#2D3748',
+    color: theme.text,
     marginBottom: 4,
   },
 
   quickAddSubtitle: {
     fontSize: 14,
-    color: '#4A5568',
+    color: theme.textSecondary,
     marginBottom: 16,
   },
 
@@ -1322,7 +1322,7 @@ const getStyles = (theme) => StyleSheet.create({
   },
 
   quickAddButton: {
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.surface,
     borderRadius: 12,
     padding: 16,
     alignItems: 'center',
@@ -1330,8 +1330,8 @@ const getStyles = (theme) => StyleSheet.create({
     width: '48%',
     minHeight: 100,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
-    shadowColor: '#000',
+    borderColor: theme.border,
+    shadowColor: theme.shadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
     shadowRadius: 3,
@@ -1341,7 +1341,7 @@ const getStyles = (theme) => StyleSheet.create({
   quickAddButtonText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#2D3748',
+    color: theme.text,
     marginTop: 8,
     textAlign: 'center',
   },
@@ -1349,7 +1349,7 @@ const getStyles = (theme) => StyleSheet.create({
   quickAddButtonAmount: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#4A90E2',
+    color: theme.text,
     marginTop: 4,
   },
 
@@ -1362,18 +1362,18 @@ const getStyles = (theme) => StyleSheet.create({
   showAllButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#EBF5FF',
+    backgroundColor: theme.primaryLight,
     borderRadius: 20,
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderWidth: 1,
-    borderColor: '#B3D9FF',
+    borderColor: theme.primaryBorder,
   },
 
   showAllButtonText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#4A90E2',
+    color: theme.text,
     marginLeft: 6,
   },
 
@@ -1381,10 +1381,10 @@ const getStyles = (theme) => StyleSheet.create({
   completionStatus: {
     marginTop: 16,
     padding: 12,
-    backgroundColor: '#F0FDF4',
+    backgroundColor: theme.successLight,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#BBF7D0',
+    borderColor: theme.successBorder,
   },
 
   completionHeader: {
@@ -1408,12 +1408,12 @@ const getStyles = (theme) => StyleSheet.create({
 
   // Next steps guidance styles
   nextStepsContainer: {
-    backgroundColor: '#F0F9FF',
+    backgroundColor: theme.primaryLight,
     borderRadius: 12,
     padding: 20,
     marginBottom: 20,
     borderWidth: 1,
-    borderColor: '#B3D9FF',
+    borderColor: theme.primaryBorder,
   },
 
   nextStepsHeader: {
@@ -1425,7 +1425,7 @@ const getStyles = (theme) => StyleSheet.create({
   nextStepsTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#1E40AF',
+    color: theme.text,
     marginLeft: 8,
   },
 
@@ -1457,19 +1457,19 @@ const getStyles = (theme) => StyleSheet.create({
 
   nextStepText: {
     fontSize: 14,
-    color: '#1E40AF',
+    color: theme.text,
     lineHeight: 20,
     flex: 1,
   },
 
   // Enhanced Results Screen styles
   resultMainCard: {
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.surface,
     borderRadius: 16,
     padding: 24,
     marginTop: 16,
     borderWidth: 2,
-    shadowColor: '#000',
+    shadowColor: theme.shadow,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
     shadowRadius: 8,
@@ -1497,14 +1497,14 @@ const getStyles = (theme) => StyleSheet.create({
 
   resultMainSubtext: {
     fontSize: 14,
-    color: '#64748B',
+    color: theme.textSecondary,
     textAlign: 'center',
     fontWeight: '500',
   },
 
   resultMainFinancialYear: {
     fontSize: 12,
-    color: '#94A3B8',
+    color: theme.textTertiary,
     textAlign: 'center',
     fontWeight: '400',
     marginTop: 2,
@@ -1519,11 +1519,11 @@ const getStyles = (theme) => StyleSheet.create({
   },
 
   tableViewButton: {
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.surface,
     borderRadius: 8,
     padding: 8,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: theme.border,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
@@ -1535,7 +1535,7 @@ const getStyles = (theme) => StyleSheet.create({
 
   // Full width home button styles
   fullWidthHomeButton: {
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.surface,
     borderRadius: 12,
     padding: 16,
     marginTop: 20,
@@ -1555,7 +1555,7 @@ const getStyles = (theme) => StyleSheet.create({
   fullWidthHomeButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#4A90E2',
+    color: theme.primary,
     marginLeft: 8,
   },
 
@@ -1600,11 +1600,11 @@ const getStyles = (theme) => StyleSheet.create({
 
   // Table view styles
   tableContainer: {
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.surface,
     borderRadius: 12,
     marginTop: 16,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: theme.border,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
@@ -1613,19 +1613,19 @@ const getStyles = (theme) => StyleSheet.create({
   },
 
   tableHeader: {
-    backgroundColor: '#F8FAFC',
+    backgroundColor: theme.surfaceSecondary,
     borderTopLeftRadius: 12,
     borderTopRightRadius: 12,
     paddingVertical: 16,
     paddingHorizontal: 20,
     borderBottomWidth: 1,
-    borderBottomColor: '#E2E8F0',
+    borderBottomColor: theme.border,
   },
 
   tableHeaderText: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#1E293B',
+    color: theme.text,
     textAlign: 'center',
   },
 
@@ -1634,7 +1634,7 @@ const getStyles = (theme) => StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 20,
     borderBottomWidth: 1,
-    borderBottomColor: '#F1F5F9',
+    borderBottomColor: theme.borderLight,
     alignItems: 'center',
     minHeight: 50,
   },
@@ -1644,9 +1644,9 @@ const getStyles = (theme) => StyleSheet.create({
   },
 
   tableRowHeader: {
-    backgroundColor: '#F8FAFC',
+    backgroundColor: theme.surfaceSecondary,
     borderBottomWidth: 2,
-    borderBottomColor: '#E2E8F0',
+    borderBottomColor: theme.border,
   },
 
   tableCell: {
@@ -1672,13 +1672,13 @@ const getStyles = (theme) => StyleSheet.create({
 
   tableCellText: {
     fontSize: 14,
-    color: '#475569',
+    color: theme.textSecondary,
     fontWeight: '500',
   },
 
   tableCellHeaderText: {
     fontSize: 14,
-    color: '#1E293B',
+    color: theme.text,
     fontWeight: '700',
   },
 
@@ -1700,26 +1700,26 @@ const getStyles = (theme) => StyleSheet.create({
   },
 
   tableSectionHeader: {
-    backgroundColor: '#F1F5F9',
+    backgroundColor: theme.surfaceSecondary,
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderBottomWidth: 1,
-    borderBottomColor: '#E2E8F0',
+    borderBottomColor: theme.border,
   },
 
   tableSectionHeaderText: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#334155',
+    color: theme.text,
   },
 
   // Compact table styles
   compactTableContainer: {
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.surface,
     borderRadius: 12,
     marginTop: 16,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: theme.border,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
@@ -1738,13 +1738,13 @@ const getStyles = (theme) => StyleSheet.create({
   },
 
   compactTableHeaderRow: {
-    backgroundColor: '#F8FAFC',
+    backgroundColor: theme.surfaceSecondary,
     borderBottomWidth: 2,
-    borderBottomColor: '#E2E8F0',
+    borderBottomColor: theme.border,
   },
 
   compactTableFinalRow: {
-    backgroundColor: '#ECFDF5',
+    backgroundColor: theme.successLight,
     borderBottomWidth: 0,
   },
 
@@ -3614,9 +3614,9 @@ function AppContent() {
   // Income category color mapping for consistency
   const getIncomeCategoryColors = (categoryKey) => {
     const colorMap = {
-      employment: { primary: '#4A90E2', light: '#EBF5FF', accent: '#2563EB' },
-      abn: { primary: '#10B981', light: '#ECFDF5', accent: '#059669' },
-      payg: { primary: '#F59E0B', light: '#FFFBEB', accent: '#D97706' }
+      employment: { primary: theme.primary, light: theme.primaryLight, accent: theme.primary },
+      abn: { primary: theme.success, light: theme.successLight, accent: theme.success },
+      payg: { primary: theme.warning, light: theme.warningLight, accent: theme.warning }
     };
     return colorMap[categoryKey] || colorMap.employment;
   };
@@ -3640,7 +3640,7 @@ function AppContent() {
         style={[
           styles.deductionCategoryHeader,
           isCollapsed && styles.deductionCategoryHeaderCollapsed,
-          { backgroundColor: hasValues ? colors.light : '#F8FAFC' }
+          { backgroundColor: hasValues ? colors.light : theme.surfaceSecondary }
         ]}
         onPress={() => toggleIncomeCategory(categoryKey)}
         activeOpacity={0.7}
@@ -3700,7 +3700,7 @@ function AppContent() {
         {totalIncome > 0 && (
           <View style={styles.deductionSummary}>
             <View style={styles.summaryHeader}>
-              <Ionicons name="wallet-outline" size={20} color="#4A90E2" />
+              <Ionicons name="wallet-outline" size={20} color={theme.primary} />
               <Text style={styles.summaryTitle}>Income Summary</Text>
               <View style={styles.summaryBadge}>
                 <Text style={styles.summaryBadgeText}>
@@ -3714,7 +3714,7 @@ function AppContent() {
             <View style={styles.summaryBreakdown}>
               {employmentTotal > 0 && (
                 <View style={styles.summaryBreakdownItem}>
-                  <View style={[styles.summaryBreakdownDot, { backgroundColor: '#4A90E2' }]} />
+                  <View style={[styles.summaryBreakdownDot, { backgroundColor: theme.primary }]} />
                   <Text style={styles.summaryBreakdownLabel}>Employment</Text>
                   <Text style={styles.summaryBreakdownValue}>{formatCurrency(employmentTotal)}</Text>
                 </View>
@@ -3778,7 +3778,7 @@ function AppContent() {
               ))}
 
               <TouchableOpacity style={styles.addButton} onPress={addJobIncomeField}>
-                <Ionicons name="add-circle-outline" size={20} color="#4A90E2" />
+                <Ionicons name="add-circle-outline" size={20} color={theme.primary} />
                 <Text style={styles.addButtonText}>Add Another Job</Text>
               </TouchableOpacity>
             </View>
@@ -3861,7 +3861,7 @@ function AppContent() {
                 <Ionicons
                   name={paygUnknown ? "checkbox-outline" : "square-outline"}
                   size={24}
-                  color={paygUnknown ? "#4A90E2" : "#666"}
+                  color={paygUnknown ? theme.primary : theme.textSecondary}
                 />
                 <Text style={[styles.toggleText, paygUnknown && styles.toggleTextActive]}>
                   I don't know my PAYG withholding amount
@@ -3875,7 +3875,7 @@ function AppContent() {
         {totalIncome > 0 && (
           <View style={styles.nextStepsContainer}>
             <View style={styles.nextStepsHeader}>
-              <Ionicons name="compass-outline" size={20} color="#4A90E2" />
+              <Ionicons name="compass-outline" size={20} color={theme.primary} />
               <Text style={styles.nextStepsTitle}>Next Steps</Text>
             </View>
             <View style={styles.nextStepsList}>
@@ -3959,11 +3959,11 @@ function AppContent() {
   // Category color mapping for better visual hierarchy
   const getCategoryColors = (categoryKey) => {
     const colorMap = {
-      workRelated: { primary: '#4A90E2', light: '#EBF5FF', accent: '#2563EB' },
-      selfEducation: { primary: '#10B981', light: '#ECFDF5', accent: '#059669' },
-      donations: { primary: '#F59E0B', light: '#FFFBEB', accent: '#D97706' },
-      other: { primary: '#8B5CF6', light: '#F3E8FF', accent: '#7C3AED' },
-      workFromHome: { primary: '#EF4444', light: '#FEF2F2', accent: '#DC2626' }
+      workRelated: { primary: theme.primary, light: theme.primaryLight, accent: theme.primary },
+      selfEducation: { primary: theme.success, light: theme.successLight, accent: theme.success },
+      donations: { primary: theme.warning, light: theme.warningLight, accent: theme.warning },
+      other: { primary: theme.secondary, light: theme.secondaryLight, accent: theme.secondary },
+      workFromHome: { primary: theme.error, light: theme.errorLight, accent: theme.error }
     };
     return colorMap[categoryKey] || colorMap.workRelated;
   };
@@ -3980,7 +3980,7 @@ function AppContent() {
         style={[
           styles.deductionCategoryHeader,
           isCollapsed && styles.deductionCategoryHeaderCollapsed,
-          { backgroundColor: hasValues ? colors.light : '#F8FAFC' }
+          { backgroundColor: hasValues ? colors.light : theme.surfaceSecondary }
         ]}
         onPress={() => toggleCategory(categoryKey)}
         activeOpacity={0.7}
@@ -4098,7 +4098,7 @@ function AppContent() {
       {grandTotal > 0 && (
         <View style={styles.deductionSummary}>
           <View style={styles.summaryHeader}>
-            <Ionicons name="calculator-outline" size={20} color="#4A90E2" />
+            <Ionicons name="calculator-outline" size={20} color={theme.primary} />
             <Text style={styles.summaryTitle}>Total Deductions</Text>
             <View style={styles.summaryBadge}>
               <Text style={styles.summaryBadgeText}>
@@ -4112,7 +4112,7 @@ function AppContent() {
           <View style={styles.summaryBreakdown}>
             {workRelatedTotal > 0 && (
               <View style={styles.summaryBreakdownItem}>
-                <View style={[styles.summaryBreakdownDot, { backgroundColor: '#4A90E2' }]} />
+                <View style={[styles.summaryBreakdownDot, { backgroundColor: theme.primary }]} />
                 <Text style={styles.summaryBreakdownLabel}>Work-Related</Text>
                 <Text style={styles.summaryBreakdownValue}>{formatCurrency(workRelatedTotal)}</Text>
               </View>
@@ -4176,7 +4176,7 @@ function AppContent() {
               });
             }}
           >
-            <Ionicons name="expand-outline" size={20} color="#4A90E2" />
+            <Ionicons name="expand-outline" size={20} color={theme.primary} />
             <Text style={styles.showAllButtonText}>Show All Categories</Text>
           </TouchableOpacity>
         </View>
@@ -4469,7 +4469,7 @@ function AppContent() {
       {grandTotal > 0 && (
         <View style={[styles.nextStepsContainer, { marginTop: 24 }]}>
           <View style={styles.nextStepsHeader}>
-            <Ionicons name="compass-outline" size={20} color="#4A90E2" />
+            <Ionicons name="compass-outline" size={20} color={theme.primary} />
             <Text style={styles.nextStepsTitle}>Next Steps</Text>
           </View>
           <View style={styles.nextStepsList}>
@@ -4501,9 +4501,9 @@ function AppContent() {
   // Additional details category color mapping
   const getDetailsCategoryColors = (categoryKey) => {
     const colorMap = {
-      taxObligations: { primary: '#4A90E2', light: '#EBF5FF', accent: '#2563EB' },
-      personalCircumstances: { primary: '#10B981', light: '#ECFDF5', accent: '#059669' },
-      disclaimer: { primary: '#F59E0B', light: '#FFFBEB', accent: '#D97706' }
+      taxObligations: { primary: theme.primary, light: theme.primaryLight, accent: theme.primary },
+      personalCircumstances: { primary: theme.success, light: theme.successLight, accent: theme.success },
+      disclaimer: { primary: theme.warning, light: theme.warningLight, accent: theme.warning }
     };
     return colorMap[categoryKey] || colorMap.taxObligations;
   };
@@ -4526,7 +4526,7 @@ function AppContent() {
         style={[
           styles.deductionCategoryHeader,
           isCollapsed && styles.deductionCategoryHeaderCollapsed,
-          { backgroundColor: hasValues ? colors.light : '#F8FAFC' }
+          { backgroundColor: hasValues ? colors.light : theme.surfaceSecondary }
         ]}
         onPress={() => toggleDetailsCategory(categoryKey)}
         activeOpacity={0.7}
@@ -4905,14 +4905,14 @@ function AppContent() {
           </View>
 
           {/* Main Result Card */}
-          <View style={[styles.resultMainCard, { backgroundColor: result.refund >= 0 ? '#ECFDF5' : '#FEF2F2' }]}>
+          <View style={[styles.resultMainCard, { backgroundColor: result.refund >= 0 ? theme.successLight : theme.errorLight }]}>
             <View style={styles.resultMainHeader}>
               <Ionicons
                 name={result.refund >= 0 ? "trending-up" : "trending-down"}
                 size={24}
-                color={result.refund >= 0 ? '#10B981' : '#EF4444'}
+                color={result.refund >= 0 ? theme.success : theme.error}
               />
-              <Text style={[styles.resultMainLabel, { color: result.refund >= 0 ? '#059669' : '#DC2626' }]}>
+              <Text style={[styles.resultMainLabel, { color: result.refund >= 0 ? theme.success : theme.error }]}>
                 {result.refund >= 0 ? 'Estimated Refund' : 'Amount Owing'}
               </Text>
             </View>
@@ -4930,15 +4930,15 @@ function AppContent() {
 
         {/* Income Breakdown Section */}
         <View style={styles.deductionCategory}>
-          <View style={[styles.deductionCategoryHeader, { backgroundColor: '#EBF5FF' }]}>
+          <View style={[styles.deductionCategoryHeader, { backgroundColor: theme.primaryLight }]}>
             <View style={styles.categoryHeaderLeft}>
-              <View style={[styles.categoryIcon, { backgroundColor: '#4A90E2' }]}>
+              <View style={[styles.categoryIcon, { backgroundColor: theme.primary }]}>
                 <Ionicons name="wallet-outline" size={22} color="#fff" />
               </View>
               <View style={styles.categoryTitleContainer}>
-                <Text style={[styles.categoryTitle, { color: '#2563EB' }]}>Income Breakdown</Text>
+                <Text style={[styles.categoryTitle, { color: theme.text }]}>Income Breakdown</Text>
                 <Text style={styles.categoryDescription}>Total gross income from all sources</Text>
-                <Text style={[styles.categoryTotal, { color: '#4A90E2' }]}>
+                <Text style={[styles.categoryTotal, { color: theme.text }]}>
                   Total: {formatCurrency(result.totalTFNIncome + result.abnIncomeNum)}
                 </Text>
               </View>
@@ -4948,7 +4948,7 @@ function AppContent() {
           <View style={styles.categoryContent}>
             <View style={styles.summaryBreakdown}>
               <View style={styles.summaryBreakdownItem}>
-                <View style={[styles.summaryBreakdownDot, { backgroundColor: '#4A90E2' }]} />
+                <View style={[styles.summaryBreakdownDot, { backgroundColor: theme.primary }]} />
                 <Text style={styles.summaryBreakdownLabel}>TFN Employment Income</Text>
                 <Text style={styles.summaryBreakdownValue}>{formatCurrency(result.totalTFNIncome)}</Text>
               </View>
@@ -4963,13 +4963,13 @@ function AppContent() {
 
         {/* Deductions Breakdown Section */}
         <View style={styles.deductionCategory}>
-          <View style={[styles.deductionCategoryHeader, { backgroundColor: '#ECFDF5' }]}>
+          <View style={[styles.deductionCategoryHeader, { backgroundColor: theme.successLight }]}>
             <View style={styles.categoryHeaderLeft}>
-              <View style={[styles.categoryIcon, { backgroundColor: '#10B981' }]}>
+              <View style={[styles.categoryIcon, { backgroundColor: theme.success }]}>
                 <Ionicons name="receipt-outline" size={22} color="#fff" />
               </View>
               <View style={styles.categoryTitleContainer}>
-                <Text style={[styles.categoryTitle, { color: '#059669' }]}>Deductions Breakdown</Text>
+                <Text style={[styles.categoryTitle, { color: theme.success }]}>Deductions Breakdown</Text>
                 <Text style={styles.categoryDescription}>Total allowable tax deductions claimed</Text>
                 <Text style={[styles.categoryTotal, { color: '#10B981' }]}>
                   Total: -{formatCurrency(result.totalDeductions)}
@@ -4996,13 +4996,13 @@ function AppContent() {
 
         {/* Tax Calculation Section */}
         <View style={styles.deductionCategory}>
-          <View style={[styles.deductionCategoryHeader, { backgroundColor: '#FFFBEB' }]}>
+          <View style={[styles.deductionCategoryHeader, { backgroundColor: theme.warningLight }]}>
             <View style={styles.categoryHeaderLeft}>
-              <View style={[styles.categoryIcon, { backgroundColor: '#F59E0B' }]}>
+              <View style={[styles.categoryIcon, { backgroundColor: theme.warning }]}>
                 <Ionicons name="calculator-outline" size={22} color="#fff" />
               </View>
               <View style={styles.categoryTitleContainer}>
-                <Text style={[styles.categoryTitle, { color: '#D97706' }]}>Tax Calculation</Text>
+                <Text style={[styles.categoryTitle, { color: theme.warning }]}>Tax Calculation</Text>
                 <Text style={styles.categoryDescription}>Detailed breakdown of tax liability calculation</Text>
                 <Text style={[styles.categoryTotal, { color: '#F59E0B' }]}>
                   Final Tax: {formatCurrency(result.finalTax)}
@@ -5057,7 +5057,7 @@ function AppContent() {
         {/* Next Steps Section */}
         <View style={styles.nextStepsContainer}>
           <View style={styles.nextStepsHeader}>
-            <Ionicons name="information-circle-outline" size={20} color="#4A90E2" />
+            <Ionicons name="information-circle-outline" size={20} color={theme.primary} />
             <Text style={styles.nextStepsTitle}>Important Reminder</Text>
           </View>
           <View style={styles.nextStepsList}>
@@ -5073,23 +5073,23 @@ function AppContent() {
             {/* Action Buttons Section - Only visible in card view */}
             <View style={styles.nextStepsContainer}>
               <View style={styles.nextStepsHeader}>
-                <Ionicons name="options-outline" size={20} color="#4A90E2" />
+                <Ionicons name="options-outline" size={20} color={theme.primary} />
                 <Text style={styles.nextStepsTitle}>Export & Save Options</Text>
               </View>
 
               <View style={styles.quickAddGrid}>
-                <TouchableOpacity style={[styles.quickAddButton, { backgroundColor: '#EF4444' }]} onPress={exportPDF}>
+                <TouchableOpacity style={[styles.quickAddButton, { backgroundColor: theme.error }]} onPress={exportPDF}>
                   <Ionicons name="document-outline" size={20} color="#fff" />
                   <Text style={[styles.quickAddButtonText, { color: '#fff', marginTop: 8 }]}>Export PDF</Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity style={[styles.quickAddButton, { backgroundColor: '#10B981' }]} onPress={exportCSV}>
+                <TouchableOpacity style={[styles.quickAddButton, { backgroundColor: theme.success }]} onPress={exportCSV}>
                   <Ionicons name="download-outline" size={20} color="#fff" />
                   <Text style={[styles.quickAddButtonText, { color: '#fff', marginTop: 8 }]}>Export CSV</Text>
                 </TouchableOpacity>
 
                 {!viewingCalculation && (
-                  <TouchableOpacity style={[styles.quickAddButton, { backgroundColor: '#F59E0B' }]} onPress={handleSaveCalculation}>
+                  <TouchableOpacity style={[styles.quickAddButton, { backgroundColor: theme.warning }]} onPress={handleSaveCalculation}>
                     <Ionicons name="bookmark-outline" size={20} color="#fff" />
                     <Text style={[styles.quickAddButtonText, { color: '#fff', marginTop: 8 }]}>Save Calculation</Text>
                   </TouchableOpacity>
@@ -5130,7 +5130,7 @@ function AppContent() {
           style={styles.fullWidthHomeButton}
           onPress={navigateToHome}
         >
-          <Ionicons name="home-outline" size={20} color="#4A90E2" />
+          <Ionicons name="home-outline" size={20} color={theme.primary} />
           <Text style={styles.fullWidthHomeButtonText}>Back to Home</Text>
         </TouchableOpacity>
       </View>
