@@ -3017,6 +3017,18 @@ function AppContent() {
     setCurrentStep(prev => Math.max(prev - 1, 1));
   }, []);
 
+  // Back button navigation function
+  const handleBackNavigation = useCallback(() => {
+    if (currentStep === 1 || currentStep === 4) {
+      // From step 1 (page 1) or step 4 (success) go to home
+      navigateToHome();
+    } else {
+      // From step 2 (page 2) go to step 1 (page 1)
+      // From step 3 (page 3) go to step 2 (page 2)
+      setCurrentStep(prev => Math.max(prev - 1, 1));
+    }
+  }, [currentStep]);
+
   const goToStep = (step) => {
     // Prevent direct access to results step unless calculation is complete
     if (step === 4 && !result) {
@@ -3587,7 +3599,7 @@ function AppContent() {
         {/* Back button */}
         <TouchableOpacity
           style={styles.stepBackButton}
-          onPress={navigateToHome}
+          onPress={handleBackNavigation}
         >
           <Ionicons name="chevron-back" size={20} color={theme.textSecondary} />
         </TouchableOpacity>
