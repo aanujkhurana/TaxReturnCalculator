@@ -21,12 +21,13 @@ import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import HomeScreen from './HomeScreen';
 import { saveCalculation } from './storage';
+import { ThemeProvider, useTheme } from './ThemeContext';
 
-// Styles definition
-const styles = StyleSheet.create({
+// Styles definition - now a function that takes theme
+const getStyles = (theme) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: theme.surfaceSecondary,
     paddingTop: Platform.OS === 'ios' ? 50 : 40,
   },
 
@@ -43,7 +44,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#333',
+    color: theme.text,
     marginBottom: 16,
   },
   inputContainer: {
@@ -61,45 +62,46 @@ const styles = StyleSheet.create({
   helpIconWithData: {
     marginLeft: 'auto',
     padding: 4,
-    backgroundColor: 'rgba(74, 144, 226, 0.1)',
+    backgroundColor: theme.primaryLight,
     borderRadius: 12,
   },
   inputLabel: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#2D3748',
+    color: theme.text,
     marginLeft: 8,
     letterSpacing: 0.2,
   },
   input: {
-    backgroundColor: '#fff',
+    backgroundColor: theme.surface,
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: theme.border,
     borderRadius: 12,
     padding: 14,
     fontSize: 16,
+    color: theme.text,
     elevation: 1,
-    shadowColor: '#000',
+    shadowColor: theme.shadow,
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
     shadowRadius: 2,
   },
   inputError: {
-    borderColor: '#FF6B6B',
+    borderColor: theme.error,
     borderWidth: 2,
-    backgroundColor: '#FFF5F5',
+    backgroundColor: theme.errorLight,
   },
   inputDisabled: {
-    backgroundColor: '#F7F8FA',
-    borderColor: '#E2E8F0',
-    color: '#64748B',
+    backgroundColor: theme.borderLight,
+    borderColor: theme.border,
+    color: theme.textSecondary,
   },
   multilineInput: {
     height: 80,
     textAlignVertical: 'top',
   },
   errorText: {
-    color: '#FF6B6B',
+    color: theme.error,
     fontSize: 12,
     marginTop: 4,
     marginLeft: 8,
@@ -121,20 +123,20 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#EBF5FF',
+    backgroundColor: theme.primaryLight,
     padding: 14,
     borderRadius: 14,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: '#BEE3F8',
-    shadowColor: '#4A90E2',
+    borderColor: theme.primaryBorder,
+    shadowColor: theme.primary,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
     shadowRadius: 3,
     elevation: 1,
   },
   addButtonText: {
-    color: '#4A90E2',
+    color: theme.primary,
     fontWeight: '600',
     marginLeft: 10,
     fontSize: 15,
@@ -143,38 +145,38 @@ const styles = StyleSheet.create({
   toggleButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.surface,
     padding: 18,
     borderRadius: 16,
     marginBottom: 14,
     elevation: 2,
-    shadowColor: '#000',
+    shadowColor: theme.shadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
     shadowRadius: 3,
     borderWidth: 1.5,
-    borderColor: '#E2E8F0',
+    borderColor: theme.border,
   },
   toggleButtonActive: {
-    backgroundColor: '#F0F9FF',
-    borderColor: '#4A90E2',
-    shadowColor: '#4A90E2',
+    backgroundColor: theme.primaryLight,
+    borderColor: theme.primary,
+    shadowColor: theme.primary,
     shadowOpacity: 0.12,
   },
   toggleText: {
     fontSize: 16,
-    color: '#64748B',
+    color: theme.textSecondary,
     marginLeft: 14,
     fontWeight: '500',
     letterSpacing: 0.2,
   },
   toggleTextActive: {
-    color: '#4A90E2',
+    color: theme.primary,
     fontWeight: '600',
   },
   toggleSubtext: {
     fontSize: 13,
-    color: '#9CA3AF',
+    color: theme.textTertiary,
     marginLeft: 38,
     marginTop: 4,
     lineHeight: 18,
@@ -182,14 +184,14 @@ const styles = StyleSheet.create({
   wfhInfo: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f8f9fa',
+    backgroundColor: theme.surfaceSecondary,
     padding: 10,
     borderRadius: 8,
     marginTop: 8,
   },
   infoText: {
     fontSize: 12,
-    color: '#666',
+    color: theme.textLight,
     marginLeft: 6,
     flex: 1,
   },
@@ -597,13 +599,13 @@ const styles = StyleSheet.create({
   },
   // Bottom button container styles
   bottomButtonContainer: {
-    backgroundColor: '#f8f9fa',
+    backgroundColor: theme.surfaceSecondary,
     paddingHorizontal: 16,
     paddingTop: 12,
     paddingBottom: Platform.OS === 'ios' ? 34 : 20, // Extra padding for phone navigation area
     borderTopWidth: 1,
-    borderTopColor: '#E2E8F0',
-    shadowColor: '#000',
+    borderTopColor: theme.border,
+    shadowColor: theme.shadow,
     shadowOffset: { width: 0, height: -2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -643,8 +645,8 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     backgroundColor: 'transparent',
     borderWidth: 2,
-    borderColor: '#6B7280',
-    shadowColor: '#000',
+    borderColor: theme.buttonBack,
+    shadowColor: theme.shadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
     shadowRadius: 3,
@@ -662,8 +664,8 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     backgroundColor: 'transparent',
     borderWidth: 2,
-    borderColor: '#EF4444',
-    shadowColor: '#000',
+    borderColor: theme.error,
+    shadowColor: theme.shadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
     shadowRadius: 3,
@@ -673,9 +675,9 @@ const styles = StyleSheet.create({
     height: 56,
   },
   navButtonPrimary: {
-    backgroundColor: '#000000',
-    borderColor: '#333333',
-    shadowColor: '#000000',
+    backgroundColor: theme.buttonNext,
+    borderColor: theme.buttonNextBorder,
+    shadowColor: theme.buttonNext,
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.2,
     shadowRadius: 5,
@@ -687,9 +689,9 @@ const styles = StyleSheet.create({
     height: 56,
   },
   navButtonCalculate: {
-    backgroundColor: '#10B981',
-    borderColor: '#059669',
-    shadowColor: '#10B981',
+    backgroundColor: theme.buttonCalculate,
+    borderColor: theme.buttonCalculateBorder,
+    shadowColor: theme.buttonCalculate,
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.2,
     shadowRadius: 5,
@@ -702,19 +704,19 @@ const styles = StyleSheet.create({
   },
   navButtonText: {
     fontSize: 16,
-    color: '#4A90E2',
+    color: theme.primary,
     fontWeight: '600',
     marginLeft: 8,
   },
   navButtonTextBack: {
     fontSize: 14,
-    color: '#6B7280',
+    color: theme.buttonBack,
     fontWeight: '600',
     marginLeft: 8,
   },
   navButtonTextCancel: {
     fontSize: 14,
-    color: '#EF4444',
+    color: theme.error,
     fontWeight: '600',
     marginLeft: 8,
   },
@@ -1219,9 +1221,9 @@ const styles = StyleSheet.create({
 
   // Smart input feature styles
   inputFocused: {
-    borderColor: '#4A90E2',
+    borderColor: theme.primary,
     borderWidth: 2,
-    shadowColor: '#4A90E2',
+    shadowColor: theme.primary,
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
@@ -1229,23 +1231,23 @@ const styles = StyleSheet.create({
   },
 
   inputWithValue: {
-    backgroundColor: '#F0F9FF',
-    borderColor: '#B3D9FF',
+    backgroundColor: theme.primaryLight,
+    borderColor: theme.primaryBorder,
   },
 
   suggestionsContainer: {
     marginTop: 8,
     padding: 12,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: theme.background,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: theme.border,
   },
 
   suggestionsLabel: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#4A5568',
+    color: theme.textSecondary,
     marginBottom: 8,
   },
 
@@ -1256,7 +1258,7 @@ const styles = StyleSheet.create({
   },
 
   suggestionChip: {
-    backgroundColor: '#4A90E2',
+    backgroundColor: theme.primary,
     borderRadius: 16,
     paddingHorizontal: 12,
     paddingVertical: 6,
@@ -1284,7 +1286,7 @@ const styles = StyleSheet.create({
 
   validationText: {
     fontSize: 12,
-    color: '#10B981',
+    color: theme.success,
     marginLeft: 4,
     fontWeight: '500',
   },
@@ -1785,255 +1787,9 @@ const styles = StyleSheet.create({
   },
 });
 
-// Help Modal Component
-const HelpModal = ({ visible, onClose, helpData }) => {
-  if (!helpData) return null;
+// HelpModal component will be defined inside AppContent function
 
-  return (
-    <Modal
-      visible={visible}
-      transparent={true}
-      animationType="slide"
-      onRequestClose={onClose}
-    >
-      <TouchableOpacity
-        style={styles.helpModalOverlay}
-        activeOpacity={1}
-        onPress={onClose}
-      >
-        <TouchableOpacity
-          style={styles.helpModalContent}
-          activeOpacity={1}
-          onPress={() => {}} // Prevent modal close when tapping content
-        >
-          <View style={styles.helpModalHeader}>
-            <Text style={styles.helpModalTitle}>{helpData.title}</Text>
-            <TouchableOpacity
-              style={styles.helpModalCloseButton}
-              onPress={onClose}
-            >
-              <Ionicons name="close" size={24} color="#64748B" />
-            </TouchableOpacity>
-          </View>
-
-          <ScrollView style={styles.helpModalScrollView} showsVerticalScrollIndicator={false}>
-            <View style={styles.helpSection}>
-              <Text style={styles.helpSectionTitle}>Purpose</Text>
-              <Text style={styles.helpSectionText}>{helpData.purpose}</Text>
-            </View>
-
-            {helpData.examples && helpData.examples.length > 0 && (
-              <View style={styles.helpSection}>
-                <Text style={styles.helpSectionTitle}>Examples</Text>
-                <View style={styles.helpExamplesList}>
-                  {helpData.examples.map((example, index) => (
-                    <Text key={index} style={styles.helpExampleItem}>
-                      • {example}
-                    </Text>
-                  ))}
-                </View>
-              </View>
-            )}
-
-            {helpData.tips && helpData.tips.length > 0 && (
-              <View style={styles.helpSection}>
-                <Text style={styles.helpSectionTitle}>Tips</Text>
-                <View style={styles.helpTipsList}>
-                  {helpData.tips.map((tip, index) => (
-                    <Text key={index} style={styles.helpTipItem}>
-                      • {tip}
-                    </Text>
-                  ))}
-                </View>
-              </View>
-            )}
-
-            {helpData.whereToFind && (
-              <View style={styles.helpSection}>
-                <Text style={styles.helpSectionTitle}>Where to Find</Text>
-                <View style={styles.helpWhereToFind}>
-                  <Text style={styles.helpWhereToFindText}>{helpData.whereToFind}</Text>
-                </View>
-              </View>
-            )}
-          </ScrollView>
-        </TouchableOpacity>
-      </TouchableOpacity>
-    </Modal>
-  );
-};
-
-// Memoized InputField component with smart features
-const InputField = memo(({ label, value, onChangeText, placeholder, keyboardType = 'numeric', multiline = false, icon, helpKey, error, editable = true, prefix = '', suffix = '' }) => {
-  const [showHelpModal, setShowHelpModal] = useState(false);
-  const [isFocused, setIsFocused] = useState(false);
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const helpData = helpKey ? HELP_TEXT[helpKey] : null;
-
-  // Smart suggestions based on field type
-  const getSmartSuggestions = (fieldKey) => {
-    const suggestions = {
-      workRelatedTravel: ['450', '800', '1200', '2000'],
-      workRelatedEquipment: ['500', '800', '1500', '3000'],
-      workRelatedUniforms: ['200', '300', '500', '800'],
-      selfEducationCourseFees: ['800', '1200', '2500', '5000'],
-      donationsCharitable: ['100', '250', '500', '1000'],
-      otherInvestment: ['500', '1000', '2000', '5000'],
-    };
-    return suggestions[fieldKey] || [];
-  };
-
-  const suggestions = getSmartSuggestions(helpKey);
-  const hasValue = value && value.trim() !== '';
-  const numericValue = parseFloat(value || '0');
-
-  // Format display value with prefix and suffix
-  const getDisplayValue = (val) => {
-    if (!val) return '';
-    return `${prefix}${val}${suffix}`;
-  };
-
-  // Extract raw value from display value (remove prefix and suffix)
-  const getRawValue = (displayVal) => {
-    if (!displayVal) return '';
-    let rawVal = displayVal;
-    if (prefix && rawVal.startsWith(prefix)) {
-      rawVal = rawVal.substring(prefix.length);
-    }
-    if (suffix && rawVal.endsWith(suffix)) {
-      rawVal = rawVal.substring(0, rawVal.length - suffix.length);
-    }
-    return rawVal;
-  };
-
-  // Filter input for numeric fields to only allow numbers and decimal point
-  const handleTextChange = (text) => {
-    // First extract the raw value without prefix/suffix
-    const rawText = getRawValue(text);
-
-    if (keyboardType === 'numeric') {
-      // Allow only numbers, decimal point, and handle empty string
-      const filteredText = rawText.replace(/[^0-9.]/g, '');
-
-      // Ensure only one decimal point
-      const parts = filteredText.split('.');
-      if (parts.length > 2) {
-        const filtered = parts[0] + '.' + parts.slice(1).join('');
-        onChangeText(filtered);
-      } else {
-        onChangeText(filteredText);
-      }
-    } else if (keyboardType === 'number-pad') {
-      // For integer-only fields, allow only numbers
-      const filteredText = rawText.replace(/[^0-9]/g, '');
-      onChangeText(filteredText);
-    } else {
-      onChangeText(rawText);
-    }
-  };
-
-  return (
-    <>
-      <View style={styles.inputContainer}>
-        <View style={styles.labelContainer}>
-          <Ionicons name={icon} size={18} color={error ? "#FF6B6B" : "#4A90E2"} />
-          <Text style={[styles.inputLabel, error && { color: '#FF6B6B' }]}>{label}</Text>
-          <TouchableOpacity
-            style={helpData ? styles.helpIconWithData : styles.helpIcon}
-            onPress={() => {
-              if (helpData) {
-                setShowHelpModal(true);
-              } else {
-                Alert.alert(label, placeholder);
-              }
-            }}
-          >
-            <Ionicons
-              name={helpData ? "help-circle" : "help-circle-outline"}
-              size={18}
-              color={helpData ? "#4A90E2" : "#64748B"}
-            />
-          </TouchableOpacity>
-        </View>
-        <TextInput
-          style={[
-            styles.input,
-            multiline && styles.multilineInput,
-            error && styles.inputError,
-            !editable && styles.inputDisabled,
-            isFocused && styles.inputFocused,
-            hasValue && styles.inputWithValue
-          ]}
-          value={getDisplayValue(value)}
-          onChangeText={handleTextChange}
-          onFocus={() => {
-            setIsFocused(true);
-            if (suggestions.length > 0 && !hasValue) {
-              setShowSuggestions(true);
-            }
-          }}
-          onBlur={() => {
-            setIsFocused(false);
-            setTimeout(() => setShowSuggestions(false), 200);
-          }}
-          placeholder={placeholder}
-          keyboardType={keyboardType}
-          multiline={multiline}
-          placeholderTextColor={!editable ? "#A0AEC0" : "#999"}
-          returnKeyType="done"
-          editable={editable}
-        />
-
-        {/* Smart Suggestions */}
-        {showSuggestions && suggestions.length > 0 && (
-          <View style={styles.suggestionsContainer}>
-            <Text style={styles.suggestionsLabel}>Common amounts:</Text>
-            <View style={styles.suggestionsRow}>
-              {suggestions.map((suggestion, index) => (
-                <TouchableOpacity
-                  key={index}
-                  style={styles.suggestionChip}
-                  onPress={() => {
-                    onChangeText(suggestion);
-                    setShowSuggestions(false);
-                  }}
-                >
-                  <Text style={styles.suggestionText}>${suggestion}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </View>
-        )}
-
-        {/* Enhanced validation feedback */}
-        {error && (
-          <View style={styles.errorContainer}>
-            <Ionicons name="alert-circle" size={16} color="#FF6B6B" />
-            <Text style={styles.errorText}>{error}</Text>
-          </View>
-        )}
-
-        {/* Smart feedback for valid values */}
-        {hasValue && !error && numericValue > 0 && (
-          <View style={styles.validationContainer}>
-            <Ionicons name="checkmark-circle" size={16} color="#10B981" />
-            <Text style={styles.validationText}>
-              Valid amount entered
-            </Text>
-          </View>
-        )}
-      </View>
-
-      <HelpModal
-        visible={showHelpModal}
-        onClose={() => setShowHelpModal(false)}
-        helpData={helpData}
-      />
-    </>
-  );
-});
-
-InputField.displayName = 'InputField';
+// InputField component will be defined inside AppContent function
 
 // Comprehensive help text data for all input fields
 const HELP_TEXT = {
@@ -2442,7 +2198,261 @@ const HELP_TEXT = {
   }
 };
 
-export default function App() {
+function AppContent() {
+  // Theme hook
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
+
+  // Memoized InputField component with smart features
+  const InputField = memo(({ label, value, onChangeText, placeholder, keyboardType = 'numeric', multiline = false, icon, helpKey, error, editable = true, prefix = '', suffix = '' }) => {
+    const [showHelpModal, setShowHelpModal] = useState(false);
+    const [isFocused, setIsFocused] = useState(false);
+    const [showSuggestions, setShowSuggestions] = useState(false);
+    const helpData = helpKey ? HELP_TEXT[helpKey] : null;
+
+    // Smart suggestions based on field type
+    const getSmartSuggestions = (fieldKey) => {
+      const suggestions = {
+        workRelatedTravel: ['450', '800', '1200', '2000'],
+        workRelatedEquipment: ['500', '800', '1500', '3000'],
+        workRelatedUniforms: ['200', '300', '500', '800'],
+        selfEducationCourseFees: ['800', '1200', '2500', '5000'],
+        donationsCharitable: ['100', '250', '500', '1000'],
+        otherInvestment: ['500', '1000', '2000', '5000'],
+      };
+      return suggestions[fieldKey] || [];
+    };
+
+    const suggestions = getSmartSuggestions(helpKey);
+    const hasValue = value && value.trim() !== '';
+    const numericValue = parseFloat(value || '0');
+
+    // Format display value with prefix and suffix
+    const getDisplayValue = (val) => {
+      if (!val) return '';
+      return `${prefix}${val}${suffix}`;
+    };
+
+    // Extract raw value from display value (remove prefix and suffix)
+    const getRawValue = (displayVal) => {
+      if (!displayVal) return '';
+      let rawVal = displayVal;
+      if (prefix && rawVal.startsWith(prefix)) {
+        rawVal = rawVal.substring(prefix.length);
+      }
+      if (suffix && rawVal.endsWith(suffix)) {
+        rawVal = rawVal.substring(0, rawVal.length - suffix.length);
+      }
+      return rawVal;
+    };
+
+    // Filter input for numeric fields to only allow numbers and decimal point
+    const handleTextChange = (text) => {
+      // First extract the raw value without prefix/suffix
+      const rawText = getRawValue(text);
+
+      if (keyboardType === 'numeric') {
+        // Allow only numbers, decimal point, and handle empty string
+        const filteredText = rawText.replace(/[^0-9.]/g, '');
+
+        // Ensure only one decimal point
+        const parts = filteredText.split('.');
+        if (parts.length > 2) {
+          const filtered = parts[0] + '.' + parts.slice(1).join('');
+          onChangeText(filtered);
+        } else {
+          onChangeText(filteredText);
+        }
+      } else if (keyboardType === 'number-pad') {
+        // For integer-only fields, allow only numbers
+        const filteredText = rawText.replace(/[^0-9]/g, '');
+        onChangeText(filteredText);
+      } else {
+        onChangeText(rawText);
+      }
+    };
+
+    return (
+      <>
+        <View style={styles.inputContainer}>
+          <View style={styles.labelContainer}>
+            <Ionicons name={icon} size={18} color={error ? theme.error : theme.primary} />
+            <Text style={[styles.inputLabel, error && { color: theme.error }]}>{label}</Text>
+            <TouchableOpacity
+              style={helpData ? styles.helpIconWithData : styles.helpIcon}
+              onPress={() => {
+                if (helpData) {
+                  setShowHelpModal(true);
+                } else {
+                  Alert.alert(label, placeholder);
+                }
+              }}
+            >
+              <Ionicons
+                name={helpData ? "help-circle" : "help-circle-outline"}
+                size={18}
+                color={helpData ? theme.primary : theme.textSecondary}
+              />
+            </TouchableOpacity>
+          </View>
+          <TextInput
+            style={[
+              styles.input,
+              multiline && styles.multilineInput,
+              error && styles.inputError,
+              !editable && styles.inputDisabled,
+              isFocused && styles.inputFocused,
+              hasValue && styles.inputWithValue
+            ]}
+            value={getDisplayValue(value)}
+            onChangeText={handleTextChange}
+            onFocus={() => {
+              setIsFocused(true);
+              if (suggestions.length > 0 && !hasValue) {
+                setShowSuggestions(true);
+              }
+            }}
+            onBlur={() => {
+              setIsFocused(false);
+              setTimeout(() => setShowSuggestions(false), 200);
+            }}
+            placeholder={placeholder}
+            keyboardType={keyboardType}
+            multiline={multiline}
+            placeholderTextColor={!editable ? theme.textTertiary : theme.textSecondary}
+            returnKeyType="done"
+            editable={editable}
+          />
+
+          {/* Smart Suggestions */}
+          {showSuggestions && suggestions.length > 0 && (
+            <View style={styles.suggestionsContainer}>
+              <Text style={styles.suggestionsLabel}>Common amounts:</Text>
+              <View style={styles.suggestionsRow}>
+                {suggestions.map((suggestion, index) => (
+                  <TouchableOpacity
+                    key={index}
+                    style={styles.suggestionChip}
+                    onPress={() => {
+                      onChangeText(suggestion);
+                      setShowSuggestions(false);
+                    }}
+                  >
+                    <Text style={styles.suggestionText}>${suggestion}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+          )}
+
+          {/* Enhanced validation feedback */}
+          {error && (
+            <View style={styles.errorContainer}>
+              <Ionicons name="alert-circle" size={16} color={theme.error} />
+              <Text style={styles.errorText}>{error}</Text>
+            </View>
+          )}
+
+          {/* Smart feedback for valid values */}
+          {hasValue && !error && numericValue > 0 && (
+            <View style={styles.validationContainer}>
+              <Ionicons name="checkmark-circle" size={16} color={theme.success} />
+              <Text style={styles.validationText}>
+                Valid amount entered
+              </Text>
+            </View>
+          )}
+        </View>
+
+        <HelpModal
+          visible={showHelpModal}
+          onClose={() => setShowHelpModal(false)}
+          helpData={helpData}
+        />
+      </>
+    );
+  });
+
+  InputField.displayName = 'InputField';
+
+  // Help Modal Component
+  const HelpModal = ({ visible, onClose, helpData }) => {
+    if (!helpData) return null;
+
+    return (
+      <Modal
+        visible={visible}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={onClose}
+      >
+        <TouchableOpacity
+          style={styles.helpModalOverlay}
+          activeOpacity={1}
+          onPress={onClose}
+        >
+          <TouchableOpacity
+            style={styles.helpModalContent}
+            activeOpacity={1}
+            onPress={() => {}} // Prevent modal close when tapping content
+          >
+            <View style={styles.helpModalHeader}>
+              <Text style={styles.helpModalTitle}>{helpData.title}</Text>
+              <TouchableOpacity
+                style={styles.helpModalCloseButton}
+                onPress={onClose}
+              >
+                <Ionicons name="close" size={24} color={theme.textSecondary} />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView style={styles.helpModalScrollView} showsVerticalScrollIndicator={false}>
+              <View style={styles.helpSection}>
+                <Text style={styles.helpSectionTitle}>Purpose</Text>
+                <Text style={styles.helpSectionText}>{helpData.purpose}</Text>
+              </View>
+
+              {helpData.examples && helpData.examples.length > 0 && (
+                <View style={styles.helpSection}>
+                  <Text style={styles.helpSectionTitle}>Examples</Text>
+                  <View style={styles.helpExamplesList}>
+                    {helpData.examples.map((example, index) => (
+                      <Text key={index} style={styles.helpExampleItem}>
+                        • {example}
+                      </Text>
+                    ))}
+                  </View>
+                </View>
+              )}
+
+              {helpData.tips && helpData.tips.length > 0 && (
+                <View style={styles.helpSection}>
+                  <Text style={styles.helpSectionTitle}>Tips</Text>
+                  <View style={styles.helpTipsList}>
+                    {helpData.tips.map((tip, index) => (
+                      <Text key={index} style={styles.helpTipItem}>
+                        • {tip}
+                      </Text>
+                    ))}
+                  </View>
+                </View>
+              )}
+
+              {helpData.whereToFind && (
+                <View style={styles.helpSection}>
+                  <Text style={styles.helpSectionTitle}>Where to Find</Text>
+                  <View style={styles.helpWhereToFind}>
+                    <Text style={styles.helpWhereToFindText}>{helpData.whereToFind}</Text>
+                  </View>
+                </View>
+              )}
+            </ScrollView>
+          </TouchableOpacity>
+        </TouchableOpacity>
+      </Modal>
+    );
+  };
+
   // Navigation state
   const [currentScreen, setCurrentScreen] = useState('home'); // 'home' or 'calculator'
   const [viewingCalculation, setViewingCalculation] = useState(null);
@@ -5191,5 +5201,14 @@ export default function App() {
         </View>
       )}
     </KeyboardAvoidingView>
+  );
+}
+
+// Main App component with theme provider
+export default function App() {
+  return (
+    <ThemeProvider>
+      <AppContent />
+    </ThemeProvider>
   );
 }

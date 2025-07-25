@@ -14,10 +14,15 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from './ThemeContext';
+import ThemeToggle from './ThemeToggle';
 
 const { width } = Dimensions.get('window');
 
 const HomeScreen = ({ onCreateNew, onViewCalculation }) => {
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
+
   const [savedCalculations, setSavedCalculations] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
   const [isResourcesExpanded, setIsResourcesExpanded] = useState(false);
@@ -220,10 +225,13 @@ const HomeScreen = ({ onCreateNew, onViewCalculation }) => {
             <Text style={styles.fixedHeaderTitle}>Australia Tax Return</Text>
             <Text style={styles.fixedHeaderSubtitle}>Professional Tax Calculator</Text>
           </View>
-          <View style={styles.fixedHeaderStats}>
-            <Text style={styles.fixedHeaderStatsText}>
-              {savedCalculations.length} saved
-            </Text>
+          <View style={styles.fixedHeaderActions}>
+            <ThemeToggle style={styles.themeToggle} />
+            <View style={styles.fixedHeaderStats}>
+              <Text style={styles.fixedHeaderStatsText}>
+                {savedCalculations.length} saved
+              </Text>
+            </View>
           </View>
         </View>
       </View>
@@ -371,10 +379,10 @@ const HomeScreen = ({ onCreateNew, onViewCalculation }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (theme) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: theme.background,
   },
   // Simple Fixed Header Styles
   fixedHeaderContainer: {
@@ -391,37 +399,45 @@ const styles = StyleSheet.create({
   fixedHeaderTextContainer: {
     flex: 1,
   },
+  fixedHeaderActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  themeToggle: {
+    marginRight: 4,
+  },
   fixedHeaderTitle: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#1E293B',
+    color: theme.text,
     letterSpacing: 0.2,
     marginBottom: 2,
   },
   fixedHeaderSubtitle: {
     fontSize: 14,
-    color: '#4A90E2',
+    color: theme.primary,
     fontWeight: '500',
     letterSpacing: 0.1,
   },
   fixedHeaderStats: {
-    backgroundColor: '#F0F7FF',
+    backgroundColor: theme.primaryLight,
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#E1EFFF',
+    borderColor: theme.primaryBorder,
   },
   fixedHeaderStatsText: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#4A90E2',
+    color: theme.primary,
     letterSpacing: 0.1,
   },
 
   scrollContainer: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: theme.background,
   },
   scrollContent: {
     paddingTop: 8,
@@ -435,11 +451,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 12,
     paddingBottom: Platform.OS === 'ios' ? 30 : 20,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.surface,
     borderTopWidth: 1,
-    borderTopColor: '#E2E8F0',
+    borderTopColor: theme.border,
     elevation: 8,
-    shadowColor: '#000',
+    shadowColor: theme.shadow,
     shadowOffset: { width: 0, height: -2 },
     shadowOpacity: 0.1,
     shadowRadius: 8,
@@ -448,12 +464,12 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     overflow: 'hidden',
     elevation: 10,
-    shadowColor: '#10B981',
+    shadowColor: theme.accent,
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.25,
     shadowRadius: 12,
     borderWidth: 1,
-    borderColor: 'rgba(16, 185, 129, 0.2)',
+    borderColor: theme.accentBorder,
   },
   createNewGradient: {
     flexDirection: 'row',
