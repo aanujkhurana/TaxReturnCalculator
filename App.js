@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, memo, useMemo } from 'react';
+import { useState, useEffect, useCallback, memo, useMemo, useRef } from 'react';
 import {
   View,
   Text,
@@ -12,7 +12,9 @@ import {
   KeyboardAvoidingView,
   ActivityIndicator,
   Modal,
-  Linking
+  Linking,
+  Keyboard,
+  TouchableWithoutFeedback
 } from 'react-native';
 import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
@@ -2199,84 +2201,88 @@ const HELP_TEXT = {
   }
 };
 
-function AppContent() {
-  // Theme hook
-  const { theme, isDark, isLoading: themeLoading } = useTheme();
+// InputField component with smart features - MOVED OUTSIDE to prevent re-creation
+const InputField = ({ label, value, onChangeText, placeholder, keyboardType = 'numeric', multiline = false, icon, helpKey, error, editable = true, prefix = '', suffix = '' }) => {
+  const { theme } = useTheme();
   const styles = getStyles(theme);
 
-  // Show splash screen while theme is loading or during initial splash
-  const [showSplash, setShowSplash] = useState(true);
+  const [showHelpModal, setShowHelpModal] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [displayValue, setDisplayValue] = useState('');
+  const inputRef = useRef(null);
+  const isTypingRef = useRef(false);
+  const helpData = helpKey ? HELP_TEXT[helpKey] : null;
 
-  // Memoized InputField component with smart features
-  const InputField = memo(({ label, value, onChangeText, placeholder, keyboardType = 'numeric', multiline = false, icon, helpKey, error, editable = true, prefix = '', suffix = '' }) => {
-    const [showHelpModal, setShowHelpModal] = useState(false);
-    const [isFocused, setIsFocused] = useState(false);
-    const [showSuggestions, setShowSuggestions] = useState(false);
-    const helpData = helpKey ? HELP_TEXT[helpKey] : null;
+  // Sync display value with external value
+  useEffect(() => {
+    // Don't update display value if user is actively typing
+    if (isTypingRef.current) return;
 
-    // Smart suggestions based on field type
-    const getSmartSuggestions = (fieldKey) => {
-      const suggestions = {
-        workRelatedTravel: ['450', '800', '1200', '2000'],
-        workRelatedEquipment: ['500', '800', '1500', '3000'],
-        workRelatedUniforms: ['200', '300', '500', '800'],
-        selfEducationCourseFees: ['800', '1200', '2500', '5000'],
-        donationsCharitable: ['100', '250', '500', '1000'],
-        otherInvestment: ['500', '1000', '2000', '5000'],
-      };
-      return suggestions[fieldKey] || [];
+    if (!isFocused) {
+      // Only apply formatting when not focused
+      const formattedValue = value ? `${prefix}${value}${suffix}` : '';
+      setDisplayValue(formattedValue);
+    } else {
+      // When focused, show raw value without formatting
+      setDisplayValue(value || '');
+    }
+  }, [value, prefix, suffix, isFocused]);
+
+  // Smart suggestions based on field type
+  const getSmartSuggestions = (fieldKey) => {
+    const suggestions = {
+      workRelatedTravel: ['450', '800', '1200', '2000'],
+      workRelatedEquipment: ['500', '800', '1500', '3000'],
+      workRelatedUniforms: ['200', '300', '500', '800'],
+      selfEducationCourseFees: ['800', '1200', '2500', '5000'],
+      donationsCharitable: ['100', '250', '500', '1000'],
+      otherInvestment: ['500', '1000', '2000', '5000'],
     };
+    return suggestions[fieldKey] || [];
+  };
 
-    const suggestions = getSmartSuggestions(helpKey);
-    const hasValue = value && value.trim() !== '';
-    const numericValue = parseFloat(value || '0');
+  const suggestions = getSmartSuggestions(helpKey);
+  const hasValue = value && value.trim() !== '';
+  const numericValue = parseFloat(value || '0');
 
-    // Format display value with prefix and suffix
-    const getDisplayValue = (val) => {
-      if (!val) return '';
-      return `${prefix}${val}${suffix}`;
-    };
+  // Filter input for numeric fields to only allow numbers and decimal point
+  const handleTextChange = (text) => {
+    // Mark that user is actively typing
+    isTypingRef.current = true;
 
-    // Extract raw value from display value (remove prefix and suffix)
-    const getRawValue = (displayVal) => {
-      if (!displayVal) return '';
-      let rawVal = displayVal;
-      if (prefix && rawVal.startsWith(prefix)) {
-        rawVal = rawVal.substring(prefix.length);
+    // Update display value immediately for smooth typing
+    setDisplayValue(text);
+
+    let filteredText = text;
+
+    if (keyboardType === 'numeric') {
+      // Allow only numbers, decimal point, and handle empty string
+      filteredText = text.replace(/[^0-9.]/g, '');
+
+      // Ensure only one decimal point
+      const parts = filteredText.split('.');
+      if (parts.length > 2) {
+        filteredText = parts[0] + '.' + parts.slice(1).join('');
       }
-      if (suffix && rawVal.endsWith(suffix)) {
-        rawVal = rawVal.substring(0, rawVal.length - suffix.length);
-      }
-      return rawVal;
-    };
+    } else if (keyboardType === 'number-pad') {
+      // For integer-only fields, allow only numbers
+      filteredText = text.replace(/[^0-9]/g, '');
+    }
 
-    // Filter input for numeric fields to only allow numbers and decimal point
-    const handleTextChange = (text) => {
-      // First extract the raw value without prefix/suffix
-      const rawText = getRawValue(text);
+    // Only call onChangeText if the filtered text is different from current value
+    // This prevents unnecessary re-renders that can cause focus loss
+    if (filteredText !== value) {
+      onChangeText(filteredText);
+    }
 
-      if (keyboardType === 'numeric') {
-        // Allow only numbers, decimal point, and handle empty string
-        const filteredText = rawText.replace(/[^0-9.]/g, '');
+    // Clear typing flag after a short delay
+    setTimeout(() => {
+      isTypingRef.current = false;
+    }, 100);
+  };
 
-        // Ensure only one decimal point
-        const parts = filteredText.split('.');
-        if (parts.length > 2) {
-          const filtered = parts[0] + '.' + parts.slice(1).join('');
-          onChangeText(filtered);
-        } else {
-          onChangeText(filteredText);
-        }
-      } else if (keyboardType === 'number-pad') {
-        // For integer-only fields, allow only numbers
-        const filteredText = rawText.replace(/[^0-9]/g, '');
-        onChangeText(filteredText);
-      } else {
-        onChangeText(rawText);
-      }
-    };
-
-    return (
+  return (
       <>
         <View style={styles.inputContainer}>
           <View style={styles.labelContainer}>
@@ -2300,6 +2306,7 @@ function AppContent() {
             </TouchableOpacity>
           </View>
           <TextInput
+            ref={inputRef}
             style={[
               styles.input,
               multiline && styles.multilineInput,
@@ -2308,24 +2315,42 @@ function AppContent() {
               isFocused && styles.inputFocused,
               hasValue && styles.inputWithValue
             ]}
-            value={getDisplayValue(value)}
+            value={displayValue}
             onChangeText={handleTextChange}
             onFocus={() => {
               setIsFocused(true);
+              isTypingRef.current = false; // Reset typing state on focus
+              // Show raw value when focused
+              setDisplayValue(value || '');
               if (suggestions.length > 0 && !hasValue) {
                 setShowSuggestions(true);
               }
             }}
             onBlur={() => {
               setIsFocused(false);
+              isTypingRef.current = false; // Reset typing state on blur
+              // Apply formatting when focus is lost
+              const formattedValue = value ? `${prefix}${value}${suffix}` : '';
+              setDisplayValue(formattedValue);
               setTimeout(() => setShowSuggestions(false), 200);
             }}
             placeholder={placeholder}
             keyboardType={keyboardType}
             multiline={multiline}
             placeholderTextColor={!editable ? theme.textTertiary : theme.textSecondary}
-            returnKeyType="done"
+            returnKeyType={multiline ? "default" : "next"}
             editable={editable}
+            selectTextOnFocus={false}
+            blurOnSubmit={multiline}
+            autoCorrect={false}
+            autoCapitalize="none"
+            onSubmitEditing={() => {
+              // Don't dismiss keyboard for single-line inputs
+              if (!multiline) {
+                // Keep focus on current input
+                inputRef.current?.focus();
+              }
+            }}
           />
 
           {/* Smart Suggestions */}
@@ -2339,6 +2364,7 @@ function AppContent() {
                     style={styles.suggestionChip}
                     onPress={() => {
                       onChangeText(suggestion);
+                      setDisplayValue(suggestion);
                       setShowSuggestions(false);
                     }}
                   >
@@ -2375,87 +2401,96 @@ function AppContent() {
         />
       </>
     );
-  });
+};
 
-  InputField.displayName = 'InputField';
+// Help Modal Component - MOVED OUTSIDE to prevent re-creation
+const HelpModal = ({ visible, onClose, helpData }) => {
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
 
-  // Help Modal Component
-  const HelpModal = ({ visible, onClose, helpData }) => {
-    if (!helpData) return null;
+  if (!helpData) return null;
 
-    return (
-      <Modal
-        visible={visible}
-        transparent={true}
-        animationType="slide"
-        onRequestClose={onClose}
+  return (
+    <Modal
+      visible={visible}
+      transparent={true}
+      animationType="slide"
+      onRequestClose={onClose}
+    >
+      <TouchableOpacity
+        style={styles.helpModalOverlay}
+        activeOpacity={1}
+        onPress={onClose}
       >
         <TouchableOpacity
-          style={styles.helpModalOverlay}
+          style={styles.helpModalContent}
           activeOpacity={1}
-          onPress={onClose}
+          onPress={() => {}} // Prevent modal close when tapping content
         >
-          <TouchableOpacity
-            style={styles.helpModalContent}
-            activeOpacity={1}
-            onPress={() => {}} // Prevent modal close when tapping content
-          >
-            <View style={styles.helpModalHeader}>
-              <Text style={styles.helpModalTitle}>{helpData.title}</Text>
-              <TouchableOpacity
-                style={styles.helpModalCloseButton}
-                onPress={onClose}
-              >
-                <Ionicons name="close" size={24} color={theme.textSecondary} />
-              </TouchableOpacity>
+          <View style={styles.helpModalHeader}>
+            <Text style={styles.helpModalTitle}>{helpData.title}</Text>
+            <TouchableOpacity
+              style={styles.helpModalCloseButton}
+              onPress={onClose}
+            >
+              <Ionicons name="close" size={24} color={theme.textSecondary} />
+            </TouchableOpacity>
+          </View>
+
+          <ScrollView style={styles.helpModalScrollView} showsVerticalScrollIndicator={false}>
+            <View style={styles.helpSection}>
+              <Text style={styles.helpSectionTitle}>Purpose</Text>
+              <Text style={styles.helpSectionText}>{helpData.purpose}</Text>
             </View>
 
-            <ScrollView style={styles.helpModalScrollView} showsVerticalScrollIndicator={false}>
+            {helpData.examples && helpData.examples.length > 0 && (
               <View style={styles.helpSection}>
-                <Text style={styles.helpSectionTitle}>Purpose</Text>
-                <Text style={styles.helpSectionText}>{helpData.purpose}</Text>
+                <Text style={styles.helpSectionTitle}>Examples</Text>
+                <View style={styles.helpExamplesList}>
+                  {helpData.examples.map((example, index) => (
+                    <Text key={index} style={styles.helpExampleItem}>
+                      • {example}
+                    </Text>
+                  ))}
+                </View>
               </View>
+            )}
 
-              {helpData.examples && helpData.examples.length > 0 && (
-                <View style={styles.helpSection}>
-                  <Text style={styles.helpSectionTitle}>Examples</Text>
-                  <View style={styles.helpExamplesList}>
-                    {helpData.examples.map((example, index) => (
-                      <Text key={index} style={styles.helpExampleItem}>
-                        • {example}
-                      </Text>
-                    ))}
-                  </View>
+            {helpData.tips && helpData.tips.length > 0 && (
+              <View style={styles.helpSection}>
+                <Text style={styles.helpSectionTitle}>Tips</Text>
+                <View style={styles.helpTipsList}>
+                  {helpData.tips.map((tip, index) => (
+                    <Text key={index} style={styles.helpTipItem}>
+                      • {tip}
+                    </Text>
+                  ))}
                 </View>
-              )}
+              </View>
+            )}
 
-              {helpData.tips && helpData.tips.length > 0 && (
-                <View style={styles.helpSection}>
-                  <Text style={styles.helpSectionTitle}>Tips</Text>
-                  <View style={styles.helpTipsList}>
-                    {helpData.tips.map((tip, index) => (
-                      <Text key={index} style={styles.helpTipItem}>
-                        • {tip}
-                      </Text>
-                    ))}
-                  </View>
+            {helpData.whereToFind && (
+              <View style={styles.helpSection}>
+                <Text style={styles.helpSectionTitle}>Where to Find</Text>
+                <View style={styles.helpWhereToFind}>
+                  <Text style={styles.helpWhereToFindText}>{helpData.whereToFind}</Text>
                 </View>
-              )}
-
-              {helpData.whereToFind && (
-                <View style={styles.helpSection}>
-                  <Text style={styles.helpSectionTitle}>Where to Find</Text>
-                  <View style={styles.helpWhereToFind}>
-                    <Text style={styles.helpWhereToFindText}>{helpData.whereToFind}</Text>
-                  </View>
-                </View>
-              )}
-            </ScrollView>
-          </TouchableOpacity>
+              </View>
+            )}
+          </ScrollView>
         </TouchableOpacity>
-      </Modal>
-    );
-  };
+      </TouchableOpacity>
+    </Modal>
+  );
+};
+
+function AppContent() {
+  // Theme hook
+  const { theme, isDark, isLoading: themeLoading } = useTheme();
+  const styles = getStyles(theme);
+
+  // Show splash screen while theme is loading or during initial splash
+  const [showSplash, setShowSplash] = useState(true);
 
   // Navigation state
   const [currentScreen, setCurrentScreen] = useState('splash'); // 'splash', 'home' or 'calculator'
@@ -5184,6 +5219,7 @@ function AppContent() {
     <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
     >
       <StatusBar style="light" />
 
@@ -5204,8 +5240,16 @@ function AppContent() {
 
       <StepIndicator />
 
-      <ScrollView style={styles.scrollContainer} showsVerticalScrollIndicator={false}>
-        {renderCurrentStep()}
+      <ScrollView
+        style={styles.scrollContainer}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <View>
+            {renderCurrentStep()}
+          </View>
+        </TouchableWithoutFeedback>
       </ScrollView>
 
       {currentStep < 4 && (
