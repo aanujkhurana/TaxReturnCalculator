@@ -622,137 +622,46 @@ const getStyles = (theme) => StyleSheet.create({
   stepLineActive: {
     backgroundColor: theme.primary,
   },
-  // Bottom button container styles
-  bottomButtonContainer: {
-    backgroundColor: theme.surfaceSecondary,
+
+
+  navButtonSpacer: {
+    flex: 1,
+  },
+  // Step button styles
+  stepButtonContainer: {
+    marginTop: 32,
+    marginBottom: 20,
     paddingHorizontal: 16,
-    paddingTop: 12,
-    paddingBottom: Platform.OS === 'ios' ? 34 : 20, // Extra padding for phone navigation area
-    borderTopWidth: 1,
-    borderTopColor: theme.border,
-    shadowColor: theme.shadow,
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 5,
   },
-  // Navigation button styles
-  navigationButtons: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: 0,
-    marginBottom: 0,
-    paddingHorizontal: 4,
-  },
-  navButton: {
+  stepButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 14,
-    paddingHorizontal: 24,
-    borderRadius: 16,
-    backgroundColor: theme.surfaceSecondary,
+    paddingVertical: 16,
+    paddingHorizontal: 32,
+    borderRadius: 12,
     borderWidth: 1.5,
-    borderColor: theme.primary,
-    shadowColor: theme.shadow,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
+    elevation: 3,
+    minHeight: 56,
   },
-  navButtonBack: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 16,
-    paddingHorizontal: 20,
-    borderRadius: 14,
-    backgroundColor: 'transparent',
-    borderWidth: 2,
-    borderColor: theme.buttonBack,
-    shadowColor: theme.shadow,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-    elevation: 2,
-    minWidth: '30%',
-    maxWidth: 120,
-    height: 56,
-  },
-  navButtonCancel: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 16,
-    paddingHorizontal: 20,
-    borderRadius: 14,
-    backgroundColor: 'transparent',
-    borderWidth: 2,
-    borderColor: theme.error,
-    shadowColor: theme.shadow,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-    elevation: 2,
-    minWidth: '30%',
-    maxWidth: 120,
-    height: 56,
-  },
-  navButtonPrimary: {
+  stepButtonNext: {
     backgroundColor: theme.buttonNext,
     borderColor: theme.buttonNextBorder,
     shadowColor: theme.buttonNext,
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.2,
-    shadowRadius: 5,
-    elevation: 3,
-    minWidth: '40%',
-    maxWidth: 160,
-    paddingVertical: 16,
-    paddingHorizontal: 32,
-    height: 56,
   },
-  navButtonCalculate: {
+  stepButtonCalculate: {
     backgroundColor: theme.buttonCalculate,
     borderColor: theme.buttonCalculateBorder,
     shadowColor: theme.buttonCalculate,
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.2,
-    shadowRadius: 5,
-    elevation: 3,
-    minWidth: '40%',
-    maxWidth: 160,
-    paddingVertical: 16,
-    paddingHorizontal: 32,
-    height: 56,
   },
-  navButtonText: {
-    fontSize: 16,
-    color: theme.text,
-    fontWeight: '600',
-    marginLeft: 8,
-  },
-  navButtonTextBack: {
-    fontSize: 14,
-    color: theme.buttonBack,
-    fontWeight: '600',
-    marginLeft: 8,
-  },
-  navButtonTextCancel: {
-    fontSize: 14,
-    color: theme.error,
-    fontWeight: '600',
-    marginLeft: 8,
-  },
-  navButtonTextPrimary: {
+  stepButtonText: {
     fontSize: 16,
     color: '#fff',
     fontWeight: '600',
-    marginLeft: 8,
-  },
-  navButtonSpacer: {
-    flex: 1,
+    marginRight: 8,
   },
   startOverButton: {
     flex: 1,
@@ -3648,44 +3557,7 @@ function AppContent() {
 
 
 
-  // Navigation Buttons Component
-  const NavigationButtons = () => (
-    <View style={styles.navigationButtons}>
-      {currentStep === 1 && (
-        <TouchableOpacity style={styles.navButtonCancel} onPress={navigateToHome}>
-          <Ionicons name="close" size={18} color={theme.error} />
-          <Text style={styles.navButtonTextCancel}>Cancel</Text>
-        </TouchableOpacity>
-      )}
 
-      {currentStep > 1 && (
-        <TouchableOpacity style={styles.navButtonBack} onPress={prevStep}>
-          <Ionicons name="chevron-back" size={18} color={theme.textSecondary} />
-          <Text style={styles.navButtonTextBack}>Back</Text>
-        </TouchableOpacity>
-      )}
-
-      <View style={styles.navButtonSpacer} />
-
-      {currentStep < 3 && (
-        <TouchableOpacity style={[styles.navButton, styles.navButtonPrimary]} onPress={nextStep}>
-          <Text style={styles.navButtonTextPrimary}>Next</Text>
-          <Ionicons name="chevron-forward" size={20} color="#fff" />
-        </TouchableOpacity>
-      )}
-
-      {currentStep === 3 && (
-        <TouchableOpacity
-          style={[styles.navButton, styles.navButtonCalculate, isCalculating && { opacity: 0.7 }]}
-          onPress={estimateTax}
-          disabled={isCalculating}
-        >
-          <Ionicons name={isCalculating ? "hourglass-outline" : "calculator-outline"} size={20} color="#fff" />
-          <Text style={styles.navButtonTextPrimary}>{isCalculating ? 'Calculating...' : 'Calculate'}</Text>
-        </TouchableOpacity>
-      )}
-    </View>
-  );
 
 
 
@@ -3979,6 +3851,16 @@ function AppContent() {
           </View>
         )}
 
+        {/* Next Button */}
+        <View style={styles.stepButtonContainer}>
+          <TouchableOpacity
+            style={[styles.stepButton, styles.stepButtonNext]}
+            onPress={nextStep}
+          >
+            <Text style={styles.stepButtonText}>Next</Text>
+            <Ionicons name="chevron-forward" size={20} color="#fff" />
+          </TouchableOpacity>
+        </View>
 
       </View>
     );
@@ -4572,6 +4454,18 @@ function AppContent() {
           </View>
         </View>
       )}
+
+      {/* Next Button */}
+      <View style={styles.stepButtonContainer}>
+        <TouchableOpacity
+          style={[styles.stepButton, styles.stepButtonNext]}
+          onPress={nextStep}
+        >
+          <Text style={styles.stepButtonText}>Next</Text>
+          <Ionicons name="chevron-forward" size={20} color="#fff" />
+        </TouchableOpacity>
+      </View>
+
     </View>
   );
   };
@@ -4764,6 +4658,19 @@ function AppContent() {
             </View>
           </View>
         )}
+
+        {/* Calculate Button */}
+        <View style={styles.stepButtonContainer}>
+          <TouchableOpacity
+            style={[styles.stepButton, styles.stepButtonCalculate, isCalculating && { opacity: 0.7 }]}
+            onPress={estimateTax}
+            disabled={isCalculating}
+          >
+            <Ionicons name={isCalculating ? "hourglass-outline" : "calculator-outline"} size={20} color="#fff" />
+            <Text style={styles.stepButtonText}>{isCalculating ? 'Calculating...' : 'Calculate'}</Text>
+          </TouchableOpacity>
+        </View>
+
       </View>
     );
   };
@@ -5248,11 +5155,7 @@ function AppContent() {
         </TouchableWithoutFeedback>
       </ScrollView>
 
-      {currentStep < 4 && (
-        <View style={styles.bottomButtonContainer}>
-          <NavigationButtons />
-        </View>
-      )}
+
     </KeyboardAvoidingView>
   );
 }
