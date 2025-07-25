@@ -1132,7 +1132,7 @@ const getStyles = (theme) => StyleSheet.create({
     borderRadius: 8,
     padding: 12,
     borderWidth: 1,
-    borderColor: theme.successBorder,
+    borderColor: theme.success,
   },
 
   taxSavingsText: {
@@ -1362,12 +1362,12 @@ const getStyles = (theme) => StyleSheet.create({
   showAllButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: theme.primaryLight,
+    backgroundColor: theme.surfaceSecondary,
     borderRadius: 20,
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderWidth: 1,
-    borderColor: theme.primaryBorder,
+    borderColor: theme.border,
   },
 
   showAllButtonText: {
@@ -1384,7 +1384,7 @@ const getStyles = (theme) => StyleSheet.create({
     backgroundColor: theme.successLight,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: theme.successBorder,
+    borderColor: theme.success,
   },
 
   completionHeader: {
@@ -4176,7 +4176,7 @@ function AppContent() {
               });
             }}
           >
-            <Ionicons name="expand-outline" size={20} color={theme.primary} />
+            <Ionicons name="expand-outline" size={20} color={theme.textSecondary} />
             <Text style={styles.showAllButtonText}>Show All Categories</Text>
           </TouchableOpacity>
         </View>
