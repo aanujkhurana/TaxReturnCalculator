@@ -3523,7 +3523,7 @@ function AppContent() {
           style={styles.stepBackButton}
           onPress={navigateToHome}
         >
-          <Ionicons name="chevron-back" size={20} color="#64748B" />
+          <Ionicons name="chevron-back" size={20} color={theme.textSecondary} />
         </TouchableOpacity>
 
         {/* Step indicator */}
@@ -3575,14 +3575,14 @@ function AppContent() {
     <View style={styles.navigationButtons}>
       {currentStep === 1 && (
         <TouchableOpacity style={styles.navButtonCancel} onPress={navigateToHome}>
-          <Ionicons name="close" size={18} color="#EF4444" />
+          <Ionicons name="close" size={18} color={theme.error} />
           <Text style={styles.navButtonTextCancel}>Cancel</Text>
         </TouchableOpacity>
       )}
 
       {currentStep > 1 && (
         <TouchableOpacity style={styles.navButtonBack} onPress={prevStep}>
-          <Ionicons name="chevron-back" size={18} color="#6B7280" />
+          <Ionicons name="chevron-back" size={18} color={theme.textSecondary} />
           <Text style={styles.navButtonTextBack}>Back</Text>
         </TouchableOpacity>
       )}

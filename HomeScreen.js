@@ -146,7 +146,7 @@ const HomeScreen = ({ onCreateNew, onViewCalculation }) => {
         <View style={styles.cardHeader}>
           <View style={styles.cardTitleContainer}>
             <View style={styles.cardIconContainer}>
-              <Ionicons name="document-text" size={22} color="#4A90E2" />
+              <Ionicons name="document-text" size={22} color={theme.primary} />
             </View>
             <View style={styles.cardTitleTextContainer}>
               <Text style={styles.cardTitle}>
@@ -162,7 +162,7 @@ const HomeScreen = ({ onCreateNew, onViewCalculation }) => {
             onPress={() => deleteCalculation(calculation.id)}
             activeOpacity={0.6}
           >
-            <Ionicons name="trash-outline" size={20} color="#EF4444" />
+            <Ionicons name="trash-outline" size={20} color={theme.error} />
           </TouchableOpacity>
         </View>
 
@@ -202,14 +202,14 @@ const HomeScreen = ({ onCreateNew, onViewCalculation }) => {
 
         <View style={styles.cardFooter}>
           <View style={styles.cardFooterLeft}>
-            <Ionicons name="time-outline" size={14} color="#9CA3AF" />
+            <Ionicons name="time-outline" size={14} color={theme.textSecondary} />
             <Text style={styles.cardDate}>
               Saved {formatDate(calculation.savedDate)}
             </Text>
           </View>
           <View style={styles.cardFooterRight}>
             <Text style={styles.cardViewText}>View Details</Text>
-            <Ionicons name="chevron-forward" size={16} color="#4A90E2" />
+            <Ionicons name="chevron-forward" size={16} color={theme.primary} />
           </View>
         </View>
       </TouchableOpacity>
@@ -253,7 +253,7 @@ const HomeScreen = ({ onCreateNew, onViewCalculation }) => {
             activeOpacity={0.7}
           >
             <View style={styles.resourcesIconContainer}>
-              <Ionicons name="information-circle" size={22} color="#4A90E2" />
+              <Ionicons name="information-circle" size={22} color={theme.primary} />
             </View>
             <View style={styles.resourcesTitleContainer}>
               <Text style={styles.resourcesTitle}>Tax Resources & Guidelines</Text>
@@ -262,7 +262,7 @@ const HomeScreen = ({ onCreateNew, onViewCalculation }) => {
             <Ionicons
               name={isResourcesExpanded ? "chevron-up" : "chevron-down"}
               size={20}
-              color="#4A90E2"
+              color={theme.primary}
             />
           </TouchableOpacity>
           {isResourcesExpanded && (
@@ -272,13 +272,13 @@ const HomeScreen = ({ onCreateNew, onViewCalculation }) => {
               onPress={() => openExternalURL('https://www.ato.gov.au/individuals/income-deductions-offsets-and-records/deductions/')}
             >
               <View style={styles.resourceButtonIconContainer}>
-                <Ionicons name="receipt" size={20} color="#059669" />
+                <Ionicons name="receipt" size={20} color={theme.success} />
               </View>
               <View style={styles.resourceButtonContent}>
                 <Text style={styles.resourceButtonTitle}>ATO Deduction Guides</Text>
                 <Text style={styles.resourceButtonDescription}>Official deduction rules</Text>
               </View>
-              <Ionicons name="open-outline" size={16} color="#6B7280" />
+              <Ionicons name="open-outline" size={16} color={theme.textSecondary} />
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -286,13 +286,13 @@ const HomeScreen = ({ onCreateNew, onViewCalculation }) => {
               onPress={() => openExternalURL('https://www.ato.gov.au/individuals/lodging-your-tax-return/')}
             >
               <View style={styles.resourceButtonIconContainer}>
-                <Ionicons name="checkmark-circle" size={20} color="#4A90E2" />
+                <Ionicons name="checkmark-circle" size={20} color={theme.primary} />
               </View>
               <View style={styles.resourceButtonContent}>
                 <Text style={styles.resourceButtonTitle}>ATO Return Checklist</Text>
                 <Text style={styles.resourceButtonDescription}>Complete your return</Text>
               </View>
-              <Ionicons name="open-outline" size={16} color="#6B7280" />
+              <Ionicons name="open-outline" size={16} color={theme.textSecondary} />
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -300,13 +300,13 @@ const HomeScreen = ({ onCreateNew, onViewCalculation }) => {
               onPress={() => openExternalURL('https://www.ato.gov.au/individuals/income-deductions-offsets-and-records/records-you-need-to-keep/')}
             >
               <View style={styles.resourceButtonIconContainer}>
-                <Ionicons name="folder" size={20} color="#F59E0B" />
+                <Ionicons name="folder" size={20} color={theme.warning} />
               </View>
               <View style={styles.resourceButtonContent}>
                 <Text style={styles.resourceButtonTitle}>ATO Record Keeping</Text>
                 <Text style={styles.resourceButtonDescription}>What to keep & how long</Text>
               </View>
-              <Ionicons name="open-outline" size={16} color="#6B7280" />
+              <Ionicons name="open-outline" size={16} color={theme.textSecondary} />
             </TouchableOpacity>
             </View>
           )}
@@ -316,7 +316,7 @@ const HomeScreen = ({ onCreateNew, onViewCalculation }) => {
         {savedCalculations.length === 0 ? (
           <View style={styles.emptyState}>
             <View style={styles.emptyStateIconContainer}>
-              <Ionicons name="calculator-outline" size={48} color="#4A90E2" />
+              <Ionicons name="calculator-outline" size={48} color={theme.primary} />
             </View>
             <Text style={styles.emptyStateTitle}>Ready to Calculate Your Tax Return?</Text>
             <Text style={styles.emptyStateText}>
@@ -325,15 +325,15 @@ const HomeScreen = ({ onCreateNew, onViewCalculation }) => {
             </Text>
             <View style={styles.emptyStateFeatures}>
               <View style={styles.emptyStateFeature}>
-                <Ionicons name="checkmark-circle" size={16} color="#10B981" />
+                <Ionicons name="checkmark-circle" size={16} color={theme.success} />
                 <Text style={styles.emptyStateFeatureText}>ATO compliant calculations</Text>
               </View>
               <View style={styles.emptyStateFeature}>
-                <Ionicons name="checkmark-circle" size={16} color="#10B981" />
+                <Ionicons name="checkmark-circle" size={16} color={theme.success} />
                 <Text style={styles.emptyStateFeatureText}>Save and track multiple returns</Text>
               </View>
               <View style={styles.emptyStateFeature}>
-                <Ionicons name="checkmark-circle" size={16} color="#10B981" />
+                <Ionicons name="checkmark-circle" size={16} color={theme.success} />
                 <Text style={styles.emptyStateFeatureText}>Professional guidance included</Text>
               </View>
             </View>
@@ -652,10 +652,6 @@ const getStyles = (theme) => StyleSheet.create({
   },
   deleteButton: {
     padding: 8,
-    borderRadius: 8,
-    backgroundColor: theme.errorLight,
-    borderWidth: 1,
-    borderColor: theme.errorBorder,
   },
   cardContent: {
     marginBottom: 16,
@@ -680,7 +676,7 @@ const getStyles = (theme) => StyleSheet.create({
   },
   cardSummaryLabel: {
     fontSize: 12,
-    color: '#64748B',
+    color: theme.textSecondary,
     fontWeight: '500',
     marginBottom: 4,
     letterSpacing: 0.1,
@@ -688,7 +684,7 @@ const getStyles = (theme) => StyleSheet.create({
   cardSummaryValue: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#1E293B',
+    color: theme.text,
     letterSpacing: 0.2,
   },
   cardRefundSection: {
