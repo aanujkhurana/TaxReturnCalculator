@@ -2200,7 +2200,7 @@ const HELP_TEXT = {
 
 function AppContent() {
   // Theme hook
-  const { theme } = useTheme();
+  const { theme, isDark } = useTheme();
   const styles = getStyles(theme);
 
   // Memoized InputField component with smart features
@@ -3654,7 +3654,7 @@ function AppContent() {
             <Ionicons
               name={icon}
               size={22}
-              color={hasValues ? "#fff" : colors.primary}
+              color={hasValues ? (isDark ? "#000" : "#fff") : colors.primary}
             />
           </View>
           <View style={styles.categoryTitleContainer}>
@@ -3962,7 +3962,7 @@ function AppContent() {
       workRelated: { primary: theme.primary, light: theme.primaryLight, accent: theme.primary },
       selfEducation: { primary: theme.success, light: theme.successLight, accent: theme.success },
       donations: { primary: theme.warning, light: theme.warningLight, accent: theme.warning },
-      other: { primary: theme.secondary, light: theme.secondaryLight, accent: theme.secondary },
+      other: { primary: theme.categoryOther, light: theme.categoryOtherLight, accent: theme.categoryOther },
       workFromHome: { primary: theme.error, light: theme.errorLight, accent: theme.error }
     };
     return colorMap[categoryKey] || colorMap.workRelated;
@@ -3994,7 +3994,7 @@ function AppContent() {
             <Ionicons
               name={icon}
               size={22}
-              color={hasValues ? "#fff" : colors.primary}
+              color={hasValues ? (isDark ? "#000" : "#fff") : colors.primary}
             />
           </View>
           <View style={styles.categoryTitleContainer}>
@@ -4540,7 +4540,7 @@ function AppContent() {
             <Ionicons
               name={icon}
               size={22}
-              color={hasValues ? "#fff" : colors.primary}
+              color={hasValues ? (isDark ? "#000" : "#fff") : colors.primary}
             />
           </View>
           <View style={styles.categoryTitleContainer}>
@@ -4933,7 +4933,7 @@ function AppContent() {
           <View style={[styles.deductionCategoryHeader, { backgroundColor: theme.primaryLight }]}>
             <View style={styles.categoryHeaderLeft}>
               <View style={[styles.categoryIcon, { backgroundColor: theme.primary }]}>
-                <Ionicons name="wallet-outline" size={22} color="#fff" />
+                <Ionicons name="wallet-outline" size={22} color={isDark ? "#000" : "#fff"} />
               </View>
               <View style={styles.categoryTitleContainer}>
                 <Text style={[styles.categoryTitle, { color: theme.text }]}>Income Breakdown</Text>
@@ -4966,7 +4966,7 @@ function AppContent() {
           <View style={[styles.deductionCategoryHeader, { backgroundColor: theme.successLight }]}>
             <View style={styles.categoryHeaderLeft}>
               <View style={[styles.categoryIcon, { backgroundColor: theme.success }]}>
-                <Ionicons name="receipt-outline" size={22} color="#fff" />
+                <Ionicons name="receipt-outline" size={22} color={isDark ? "#000" : "#fff"} />
               </View>
               <View style={styles.categoryTitleContainer}>
                 <Text style={[styles.categoryTitle, { color: theme.success }]}>Deductions Breakdown</Text>
@@ -4999,7 +4999,7 @@ function AppContent() {
           <View style={[styles.deductionCategoryHeader, { backgroundColor: theme.warningLight }]}>
             <View style={styles.categoryHeaderLeft}>
               <View style={[styles.categoryIcon, { backgroundColor: theme.warning }]}>
-                <Ionicons name="calculator-outline" size={22} color="#fff" />
+                <Ionicons name="calculator-outline" size={22} color={isDark ? "#000" : "#fff"} />
               </View>
               <View style={styles.categoryTitleContainer}>
                 <Text style={[styles.categoryTitle, { color: theme.warning }]}>Tax Calculation</Text>
@@ -5079,19 +5079,19 @@ function AppContent() {
 
               <View style={styles.quickAddGrid}>
                 <TouchableOpacity style={[styles.quickAddButton, { backgroundColor: theme.error }]} onPress={exportPDF}>
-                  <Ionicons name="document-outline" size={20} color="#fff" />
-                  <Text style={[styles.quickAddButtonText, { color: '#fff', marginTop: 8 }]}>Export PDF</Text>
+                  <Ionicons name="document-outline" size={20} color={isDark ? "#000" : "#fff"} />
+                  <Text style={[styles.quickAddButtonText, { color: isDark ? "#000" : '#fff', marginTop: 8 }]}>Export PDF</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity style={[styles.quickAddButton, { backgroundColor: theme.success }]} onPress={exportCSV}>
-                  <Ionicons name="download-outline" size={20} color="#fff" />
-                  <Text style={[styles.quickAddButtonText, { color: '#fff', marginTop: 8 }]}>Export CSV</Text>
+                  <Ionicons name="download-outline" size={20} color={isDark ? "#000" : "#fff"} />
+                  <Text style={[styles.quickAddButtonText, { color: isDark ? "#000" : '#fff', marginTop: 8 }]}>Export CSV</Text>
                 </TouchableOpacity>
 
                 {!viewingCalculation && (
                   <TouchableOpacity style={[styles.quickAddButton, { backgroundColor: theme.warning }]} onPress={handleSaveCalculation}>
-                    <Ionicons name="bookmark-outline" size={20} color="#fff" />
-                    <Text style={[styles.quickAddButtonText, { color: '#fff', marginTop: 8 }]}>Save Calculation</Text>
+                    <Ionicons name="bookmark-outline" size={20} color={isDark ? "#000" : "#fff"} />
+                    <Text style={[styles.quickAddButtonText, { color: isDark ? "#000" : '#fff', marginTop: 8 }]}>Save Calculation</Text>
                   </TouchableOpacity>
                 )}
 
@@ -5101,8 +5101,8 @@ function AppContent() {
                     setCurrentStep(1);
                   }}
                 >
-                  <Ionicons name="create-outline" size={20} color="#fff" />
-                  <Text style={[styles.quickAddButtonText, { color: '#fff', marginTop: 8 }]}>Edit Calculation</Text>
+                  <Ionicons name="create-outline" size={20} color={isDark ? "#000" : "#fff"} />
+                  <Text style={[styles.quickAddButtonText, { color: isDark ? "#000" : '#fff', marginTop: 8 }]}>Edit Calculation</Text>
                 </TouchableOpacity>
               </View>
             </View>
