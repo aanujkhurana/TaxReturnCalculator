@@ -39,8 +39,12 @@ const HomeScreen = ({ onCreateNew, onViewCalculation }) => {
         // Sort by date (newest first)
         calculations.sort((a, b) => new Date(b.savedDate) - new Date(a.savedDate));
         setSavedCalculations(calculations);
+        // Collapse tax resources when there are saved calculations
+        setIsResourcesExpanded(false);
       } else {
         setSavedCalculations([]);
+        // Expand tax resources when there are no saved calculations
+        setIsResourcesExpanded(true);
       }
     } catch (error) {
       console.error('Error loading saved calculations:', error);
@@ -227,11 +231,6 @@ const HomeScreen = ({ onCreateNew, onViewCalculation }) => {
           </View>
           <View style={styles.fixedHeaderActions}>
             <ThemeToggle style={styles.themeToggle} />
-            <View style={styles.fixedHeaderStats}>
-              <Text style={styles.fixedHeaderStatsText}>
-                {savedCalculations.length} saved
-              </Text>
-            </View>
           </View>
         </View>
       </View>
@@ -420,20 +419,7 @@ const getStyles = (theme) => StyleSheet.create({
     fontWeight: '500',
     letterSpacing: 0.1,
   },
-  fixedHeaderStats: {
-    backgroundColor: theme.primaryLight,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: theme.primaryBorder,
-  },
-  fixedHeaderStatsText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: theme.primary,
-    letterSpacing: 0.1,
-  },
+
 
   scrollContainer: {
     flex: 1,
@@ -441,7 +427,7 @@ const getStyles = (theme) => StyleSheet.create({
   },
   scrollContent: {
     paddingTop: 8,
-    paddingBottom: 80, // Padding to prevent content hiding behind button
+    paddingBottom: 120, // Increased padding to prevent content hiding behind button
   },
   bottomActionContainer: {
     position: 'absolute',
