@@ -2338,17 +2338,17 @@ const InputField = ({ label, value, onChangeText, placeholder, keyboardType = 'n
             keyboardType={keyboardType}
             multiline={multiline}
             placeholderTextColor={!editable ? theme.textTertiary : theme.textSecondary}
-            returnKeyType={multiline ? "default" : "next"}
+            returnKeyType={multiline ? "default" : "done"}
             editable={editable}
             selectTextOnFocus={false}
             blurOnSubmit={multiline}
             autoCorrect={false}
             autoCapitalize="none"
             onSubmitEditing={() => {
-              // Don't dismiss keyboard for single-line inputs
+              // Dismiss keyboard when "Done" is pressed
               if (!multiline) {
-                // Keep focus on current input
-                inputRef.current?.focus();
+                inputRef.current?.blur();
+                Keyboard.dismiss();
               }
             }}
           />
