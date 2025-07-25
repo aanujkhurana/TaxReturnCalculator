@@ -3614,9 +3614,9 @@ function AppContent() {
   // Income category color mapping for consistency
   const getIncomeCategoryColors = (categoryKey) => {
     const colorMap = {
-      employment: { primary: theme.primary, light: theme.primaryLight, accent: theme.primary },
-      abn: { primary: theme.success, light: theme.successLight, accent: theme.success },
-      payg: { primary: theme.warning, light: theme.warningLight, accent: theme.warning }
+      employment: { primary: theme.categoryWork, light: theme.categoryWorkLight, accent: theme.categoryWork },
+      abn: { primary: theme.categoryEducation, light: theme.categoryEducationLight, accent: theme.categoryEducation },
+      payg: { primary: theme.categoryDonations, light: theme.categoryDonationsLight, accent: theme.categoryDonations }
     };
     return colorMap[categoryKey] || colorMap.employment;
   };
@@ -3721,7 +3721,7 @@ function AppContent() {
               )}
               {abnTotal > 0 && (
                 <View style={styles.summaryBreakdownItem}>
-                  <View style={[styles.summaryBreakdownDot, { backgroundColor: '#10B981' }]} />
+                  <View style={[styles.summaryBreakdownDot, { backgroundColor: theme.categoryEducation }]} />
                   <Text style={styles.summaryBreakdownLabel}>ABN/Freelance</Text>
                   <Text style={styles.summaryBreakdownValue}>{formatCurrency(abnTotal)}</Text>
                 </View>
@@ -3729,9 +3729,9 @@ function AppContent() {
             </View>
 
             {/* Tax Estimate */}
-            <View style={styles.taxSavingsEstimate}>
+            <View style={[styles.taxSavingsEstimate, { backgroundColor: theme.warningLight, borderColor: theme.warning }]}>
               <Ionicons name="calculator" size={16} color={theme.warning} />
-              <Text style={[styles.taxSavingsText, { color: '#D97706' }]}>
+              <Text style={[styles.taxSavingsText, { color: theme.warning }]}>
                 Estimated tax liability: {formatCurrency(estimatedTax)}
               </Text>
             </View>
@@ -3959,11 +3959,11 @@ function AppContent() {
   // Category color mapping for better visual hierarchy
   const getCategoryColors = (categoryKey) => {
     const colorMap = {
-      workRelated: { primary: theme.primary, light: theme.primaryLight, accent: theme.primary },
-      selfEducation: { primary: theme.success, light: theme.successLight, accent: theme.success },
-      donations: { primary: theme.warning, light: theme.warningLight, accent: theme.warning },
+      workRelated: { primary: theme.categoryWork, light: theme.categoryWorkLight, accent: theme.categoryWork },
+      selfEducation: { primary: theme.categoryEducation, light: theme.categoryEducationLight, accent: theme.categoryEducation },
+      donations: { primary: theme.categoryDonations, light: theme.categoryDonationsLight, accent: theme.categoryDonations },
       other: { primary: theme.categoryOther, light: theme.categoryOtherLight, accent: theme.categoryOther },
-      workFromHome: { primary: theme.error, light: theme.errorLight, accent: theme.error }
+      workFromHome: { primary: theme.categoryHome, light: theme.categoryHomeLight, accent: theme.categoryHome }
     };
     return colorMap[categoryKey] || colorMap.workRelated;
   };
@@ -4119,28 +4119,28 @@ function AppContent() {
             )}
             {selfEducationTotal > 0 && (
               <View style={styles.summaryBreakdownItem}>
-                <View style={[styles.summaryBreakdownDot, { backgroundColor: '#10B981' }]} />
+                <View style={[styles.summaryBreakdownDot, { backgroundColor: theme.categoryEducation }]} />
                 <Text style={styles.summaryBreakdownLabel}>Self-Education</Text>
                 <Text style={styles.summaryBreakdownValue}>{formatCurrency(selfEducationTotal)}</Text>
               </View>
             )}
             {donationsTotal > 0 && (
               <View style={styles.summaryBreakdownItem}>
-                <View style={[styles.summaryBreakdownDot, { backgroundColor: '#F59E0B' }]} />
+                <View style={[styles.summaryBreakdownDot, { backgroundColor: theme.categoryDonations }]} />
                 <Text style={styles.summaryBreakdownLabel}>Donations</Text>
                 <Text style={styles.summaryBreakdownValue}>{formatCurrency(donationsTotal)}</Text>
               </View>
             )}
             {otherTotal > 0 && (
               <View style={styles.summaryBreakdownItem}>
-                <View style={[styles.summaryBreakdownDot, { backgroundColor: '#8B5CF6' }]} />
+                <View style={[styles.summaryBreakdownDot, { backgroundColor: theme.categoryOther }]} />
                 <Text style={styles.summaryBreakdownLabel}>Other</Text>
                 <Text style={styles.summaryBreakdownValue}>{formatCurrency(otherTotal)}</Text>
               </View>
             )}
             {wfhTotal > 0 && (
               <View style={styles.summaryBreakdownItem}>
-                <View style={[styles.summaryBreakdownDot, { backgroundColor: '#EF4444' }]} />
+                <View style={[styles.summaryBreakdownDot, { backgroundColor: theme.categoryHome }]} />
                 <Text style={styles.summaryBreakdownLabel}>Work From Home</Text>
                 <Text style={styles.summaryBreakdownValue}>{formatCurrency(wfhTotal)}</Text>
               </View>
@@ -4501,9 +4501,9 @@ function AppContent() {
   // Additional details category color mapping
   const getDetailsCategoryColors = (categoryKey) => {
     const colorMap = {
-      taxObligations: { primary: theme.primary, light: theme.primaryLight, accent: theme.primary },
-      personalCircumstances: { primary: theme.success, light: theme.successLight, accent: theme.success },
-      disclaimer: { primary: theme.warning, light: theme.warningLight, accent: theme.warning }
+      taxObligations: { primary: theme.categoryWork, light: theme.categoryWorkLight, accent: theme.categoryWork },
+      personalCircumstances: { primary: theme.categoryEducation, light: theme.categoryEducationLight, accent: theme.categoryEducation },
+      disclaimer: { primary: theme.categoryDonations, light: theme.categoryDonationsLight, accent: theme.categoryDonations }
     };
     return colorMap[categoryKey] || colorMap.taxObligations;
   };
@@ -4916,7 +4916,7 @@ function AppContent() {
                 {result.refund >= 0 ? 'Estimated Refund' : 'Amount Owing'}
               </Text>
             </View>
-            <Text style={[styles.resultMainAmount, { color: result.refund >= 0 ? '#10B981' : '#EF4444' }]}>
+            <Text style={[styles.resultMainAmount, { color: result.refund >= 0 ? theme.success : theme.error }]}>
               {formatCurrency(Math.abs(result.refund))}
             </Text>
             <Text style={styles.resultMainSubtext}>
@@ -4953,7 +4953,7 @@ function AppContent() {
                 <Text style={styles.summaryBreakdownValue}>{formatCurrency(result.totalTFNIncome)}</Text>
               </View>
               <View style={styles.summaryBreakdownItem}>
-                <View style={[styles.summaryBreakdownDot, { backgroundColor: '#10B981' }]} />
+                <View style={[styles.summaryBreakdownDot, { backgroundColor: theme.categoryEducation }]} />
                 <Text style={styles.summaryBreakdownLabel}>ABN/Business Income</Text>
                 <Text style={styles.summaryBreakdownValue}>{formatCurrency(result.abnIncomeNum)}</Text>
               </View>
@@ -4971,7 +4971,7 @@ function AppContent() {
               <View style={styles.categoryTitleContainer}>
                 <Text style={[styles.categoryTitle, { color: theme.success }]}>Deductions Breakdown</Text>
                 <Text style={styles.categoryDescription}>Total allowable tax deductions claimed</Text>
-                <Text style={[styles.categoryTotal, { color: '#10B981' }]}>
+                <Text style={[styles.categoryTotal, { color: theme.success }]}>
                   Total: -{formatCurrency(result.totalDeductions)}
                 </Text>
               </View>
@@ -4981,12 +4981,12 @@ function AppContent() {
           <View style={styles.categoryContent}>
             <View style={styles.summaryBreakdown}>
               <View style={styles.summaryBreakdownItem}>
-                <View style={[styles.summaryBreakdownDot, { backgroundColor: '#F59E0B' }]} />
+                <View style={[styles.summaryBreakdownDot, { backgroundColor: theme.categoryDonations }]} />
                 <Text style={styles.summaryBreakdownLabel}>Manual Deductions</Text>
                 <Text style={styles.summaryBreakdownValue}>-{formatCurrency(result.totalManualDeductions)}</Text>
               </View>
               <View style={styles.summaryBreakdownItem}>
-                <View style={[styles.summaryBreakdownDot, { backgroundColor: '#EF4444' }]} />
+                <View style={[styles.summaryBreakdownDot, { backgroundColor: theme.categoryHome }]} />
                 <Text style={styles.summaryBreakdownLabel}>Work From Home</Text>
                 <Text style={styles.summaryBreakdownValue}>-{formatCurrency(result.workFromHomeDeduction)}</Text>
               </View>
@@ -5004,7 +5004,7 @@ function AppContent() {
               <View style={styles.categoryTitleContainer}>
                 <Text style={[styles.categoryTitle, { color: theme.warning }]}>Tax Calculation</Text>
                 <Text style={styles.categoryDescription}>Detailed breakdown of tax liability calculation</Text>
-                <Text style={[styles.categoryTotal, { color: '#F59E0B' }]}>
+                <Text style={[styles.categoryTotal, { color: theme.warning }]}>
                   Final Tax: {formatCurrency(result.finalTax)}
                 </Text>
               </View>
@@ -5014,28 +5014,28 @@ function AppContent() {
           <View style={styles.categoryContent}>
             <View style={styles.summaryBreakdown}>
               <View style={styles.summaryBreakdownItem}>
-                <View style={[styles.summaryBreakdownDot, { backgroundColor: '#8B5CF6' }]} />
+                <View style={[styles.summaryBreakdownDot, { backgroundColor: theme.categoryOther }]} />
                 <Text style={[styles.summaryBreakdownLabel, { fontWeight: '600' }]}>Taxable Income</Text>
                 <Text style={[styles.summaryBreakdownValue, { fontWeight: '600' }]}>{formatCurrency(result.taxableIncome)}</Text>
               </View>
               <View style={styles.summaryBreakdownItem}>
-                <View style={[styles.summaryBreakdownDot, { backgroundColor: '#F59E0B' }]} />
+                <View style={[styles.summaryBreakdownDot, { backgroundColor: theme.categoryDonations }]} />
                 <Text style={styles.summaryBreakdownLabel}>Gross Tax</Text>
                 <Text style={styles.summaryBreakdownValue}>{formatCurrency(result.tax)}</Text>
               </View>
               <View style={styles.summaryBreakdownItem}>
-                <View style={[styles.summaryBreakdownDot, { backgroundColor: '#10B981' }]} />
+                <View style={[styles.summaryBreakdownDot, { backgroundColor: theme.success }]} />
                 <Text style={styles.summaryBreakdownLabel}>LITO Offset</Text>
                 <Text style={styles.summaryBreakdownValue}>-{formatCurrency(result.lito)}</Text>
               </View>
               <View style={styles.summaryBreakdownItem}>
-                <View style={[styles.summaryBreakdownDot, { backgroundColor: '#EF4444' }]} />
+                <View style={[styles.summaryBreakdownDot, { backgroundColor: theme.categoryHome }]} />
                 <Text style={styles.summaryBreakdownLabel}>Medicare Levy</Text>
                 <Text style={styles.summaryBreakdownValue}>+{formatCurrency(result.medicare)}</Text>
               </View>
               {result.hecsRepayment > 0 && (
                 <View style={styles.summaryBreakdownItem}>
-                  <View style={[styles.summaryBreakdownDot, { backgroundColor: '#8B5CF6' }]} />
+                  <View style={[styles.summaryBreakdownDot, { backgroundColor: theme.categoryOther }]} />
                   <Text style={styles.summaryBreakdownLabel}>HECS-HELP Repayment</Text>
                   <Text style={styles.summaryBreakdownValue}>+{formatCurrency(result.hecsRepayment)}</Text>
                 </View>
@@ -5043,9 +5043,9 @@ function AppContent() {
             </View>
 
             {/* Tax Estimate */}
-            <View style={styles.taxSavingsEstimate}>
+            <View style={[styles.taxSavingsEstimate, { backgroundColor: theme.warningLight, borderColor: theme.warning }]}>
               <Ionicons name="information-circle" size={16} color={theme.warning} />
-              <Text style={[styles.taxSavingsText, { color: '#D97706' }]}>
+              <Text style={[styles.taxSavingsText, { color: theme.warning }]}>
                 Tax withheld: {formatCurrency(parseFloat(taxWithheld || '0'))} • Calculated using 2024-25 ATO rates
               </Text>
             </View>
@@ -5096,7 +5096,7 @@ function AppContent() {
                 )}
 
                 <TouchableOpacity
-                  style={[styles.quickAddButton, { backgroundColor: '#8B5CF6' }]}
+                  style={[styles.quickAddButton, { backgroundColor: theme.categoryOther }]}
                   onPress={() => {
                     setCurrentStep(1);
                   }}
