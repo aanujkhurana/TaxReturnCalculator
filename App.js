@@ -346,7 +346,7 @@ const getStyles = (theme) => StyleSheet.create({
     shadowOpacity: 0.18,
     shadowRadius: 8,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: theme.border,
     backgroundColor: theme.surface,
   },
   resultHeader: {
@@ -526,7 +526,7 @@ const getStyles = (theme) => StyleSheet.create({
     shadowOpacity: 0.08,
     shadowRadius: 3,
     borderWidth: 1,
-    borderColor: '#F1F5F9',
+    borderColor: theme.borderLight,
   },
   stepIndicatorRow: {
     flex: 1,
@@ -1541,7 +1541,7 @@ const getStyles = (theme) => StyleSheet.create({
     marginTop: 20,
     marginBottom: Platform.OS === 'ios' ? 50 : 40, // Platform-specific bottom margin for nav bar
     borderWidth: 2,
-    borderColor: '#4A90E2',
+    borderColor: theme.primary,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -1734,7 +1734,7 @@ const getStyles = (theme) => StyleSheet.create({
   compactTableRow: {
     flexDirection: 'row',
     borderBottomWidth: 1,
-    borderBottomColor: '#F1F5F9',
+    borderBottomColor: theme.borderLight,
   },
 
   compactTableHeaderRow: {
@@ -1757,7 +1757,7 @@ const getStyles = (theme) => StyleSheet.create({
   compactTableCellLabel: {
     flex: 2,
     borderRightWidth: 1,
-    borderRightColor: '#F1F5F9',
+    borderRightColor: theme.borderLight,
   },
 
   compactTableCellValue: {

@@ -518,7 +518,7 @@ const getStyles = (theme) => StyleSheet.create({
     marginBottom: 20,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#F1F5F9',
+    borderColor: theme.border,
     elevation: 2,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -609,7 +609,7 @@ const getStyles = (theme) => StyleSheet.create({
     shadowOpacity: 0.08,
     shadowRadius: 8,
     borderWidth: 1,
-    borderColor: '#F1F5F9',
+    borderColor: theme.border,
   },
   cardHeader: {
     flexDirection: 'row',
@@ -675,7 +675,7 @@ const getStyles = (theme) => StyleSheet.create({
   },
   cardSummaryDivider: {
     width: 1,
-    backgroundColor: '#E2E8F0',
+    backgroundColor: theme.border,
     marginHorizontal: 16,
   },
   cardSummaryLabel: {
@@ -695,7 +695,7 @@ const getStyles = (theme) => StyleSheet.create({
     borderRadius: 12,
     padding: 14,
     borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.05)',
+    borderColor: theme.borderLight,
   },
   cardRefundHeader: {
     flexDirection: 'row',
@@ -754,7 +754,7 @@ const getStyles = (theme) => StyleSheet.create({
     borderRadius: 16,
     padding: 20,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: theme.border,
     elevation: 2,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -811,7 +811,7 @@ const getStyles = (theme) => StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: theme.border,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.04,
