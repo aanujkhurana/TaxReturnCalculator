@@ -2420,6 +2420,9 @@ function AppContent() {
   const { theme, isDark, isLoading: themeLoading } = useTheme();
   const styles = getStyles(theme);
 
+  // ScrollView ref for scroll to top functionality
+  const scrollViewRef = useRef(null);
+
   // Show splash screen while theme is loading or during initial splash
   const [showSplash, setShowSplash] = useState(true);
 
@@ -2584,6 +2587,8 @@ function AppContent() {
     setResult(calculation.result);
     setCurrentStep(4); // Go directly to results
     setCurrentScreen('calculator');
+    // Scroll to top when viewing calculation results
+    setTimeout(() => scrollToTop(), 100);
   };
 
   const resetForm = () => {
@@ -2914,17 +2919,28 @@ function AppContent() {
     return isNaN(num) ? '$0.00' : `$${num.toLocaleString('en-AU', { minimumFractionDigits: 2 })}`;
   };
 
+  // Helper function to scroll to top
+  const scrollToTop = useCallback(() => {
+    if (scrollViewRef.current) {
+      scrollViewRef.current.scrollTo({ y: 0, animated: true });
+    }
+  }, []);
+
   // Step navigation functions
   const nextStep = useCallback(() => {
     console.log('Next step clicked. Current values:', { jobIncomes, abnIncome, taxWithheld });
     if (validateCurrentStep()) {
       setCurrentStep(prev => Math.min(prev + 1, totalSteps));
+      // Scroll to top when moving to next step
+      setTimeout(() => scrollToTop(), 100);
     }
-  }, [totalSteps, validateCurrentStep, jobIncomes, abnIncome, taxWithheld]);
+  }, [totalSteps, validateCurrentStep, jobIncomes, abnIncome, taxWithheld, scrollToTop]);
 
   const prevStep = useCallback(() => {
     setCurrentStep(prev => Math.max(prev - 1, 1));
-  }, []);
+    // Scroll to top when moving to previous step
+    setTimeout(() => scrollToTop(), 100);
+  }, [scrollToTop]);
 
   // Back button navigation function
   const handleBackNavigation = useCallback(() => {
@@ -2935,8 +2951,10 @@ function AppContent() {
       // From step 2 (page 2) go to step 1 (page 1)
       // From step 3 (page 3) go to step 2 (page 2)
       setCurrentStep(prev => Math.max(prev - 1, 1));
+      // Scroll to top when navigating back
+      setTimeout(() => scrollToTop(), 100);
     }
-  }, [currentStep]);
+  }, [currentStep, scrollToTop]);
 
   const goToStep = (step) => {
     // Prevent direct access to results step unless calculation is complete
@@ -3010,6 +3028,8 @@ function AppContent() {
     }
 
     setCurrentStep(step);
+    // Scroll to top when navigating to a step
+    setTimeout(() => scrollToTop(), 100);
   };
 
   // Step validation
@@ -3282,6 +3302,8 @@ function AppContent() {
       setLoadingStep(0);
       setShowSuccessAnimation(true);
       setCurrentStep(4);
+      // Scroll to top when calculation completes
+      setTimeout(() => scrollToTop(), 100);
 
       // Hide success animation after 3 seconds
       setTimeout(() => {
@@ -5144,6 +5166,7 @@ function AppContent() {
       <StepIndicator />
 
       <ScrollView
+        ref={scrollViewRef}
         style={styles.scrollContainer}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
