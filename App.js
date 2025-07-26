@@ -4987,9 +4987,6 @@ function AppContent() {
           </View>
           <View style={styles.nextStepsList}>
             <View style={styles.nextStepItem}>
-              <View style={styles.nextStepNumber}>
-                <Text style={styles.nextStepNumberText}>!</Text>
-              </View>
               <Text style={styles.nextStepText}>Keep receipts and documentation for all claimed deductions</Text>
             </View>
           </View>
