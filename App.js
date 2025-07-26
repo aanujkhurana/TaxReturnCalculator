@@ -1838,15 +1838,16 @@ const HELP_TEXT = {
   },
   taxWithheld: {
     title: "Tax Withheld (PAYG)",
-    purpose: "Enter the total amount of tax that was withheld from your pay during the financial year.",
+    purpose: "Enter the total amount of tax that was withheld from your employment income (TFN jobs) during the financial year.",
     examples: [
       "Single job PAYG: 12500",
       "Multiple jobs total: 18750",
       "Including extra withholding: 16200"
     ],
     tips: [
-      "Add up tax withheld from all your jobs",
+      "Add up tax withheld from all your TFN employment jobs only",
       "Include any extra tax you asked to be withheld",
+      "Don't include ABN/business income (no tax withheld)",
       "Don't include super contributions or other deductions",
       "This reduces your final tax bill"
     ],
@@ -3873,16 +3874,8 @@ function AppContent() {
                   setAbnIncome(value);
                   clearFieldError('abnIncome');
 
-                  // Auto-fill tax withheld based on total income
-                  const totalEmploymentIncome = jobIncomes.reduce((sum, income) => sum + parseFloat(income || '0'), 0);
-                  const abnIncomeValue = parseFloat(value || '0');
-                  const totalIncome = totalEmploymentIncome + abnIncomeValue;
-
-                  // Auto-fill tax withheld if not manually set and not unknown
-                  if (!paygUnknown && totalIncome > 0) {
-                    const estimatedTax = estimateTaxWithheld(totalIncome);
-                    setTaxWithheld(estimatedTax.toString());
-                  }
+                  // Note: ABN income changes don't affect PAYG tax withheld estimation
+                  // as PAYG tax is only withheld from employment income (TFN), not ABN income
                 }}
                 placeholder="Self-employed income (e.g., 15000)"
                 icon="business-outline"
@@ -3973,7 +3966,8 @@ function AppContent() {
     }, 0);
   };
 
-  // Helper function to estimate tax withheld based on income
+  // Helper function to estimate tax withheld based on TFN employment income only
+  // Note: This should only be used for employment income, not ABN/business income
   const estimateTaxWithheld = (income) => {
     const annualIncome = parseFloat(income || '0');
     if (annualIncome <= 0) return 0;
