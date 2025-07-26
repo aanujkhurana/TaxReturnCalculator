@@ -2805,48 +2805,47 @@ function AppContent() {
     setValidationErrors({});
   };
 
-  // Calculate estimated PAYG withholding based on total income
+  // Calculate estimated PAYG withholding based on TFN income only
   const calculateEstimatedPayg = useCallback(() => {
     const parsedJobIncomes = jobIncomes.map((val) => parseFloat(val || '0'));
     const totalTFNIncome = parsedJobIncomes.reduce((sum, curr) => sum + (isNaN(curr) ? 0 : curr), 0);
-    const abnIncomeNum = parseFloat(abnIncome || '0');
-    const totalIncome = totalTFNIncome + abnIncomeNum;
+    // Note: ABN income is excluded as PAYG tax is not withheld from ABN/business income
 
-    if (totalIncome <= 0) {
+    if (totalTFNIncome <= 0) {
       return '0';
     }
 
-    // Use a simplified withholding estimation based on income brackets
-    // This approximates what employers typically withhold
+    // Use a simplified withholding estimation based on TFN income brackets only
+    // This approximates what employers typically withhold from employment income
     let estimatedWithholding = 0;
 
-    if (totalIncome <= 18200) {
+    if (totalTFNIncome <= 18200) {
       // Tax-free threshold
       estimatedWithholding = 0;
-    } else if (totalIncome <= 45000) {
+    } else if (totalTFNIncome <= 45000) {
       // 19% bracket - typically withhold around 15-20% due to tax-free threshold
-      estimatedWithholding = (totalIncome - 18200) * 0.17;
-    } else if (totalIncome <= 120000) {
+      estimatedWithholding = (totalTFNIncome - 18200) * 0.17;
+    } else if (totalTFNIncome <= 120000) {
       // 32.5% bracket - withhold around 25-30%
       const baseTax = (45000 - 18200) * 0.17;
-      estimatedWithholding = baseTax + (totalIncome - 45000) * 0.28;
-    } else if (totalIncome <= 180000) {
+      estimatedWithholding = baseTax + (totalTFNIncome - 45000) * 0.28;
+    } else if (totalTFNIncome <= 180000) {
       // 37% bracket - withhold around 32-35%
       const baseTax = (45000 - 18200) * 0.17 + (120000 - 45000) * 0.28;
-      estimatedWithholding = baseTax + (totalIncome - 120000) * 0.34;
+      estimatedWithholding = baseTax + (totalTFNIncome - 120000) * 0.34;
     } else {
       // 45% bracket - withhold around 40-42%
       const baseTax = (45000 - 18200) * 0.17 + (120000 - 45000) * 0.28 + (180000 - 120000) * 0.34;
-      estimatedWithholding = baseTax + (totalIncome - 180000) * 0.42;
+      estimatedWithholding = baseTax + (totalTFNIncome - 180000) * 0.42;
     }
 
-    // Add Medicare levy estimation (2% of taxable income)
-    if (totalIncome > 27222) { // Medicare levy threshold for 2024-25
-      estimatedWithholding += totalIncome * 0.02;
+    // Add Medicare levy estimation (2% of TFN income only)
+    if (totalTFNIncome > 27222) { // Medicare levy threshold for 2024-25
+      estimatedWithholding += totalTFNIncome * 0.02;
     }
 
     return Math.round(estimatedWithholding).toString();
-  }, [jobIncomes, abnIncome]);
+  }, [jobIncomes]);
 
   // Handle PAYG unknown checkbox toggle
   const handlePaygUnknownToggle = useCallback(() => {
@@ -2868,14 +2867,15 @@ function AppContent() {
     clearFieldError('taxWithheld');
   }, [paygUnknown, calculateEstimatedPayg, clearFieldError]);
 
-  // Update estimated PAYG when income values change and estimation is enabled
+  // Update estimated PAYG when TFN income values change and estimation is enabled
+  // Note: ABN income changes don't affect PAYG estimation as no tax is withheld from ABN income
   useEffect(() => {
     if (paygUnknown) {
       const estimated = calculateEstimatedPayg();
       setEstimatedPayg(estimated);
       setTaxWithheld(estimated);
     }
-  }, [paygUnknown, jobIncomes, abnIncome, calculateEstimatedPayg]);
+  }, [paygUnknown, jobIncomes, calculateEstimatedPayg]);
 
   useEffect(() => {
     Animated.parallel([
@@ -2939,14 +2939,13 @@ function AppContent() {
       const newIncomes = [...prevIncomes];
       newIncomes[index] = value;
 
-      // Auto-fill tax withheld based on total income
+      // Auto-fill tax withheld based on TFN employment income only
       const totalEmploymentIncome = newIncomes.reduce((sum, income) => sum + parseFloat(income || '0'), 0);
-      const abnIncomeValue = parseFloat(abnIncome || '0');
-      const totalIncome = totalEmploymentIncome + abnIncomeValue;
+      // Note: ABN income excluded as PAYG tax is not withheld from ABN/business income
 
       // Auto-fill tax withheld if not manually set and not unknown
-      if (!paygUnknown && totalIncome > 0) {
-        const estimatedTax = estimateTaxWithheld(totalIncome);
+      if (!paygUnknown && totalEmploymentIncome > 0) {
+        const estimatedTax = estimateTaxWithheld(totalEmploymentIncome);
         setTaxWithheld(estimatedTax.toString());
       }
 
@@ -2954,7 +2953,7 @@ function AppContent() {
     });
     // Clear error for this field when user starts typing
     clearFieldError(`jobIncome_${index}`);
-  }, [abnIncome, paygUnknown, estimateTaxWithheld]);
+  }, [paygUnknown, estimateTaxWithheld]);
 
   const addJobIncomeField = useCallback(() => {
     setJobIncomes(prevIncomes => [...prevIncomes, '']);

@@ -65,17 +65,18 @@ This calculator eliminates the complexity of traditional tax estimation tools by
 #### Tax Withheld (PAYG)
 - **Field**: `taxWithheld`
 - **Format**: Monetary value with `$` prefix
-- **Purpose**: Total amount of tax withheld by employers during the financial year
-- **Validation**: Must be positive number, cannot exceed reasonable percentage of income
+- **Purpose**: Total amount of tax withheld by employers from TFN employment income only
+- **Validation**: Must be positive number, cannot exceed reasonable percentage of employment income
 - **Source**: Payment summaries, payslips, or PAYG summaries
-- **Smart Feature**: Auto-estimation available if unknown
+- **Smart Feature**: Auto-estimation available based on TFN employment income only
+- **Important**: PAYG estimation excludes ABN income as no tax is withheld from business income
 
 #### ABN/Business Income
 - **Field**: `abnIncome`
 - **Format**: Monetary value with `$` prefix
 - **Purpose**: Income from ABN work, contracting, or business activities
 - **Validation**: Must be positive number
-- **Note**: No tax typically withheld from this income type
+- **Note**: No tax is withheld from this income type - handled through quarterly BAS or annual tax return
 
 ### Step 2: Deductions
 
@@ -209,7 +210,7 @@ Tax Refund/Owing = Tax Withheld - Final Tax
 
 ### PAYG Estimation Algorithm
 
-When tax withheld is unknown, the app estimates based on income brackets:
+When tax withheld is unknown, the app estimates based on **TFN employment income only** (excludes ABN income):
 
 - **Up to $18,200**: 0% withholding
 - **$18,201 - $45,000**: ~17% withholding
@@ -217,7 +218,9 @@ When tax withheld is unknown, the app estimates based on income brackets:
 - **$120,001 - $180,000**: ~34% withholding
 - **$180,001+**: ~42% withholding
 
-Plus estimated Medicare levy (2% for income over threshold).
+Plus estimated Medicare levy (2% for TFN income over threshold).
+
+**Important**: ABN/business income is excluded from PAYG estimation as employers don't withhold tax from business income.
 
 ## 🚀 Installation and Setup
 
