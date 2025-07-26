@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "start": "expo start"
+    "start": "expo start",
+    "test": "node run-tests.js",
+    "test:report": "node run-tests.js && open test-report.html"
   },
   "dependencies": {
     "@expo/metro-runtime": "~5.0.4",
