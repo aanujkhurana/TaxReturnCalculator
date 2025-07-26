@@ -2565,6 +2565,7 @@ function AppContent() {
   const [hecsDebt, setHecsDebt] = useState(false);
   const [medicareExemption, setMedicareExemption] = useState(false);
   const [dependents, setDependents] = useState('0');
+  const [hasDependents, setHasDependents] = useState(false);
 
   // PAYG estimation feature
   const [paygUnknown, setPaygUnknown] = useState(false);
@@ -2678,6 +2679,7 @@ function AppContent() {
     setHecsDebt(calculation.formData.hecsDebt || false);
     setMedicareExemption(calculation.formData.medicareExemption || false);
     setDependents(calculation.formData.dependents || '0');
+    setHasDependents(calculation.formData.hasDependents || false);
     setResult(calculation.result);
     setCurrentStep(4); // Go directly to results
     setCurrentScreen('calculator');
@@ -2723,6 +2725,7 @@ function AppContent() {
     setHecsDebt(false);
     setMedicareExemption(false);
     setDependents('0');
+    setHasDependents(false);
     setResult(null);
     setValidationErrors({});
     setPaygUnknown(false);
@@ -2756,6 +2759,7 @@ function AppContent() {
                 hecsDebt,
                 medicareExemption,
                 dependents,
+                hasDependents,
                 result,
               };
 
@@ -3289,7 +3293,7 @@ function AppContent() {
     const abnIncomeNum = parseFloat(abnIncome || '0');
     const taxWithheldNum = parseFloat(taxWithheld || '0');
     const wfhHours = parseFloat(workFromHomeHours || '0');
-    const dependentsNum = parseInt(dependents || '0');
+    const dependentsNum = hasDependents ? parseInt(dependents || '0') : 0;
 
     // Calculate total deductions
     const workFromHomeDeduction = wfhHours * 0.67;
@@ -3404,7 +3408,7 @@ function AppContent() {
         setShowSuccessAnimation(false);
       }, 3000);
     }, 2400); // Complete after all loading steps
-  }, [jobIncomes, abnIncome, taxWithheld, deductions, workFromHomeHours, hecsDebt, medicareExemption, dependents]);
+  }, [jobIncomes, abnIncome, taxWithheld, deductions, workFromHomeHours, hecsDebt, medicareExemption, dependents, hasDependents]);
 
 
 
@@ -4611,7 +4615,7 @@ function AppContent() {
 
   const renderDetailsTab = () => {
     const hecsCompleted = hecsDebt;
-    const medicareCompleted = medicareExemption || (dependents && dependents.trim() !== '');
+    const medicareCompleted = medicareExemption || hasDependents;
     const completedCategories = [hecsCompleted, medicareCompleted].filter(Boolean).length;
 
     return (
@@ -4691,15 +4695,36 @@ function AppContent() {
                 </View>
               </TouchableOpacity>
 
-              <InputField
-                label="Number of Dependents"
-                value={dependents}
-                onChangeText={setDependents}
-                placeholder="Number of children/dependents (e.g., 2)"
-                keyboardType="number-pad"
-                icon="people-outline"
-                helpKey="dependents"
-              />
+              <TouchableOpacity
+                style={[styles.toggleButton, hasDependents && styles.toggleButtonActive]}
+                onPress={() => {
+                  setHasDependents(!hasDependents);
+                  if (hasDependents) {
+                    setDependents('0');
+                  }
+                }}
+              >
+                <Ionicons
+                  name={hasDependents ? "checkbox-outline" : "square-outline"}
+                  size={24}
+                  color={hasDependents ? "#4A90E2" : "#666"}
+                />
+                <Text style={[styles.toggleText, hasDependents && styles.toggleTextActive]}>
+                  I have dependents
+                </Text>
+              </TouchableOpacity>
+
+              {hasDependents && (
+                <InputField
+                  label="Number of Dependents"
+                  value={dependents}
+                  onChangeText={setDependents}
+                  placeholder="Number of children/dependents (e.g., 2)"
+                  keyboardType="number-pad"
+                  icon="people-outline"
+                  helpKey="dependents"
+                />
+              )}
             </View>
           )}
         </View>
