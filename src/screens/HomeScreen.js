@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,7 +7,6 @@ import {
   StyleSheet,
   Alert,
   RefreshControl,
-  Dimensions,
   Linking,
   Platform
 } from 'react-native';
@@ -16,16 +15,18 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../context/ThemeContext';
 import ThemeToggle from '../components/ui/ThemeToggle';
+import Sidebar from '../components/ui/Sidebar';
 
-const { width } = Dimensions.get('window');
 
-const HomeScreen = ({ onCreateNew, onViewCalculation }) => {
+
+const HomeScreen = ({ onCreateNew, onViewCalculation, onNavigate }) => {
   const { theme } = useTheme();
   const styles = getStyles(theme);
 
   const [savedCalculations, setSavedCalculations] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
   const [isResourcesExpanded, setIsResourcesExpanded] = useState(false);
+  const [sidebarVisible, setSidebarVisible] = useState(false);
 
   useEffect(() => {
     loadSavedCalculations();
@@ -225,6 +226,13 @@ const HomeScreen = ({ onCreateNew, onViewCalculation }) => {
       {/* Simple Header at Top */}
       <View style={styles.fixedHeaderContainer}>
         <View style={styles.fixedHeaderContent}>
+          <TouchableOpacity
+            style={styles.menuButton}
+            onPress={() => setSidebarVisible(true)}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="menu" size={24} color={theme.primary} />
+          </TouchableOpacity>
           <View style={styles.fixedHeaderTextContainer}>
             <Text style={styles.fixedHeaderTitle}>Australia Tax Return</Text>
             <Text style={styles.fixedHeaderSubtitle}>Professional Tax Calculator</Text>
@@ -374,6 +382,14 @@ const HomeScreen = ({ onCreateNew, onViewCalculation }) => {
           </LinearGradient>
         </TouchableOpacity>
       </View>
+
+      {/* Sidebar */}
+      <Sidebar
+        visible={sidebarVisible}
+        onClose={() => setSidebarVisible(false)}
+        onNavigate={onNavigate}
+        currentScreen="home"
+      />
     </View>
   );
 };
@@ -402,6 +418,22 @@ const getStyles = (theme) => StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
+  },
+  menuButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: theme.surface,
+    borderWidth: 1.5,
+    borderColor: theme.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: theme.shadow,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    marginRight: 12,
   },
   themeToggle: {
     marginRight: 4,
