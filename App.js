@@ -648,9 +648,9 @@ const getStyles = (theme) => StyleSheet.create({
     minHeight: 56,
   },
   stepButtonNext: {
-    backgroundColor: theme.buttonNext,
-    borderColor: theme.buttonNextBorder,
-    shadowColor: theme.buttonNext,
+    backgroundColor: theme.surface,
+    borderColor: theme.primary,
+    shadowColor: theme.shadow,
   },
   stepButtonCalculate: {
     backgroundColor: theme.buttonCalculate,
@@ -660,6 +660,12 @@ const getStyles = (theme) => StyleSheet.create({
   stepButtonText: {
     fontSize: 16,
     color: '#fff',
+    fontWeight: '600',
+    marginRight: 8,
+  },
+  stepButtonNextText: {
+    fontSize: 16,
+    color: theme.primary,
     fontWeight: '600',
     marginRight: 8,
   },
@@ -3855,8 +3861,8 @@ function AppContent() {
             style={[styles.stepButton, styles.stepButtonNext]}
             onPress={nextStep}
           >
-            <Text style={styles.stepButtonText}>Next</Text>
-            <Ionicons name="chevron-forward" size={20} color="#fff" />
+            <Text style={styles.stepButtonNextText}>Next</Text>
+            <Ionicons name="chevron-forward" size={20} color={theme.primary} />
           </TouchableOpacity>
         </View>
 
@@ -4429,8 +4435,8 @@ function AppContent() {
           style={[styles.stepButton, styles.stepButtonNext]}
           onPress={nextStep}
         >
-          <Text style={styles.stepButtonText}>Next</Text>
-          <Ionicons name="chevron-forward" size={20} color="#fff" />
+          <Text style={styles.stepButtonNextText}>Next</Text>
+          <Ionicons name="chevron-forward" size={20} color={theme.primary} />
         </TouchableOpacity>
       </View>
 
