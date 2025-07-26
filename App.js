@@ -3842,36 +3842,6 @@ function AppContent() {
           )}
         </View>
 
-        {/* Tips Guidance for Income */}
-        {totalIncome > 0 && (
-          <View style={styles.nextStepsContainer}>
-            <View style={styles.nextStepsHeader}>
-              <Ionicons name="compass-outline" size={20} color={theme.primary} />
-              <Text style={styles.nextStepsTitle}>Tips</Text>
-            </View>
-            <View style={styles.nextStepsList}>
-              <View style={styles.nextStepItem}>
-                <View style={styles.nextStepNumber}>
-                  <Text style={styles.nextStepNumberText}>1</Text>
-                </View>
-                <Text style={styles.nextStepText}>Verify all income amounts match your payment summaries</Text>
-              </View>
-              <View style={styles.nextStepItem}>
-                <View style={styles.nextStepNumber}>
-                  <Text style={styles.nextStepNumberText}>2</Text>
-                </View>
-                <Text style={styles.nextStepText}>Check PAYG withholding amounts on your payslips</Text>
-              </View>
-              <View style={styles.nextStepItem}>
-                <View style={styles.nextStepNumber}>
-                  <Text style={styles.nextStepNumberText}>3</Text>
-                </View>
-                <Text style={styles.nextStepText}>Continue to deductions to maximize your refund</Text>
-              </View>
-            </View>
-          </View>
-        )}
-
         {/* Next Button */}
         <View style={styles.stepButtonContainer}>
           <TouchableOpacity
@@ -4446,36 +4416,6 @@ function AppContent() {
 
       </View>
 
-      {/* Tips Guidance - Separate card at bottom */}
-      {grandTotal > 0 && (
-        <View style={[styles.nextStepsContainer, { marginTop: 24 }]}>
-          <View style={styles.nextStepsHeader}>
-            <Ionicons name="compass-outline" size={20} color={theme.primary} />
-            <Text style={styles.nextStepsTitle}>Tips</Text>
-          </View>
-          <View style={styles.nextStepsList}>
-            <View style={styles.nextStepItem}>
-              <View style={styles.nextStepNumber}>
-                <Text style={styles.nextStepNumberText}>1</Text>
-              </View>
-              <Text style={styles.nextStepText}>Review your deduction amounts and ensure accuracy</Text>
-            </View>
-            <View style={styles.nextStepItem}>
-              <View style={styles.nextStepNumber}>
-                <Text style={styles.nextStepNumberText}>2</Text>
-              </View>
-              <Text style={styles.nextStepText}>Keep receipts and documentation for all claimed deductions</Text>
-            </View>
-            <View style={styles.nextStepItem}>
-              <View style={styles.nextStepNumber}>
-                <Text style={styles.nextStepNumberText}>3</Text>
-              </View>
-              <Text style={styles.nextStepText}>Continue to the next step to complete your tax calculation</Text>
-            </View>
-          </View>
-        </View>
-      )}
-
       {/* Next Button */}
       <View style={styles.stepButtonContainer}>
         <TouchableOpacity
@@ -4649,36 +4589,6 @@ function AppContent() {
             This calculator uses 2024-25 tax rates and thresholds. Results are estimates only and should not replace professional tax advice.
           </Text>
         </View>
-
-        {/* Completion Status and Tips */}
-        {completedCategories > 0 && (
-          <View style={styles.nextStepsContainer}>
-            <View style={styles.nextStepsHeader}>
-              <Ionicons name="checkmark-circle-outline" size={20} color={theme.success} />
-              <Text style={styles.nextStepsTitle}>Ready to Calculate</Text>
-            </View>
-            <View style={styles.nextStepsList}>
-              <View style={styles.nextStepItem}>
-                <View style={styles.nextStepNumber}>
-                  <Text style={styles.nextStepNumberText}>1</Text>
-                </View>
-                <Text style={styles.nextStepText}>Review all your entered information for accuracy</Text>
-              </View>
-              <View style={styles.nextStepItem}>
-                <View style={styles.nextStepNumber}>
-                  <Text style={styles.nextStepNumberText}>2</Text>
-                </View>
-                <Text style={styles.nextStepText}>Click "Calculate Tax" to see your estimated refund or liability</Text>
-              </View>
-              <View style={styles.nextStepItem}>
-                <View style={styles.nextStepNumber}>
-                  <Text style={styles.nextStepNumberText}>3</Text>
-                </View>
-                <Text style={styles.nextStepText}>Save or share your results for tax planning</Text>
-              </View>
-            </View>
-          </View>
-        )}
 
         {/* Calculate Button */}
         <View style={styles.stepButtonContainer}>
