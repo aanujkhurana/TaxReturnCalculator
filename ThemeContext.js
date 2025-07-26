@@ -28,8 +28,8 @@ const lightTheme = {
   accentBorder: '#BBF7D0',
   
   // Button colors (following user preferences)
-  buttonNext: '#000000',
-  buttonNextBorder: '#333333',
+  buttonNext: '#4A90E2',
+  buttonNextBorder: '#2C5F8C',
   buttonBack: '#6B7280',
   buttonBackBorder: '#6B7280',
   buttonCalculate: '#10B981',
@@ -94,8 +94,8 @@ const darkTheme = {
   accentBorder: '#10B981',
   
   // Button colors (following user preferences, adapted for dark mode)
-  buttonNext: '#000000',
-  buttonNextBorder: '#374151',
+  buttonNext: '#60A5FA',
+  buttonNextBorder: '#3B82F6',
   buttonBack: '#6B7280',
   buttonBackBorder: '#9CA3AF',
   buttonCalculate: '#10B981',
