@@ -24,6 +24,7 @@ import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import HomeScreen from './screens/HomeScreen';
 import SplashScreen from './screens/SplashScreen';
+import AboutScreen from './screens/AboutScreen';
 import { saveCalculation } from './services/storageService';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
 import { calculateTax } from './services/taxCalculationService';
@@ -1834,7 +1835,7 @@ function AppContent() {
   const [showSplash, setShowSplash] = useState(true);
 
   // Navigation state
-  const [currentScreen, setCurrentScreen] = useState('splash'); // 'splash', 'home' or 'calculator'
+  const [currentScreen, setCurrentScreen] = useState('splash'); // 'splash', 'home', 'about', or 'calculator'
   const [viewingCalculation, setViewingCalculation] = useState(null);
 
   // Step management
@@ -1936,6 +1937,24 @@ function AppContent() {
   const navigateToHome = () => {
     setCurrentScreen('home');
     setViewingCalculation(null);
+  };
+
+  const navigateToAbout = () => {
+    setCurrentScreen('about');
+  };
+
+  const handleNavigation = (screen) => {
+    switch (screen) {
+      case 'home':
+        navigateToHome();
+        break;
+      case 'about':
+        navigateToAbout();
+        break;
+      default:
+        navigateToHome();
+        break;
+    }
   };
 
   // Function to handle opening external URLs
@@ -4546,7 +4565,17 @@ function AppContent() {
         <HomeScreen
           onCreateNew={navigateToCalculator}
           onViewCalculation={viewCalculation}
+          onNavigate={handleNavigation}
         />
+      </View>
+    );
+  }
+
+  if (currentScreen === 'about') {
+    return (
+      <View style={styles.container}>
+        <StatusBar style="light" />
+        <AboutScreen onBack={navigateToHome} />
       </View>
     );
   }
