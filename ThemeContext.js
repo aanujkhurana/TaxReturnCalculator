@@ -65,6 +65,8 @@ const lightTheme = {
   categoryOtherLight: '#F3E8FF',
   categoryHome: '#EF4444',
   categoryHomeLight: '#FEF2F2',
+  categoryPink: '#EC4899',
+  categoryPinkLight: '#FDF2F8',
   
   // ATO colors
   atoBlue: '#1E40AF',
@@ -133,6 +135,8 @@ const darkTheme = {
   categoryOtherLight: '#4C1D95',
   categoryHome: '#F87171',
   categoryHomeLight: '#7F1D1D',
+  categoryPink: '#F472B6',
+  categoryPinkLight: '#831843',
   
   // ATO colors
   atoBlue: '#3B82F6',
