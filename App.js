@@ -1949,6 +1949,23 @@ const HELP_TEXT = {
     whereToFind: "Count your dependent children and other dependents you financially support"
   },
 
+  hecsDebt: {
+    title: "HECS-HELP Debt",
+    purpose: "Indicate if you have outstanding Higher Education Contribution Scheme (HECS) or Higher Education Loan Programme (HELP) debt.",
+    examples: [
+      "University degree with HECS debt: Yes",
+      "TAFE course with VET Student Loan: Yes",
+      "No student loans: No"
+    ],
+    tips: [
+      "HECS-HELP repayments are calculated automatically based on your income",
+      "Repayment rates range from 1% to 10% of your taxable income",
+      "Minimum repayment threshold is $51,550 for 2024-25",
+      "Check your myGov account for current debt balance"
+    ],
+    whereToFind: "Check your myGov account, ATO online services, or previous tax returns"
+  },
+
   // Work-Related Deduction Subcategories
   workRelatedTravel: {
     title: "Work-Related Travel Expenses",
@@ -2579,8 +2596,8 @@ function AppContent() {
 
   // Details category collapse state
   const [detailsCollapsedCategories, setDetailsCollapsedCategories] = useState({
-    taxObligations: false,
-    personalCircumstances: true,
+    hecsDebt: false,
+    medicareLevy: false,
     disclaimer: true
   });
 
@@ -4532,11 +4549,11 @@ function AppContent() {
   // Additional details category color mapping
   const getDetailsCategoryColors = (categoryKey) => {
     const colorMap = {
-      taxObligations: { primary: theme.categoryWork, light: theme.categoryWorkLight, accent: theme.categoryWork },
-      personalCircumstances: { primary: theme.categoryPink, light: theme.categoryPinkLight, accent: theme.categoryPink },
+      hecsDebt: { primary: theme.categoryWork, light: theme.categoryWorkLight, accent: theme.categoryWork },
+      medicareLevy: { primary: theme.categoryPink, light: theme.categoryPinkLight, accent: theme.categoryPink },
       disclaimer: { primary: theme.categoryDonations, light: theme.categoryDonationsLight, accent: theme.categoryDonations }
     };
-    return colorMap[categoryKey] || colorMap.taxObligations;
+    return colorMap[categoryKey] || colorMap.hecsDebt;
   };
 
   // Toggle details category collapse state
@@ -4593,9 +4610,9 @@ function AppContent() {
   };
 
   const renderDetailsTab = () => {
-    const taxObligationsCompleted = hecsDebt || medicareExemption;
-    const personalCircumstancesCompleted = dependents && dependents.trim() !== '';
-    const completedCategories = [taxObligationsCompleted, personalCircumstancesCompleted].filter(Boolean).length;
+    const hecsCompleted = hecsDebt;
+    const medicareCompleted = medicareExemption || (dependents && dependents.trim() !== '');
+    const completedCategories = [hecsCompleted, medicareCompleted].filter(Boolean).length;
 
     return (
       <View style={styles.tabContent}>
@@ -4605,32 +4622,54 @@ function AppContent() {
 
 
 
-        {/* Tax Obligations Section */}
+        {/* HECS-HELP Debt Section */}
         <View style={styles.deductionCategory}>
           {renderDetailsCategoryHeader(
-            'taxObligations',
-            'Tax Obligations',
-            'HECS-HELP debt and Medicare levy exemptions',
-            'document-text-outline',
-            taxObligationsCompleted
+            'hecsDebt',
+            'HECS-HELP Debt',
+            'Student loan repayment obligations',
+            'school-outline',
+            hecsCompleted
           )}
 
-          {!detailsCollapsedCategories.taxObligations && (
+          {!detailsCollapsedCategories.hecsDebt && (
             <View style={styles.categoryContent}>
               <TouchableOpacity
                 style={[styles.toggleButton, hecsDebt && styles.toggleButtonActive]}
                 onPress={() => setHecsDebt(!hecsDebt)}
               >
-                <Ionicons
-                  name={hecsDebt ? "checkbox-outline" : "square-outline"}
-                  size={24}
-                  color={hecsDebt ? "#4A90E2" : "#666"}
-                />
-                <Text style={[styles.toggleText, hecsDebt && styles.toggleTextActive]}>
-                  I have HECS-HELP debt
-                </Text>
+                <View style={{ flex: 1 }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <Ionicons
+                      name={hecsDebt ? "checkbox-outline" : "square-outline"}
+                      size={24}
+                      color={hecsDebt ? "#4A90E2" : "#666"}
+                    />
+                    <Text style={[styles.toggleText, hecsDebt && styles.toggleTextActive]}>
+                      I have HECS-HELP debt
+                    </Text>
+                  </View>
+                  <Text style={styles.toggleSubtext}>
+                    HECS-HELP repayments are automatically calculated based on your taxable income. Repayment rates range from 1% to 10%, with a minimum threshold of $51,550 for 2024-25. Check your myGov account for your current debt balance.
+                  </Text>
+                </View>
               </TouchableOpacity>
+            </View>
+          )}
+        </View>
 
+        {/* Medicare Levy Section */}
+        <View style={styles.deductionCategory}>
+          {renderDetailsCategoryHeader(
+            'medicareLevy',
+            'Medicare Levy',
+            'Medicare levy exemptions and dependents',
+            'medical-outline',
+            medicareCompleted
+          )}
+
+          {!detailsCollapsedCategories.medicareLevy && (
+            <View style={styles.categoryContent}>
               <TouchableOpacity
                 style={[styles.toggleButton, medicareExemption && styles.toggleButtonActive]}
                 onPress={() => setMedicareExemption(!medicareExemption)}
@@ -4651,22 +4690,7 @@ function AppContent() {
                   </Text>
                 </View>
               </TouchableOpacity>
-            </View>
-          )}
-        </View>
 
-        {/* Personal Circumstances Section */}
-        <View style={styles.deductionCategory}>
-          {renderDetailsCategoryHeader(
-            'personalCircumstances',
-            'Personal Circumstances',
-            'Dependents and family situation',
-            'people-outline',
-            personalCircumstancesCompleted
-          )}
-
-          {!detailsCollapsedCategories.personalCircumstances && (
-            <View style={styles.categoryContent}>
               <InputField
                 label="Number of Dependents"
                 value={dependents}
