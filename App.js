@@ -1657,21 +1657,23 @@ const getStyles = (theme) => StyleSheet.create({
     marginTop: 16,
     borderWidth: 1,
     borderColor: theme.border,
-    shadowColor: '#000',
+    shadowColor: theme.shadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
     shadowRadius: 4,
     elevation: 2,
+    overflow: 'hidden',
   },
 
   compactTableContent: {
-    minWidth: 350,
+    width: '100%', // Fixed width instead of minWidth
   },
 
   compactTableRow: {
     flexDirection: 'row',
     borderBottomWidth: 1,
     borderBottomColor: theme.borderLight,
+    minHeight: 48,
   },
 
   compactTableHeaderRow: {
@@ -1686,7 +1688,7 @@ const getStyles = (theme) => StyleSheet.create({
   },
 
   compactTableCell: {
-    paddingVertical: 12,
+    paddingVertical: 14,
     paddingHorizontal: 16,
     justifyContent: 'center',
   },
@@ -1704,23 +1706,24 @@ const getStyles = (theme) => StyleSheet.create({
 
   compactTableCellText: {
     fontSize: 14,
-    color: '#475569',
+    color: theme.textSecondary, // Use theme color instead of hardcoded
     fontWeight: '500',
   },
 
   compactTableHeaderText: {
     fontWeight: '700',
-    color: '#1E293B',
+    color: theme.text, // Use theme color instead of hardcoded
   },
 
   compactTableFinalText: {
     fontWeight: '700',
-    color: '#059669',
+    color: theme.success, // Use theme color instead of hardcoded
   },
 
   compactTableValueText: {
     fontWeight: '600',
     textAlign: 'right',
+    color: theme.text, // Use theme color for values
   },
 });
 
@@ -4643,33 +4646,31 @@ function AppContent() {
 
     return (
       <View style={styles.compactTableContainer}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          <View style={styles.compactTableContent}>
-            {tableData.map((row, rowIndex) => (
-              <View key={rowIndex} style={[
-                styles.compactTableRow,
-                rowIndex === 0 && styles.compactTableHeaderRow,
-                rowIndex === tableData.length - 1 && styles.compactTableFinalRow
-              ]}>
-                {row.map((cell, cellIndex) => (
-                  <View key={cellIndex} style={[
-                    styles.compactTableCell,
-                    cellIndex === 0 ? styles.compactTableCellLabel : styles.compactTableCellValue
+        <View style={styles.compactTableContent}>
+          {tableData.map((row, rowIndex) => (
+            <View key={rowIndex} style={[
+              styles.compactTableRow,
+              rowIndex === 0 && styles.compactTableHeaderRow,
+              rowIndex === tableData.length - 1 && styles.compactTableFinalRow
+            ]}>
+              {row.map((cell, cellIndex) => (
+                <View key={cellIndex} style={[
+                  styles.compactTableCell,
+                  cellIndex === 0 ? styles.compactTableCellLabel : styles.compactTableCellValue
+                ]}>
+                  <Text style={[
+                    styles.compactTableCellText,
+                    rowIndex === 0 && styles.compactTableHeaderText,
+                    rowIndex === tableData.length - 1 && styles.compactTableFinalText,
+                    cellIndex === 1 && rowIndex > 0 && styles.compactTableValueText
                   ]}>
-                    <Text style={[
-                      styles.compactTableCellText,
-                      rowIndex === 0 && styles.compactTableHeaderText,
-                      rowIndex === tableData.length - 1 && styles.compactTableFinalText,
-                      cellIndex === 1 && rowIndex > 0 && styles.compactTableValueText
-                    ]}>
-                      {cell}
-                    </Text>
-                  </View>
-                ))}
-              </View>
-            ))}
-          </View>
-        </ScrollView>
+                    {cell}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          ))}
+        </View>
       </View>
     );
   };
