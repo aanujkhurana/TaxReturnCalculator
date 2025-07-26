@@ -649,9 +649,34 @@ const getStyles = (theme) => StyleSheet.create({
     minHeight: 56,
   },
   stepButtonNext: {
-    backgroundColor: theme.surface,
-    borderColor: theme.primary,
-    shadowColor: theme.shadow,
+    borderRadius: 20,
+    overflow: 'hidden',
+    elevation: 10,
+    shadowColor: theme.primary,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.25,
+    shadowRadius: 12,
+    borderWidth: 1,
+    borderColor: theme.primaryBorder,
+  },
+  stepButtonNextGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 16,
+    paddingHorizontal: 32,
+    minHeight: 56,
+  },
+  stepButtonNextIconContainer: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+    marginRight: 12,
   },
   stepButtonCalculate: {
     borderRadius: 20,
@@ -691,9 +716,23 @@ const getStyles = (theme) => StyleSheet.create({
   },
   stepButtonNextText: {
     fontSize: 16,
-    color: theme.primary,
+    color: '#fff',
     fontWeight: '600',
-    marginRight: 8,
+    marginLeft: 8,
+  },
+  readyToCalculateLabel: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 12,
+    paddingHorizontal: 16,
+  },
+  readyToCalculateLabelText: {
+    fontSize: 14,
+    color: theme.textSecondary,
+    fontWeight: '500',
+    marginLeft: 8,
+    letterSpacing: 0.2,
   },
   startOverButton: {
     flex: 1,
@@ -3884,11 +3923,21 @@ function AppContent() {
         {/* Next Button */}
         <View style={styles.stepButtonContainer}>
           <TouchableOpacity
-            style={[styles.stepButton, styles.stepButtonNext]}
+            style={styles.stepButtonNext}
             onPress={nextStep}
+            activeOpacity={0.8}
           >
-            <Text style={styles.stepButtonNextText}>Next</Text>
-            <Ionicons name="chevron-forward" size={20} color={theme.primary} />
+            <LinearGradient
+              colors={['#4A90E2', '#2C5F8C']}
+              style={styles.stepButtonNextGradient}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+            >
+              <View style={styles.stepButtonNextIconContainer}>
+                <Ionicons name="chevron-forward" size={20} color="#fff" />
+              </View>
+              <Text style={styles.stepButtonNextText}>Next</Text>
+            </LinearGradient>
           </TouchableOpacity>
         </View>
 
@@ -4458,11 +4507,21 @@ function AppContent() {
       {/* Next Button */}
       <View style={styles.stepButtonContainer}>
         <TouchableOpacity
-          style={[styles.stepButton, styles.stepButtonNext]}
+          style={styles.stepButtonNext}
           onPress={nextStep}
+          activeOpacity={0.8}
         >
-          <Text style={styles.stepButtonNextText}>Next</Text>
-          <Ionicons name="chevron-forward" size={20} color={theme.primary} />
+          <LinearGradient
+            colors={['#4A90E2', '#2C5F8C']}
+            style={styles.stepButtonNextGradient}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+          >
+            <View style={styles.stepButtonNextIconContainer}>
+              <Ionicons name="chevron-forward" size={20} color="#fff" />
+            </View>
+            <Text style={styles.stepButtonNextText}>Next</Text>
+          </LinearGradient>
         </TouchableOpacity>
       </View>
 
@@ -4629,6 +4688,12 @@ function AppContent() {
           </Text>
         </View>
 
+        {/* Ready to Calculate Label */}
+        <View style={styles.readyToCalculateLabel}>
+          <Ionicons name="checkmark-circle" size={16} color={theme.textSecondary} />
+          <Text style={styles.readyToCalculateLabelText}>Ready to Calculate</Text>
+        </View>
+
         {/* Calculate Button */}
         <View style={styles.stepButtonContainer}>
           <TouchableOpacity
@@ -4646,7 +4711,7 @@ function AppContent() {
               <View style={styles.stepButtonCalculateIconContainer}>
                 <Ionicons name={isCalculating ? "hourglass-outline" : "calculator-outline"} size={20} color="#fff" />
               </View>
-              <Text style={styles.stepButtonText}>{isCalculating ? 'Calculating...' : 'Calculate'}</Text>
+              <Text style={styles.stepButtonText}>{isCalculating ? 'Calculating...' : 'Calculate Tax Return'}</Text>
             </LinearGradient>
           </TouchableOpacity>
         </View>
