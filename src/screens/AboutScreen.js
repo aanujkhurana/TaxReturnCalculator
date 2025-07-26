@@ -35,26 +35,36 @@ const AboutScreen = ({ onBack }) => {
     }
   };
 
-  const features = [
+  const legalSections = [
     {
-      icon: 'calculator-outline',
-      title: 'Accurate Calculations',
-      description: 'ATO-compliant tax calculations for Australian residents',
+      icon: 'shield-outline',
+      title: 'Privacy Policy',
+      content: [
+        'This application does not collect, store, or transmit any personal data to external servers.',
+        'All calculations and data remain on your device only.',
+        'No personal information, tax details, or usage data is shared with third parties.',
+        'The app may access device storage only to save your calculations locally.',
+      ],
     },
     {
-      icon: 'document-text-outline',
-      title: 'Professional Reports',
-      description: 'Generate detailed PDF reports for your records',
+      icon: 'warning-outline',
+      title: 'Important Disclaimer',
+      content: [
+        'This application is NOT affiliated with the Australian Taxation Office (ATO).',
+        'This app is NOT operated by a registered tax agent.',
+        'All calculations are estimates only and should not be considered as professional tax advice.',
+        'Results may not reflect your actual tax liability or refund amount.',
+      ],
     },
     {
-      icon: 'save-outline',
-      title: 'Save & Track',
-      description: 'Save multiple calculations and track your progress',
-    },
-    {
-      icon: 'shield-checkmark-outline',
-      title: 'Secure & Private',
-      description: 'Your data stays on your device - complete privacy',
+      icon: 'people-outline',
+      title: 'Professional Advice',
+      content: [
+        'For final accuracy and compliance, consult a registered tax agent.',
+        'Tax laws are complex and subject to change.',
+        'Individual circumstances may affect your tax obligations.',
+        'This tool is designed for general guidance only.',
+      ],
     },
   ];
 
@@ -150,6 +160,25 @@ const AboutScreen = ({ onBack }) => {
       lineHeight: 20,
       marginTop: 8,
     },
+    disclaimerBanner: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: theme.warningLight,
+      borderWidth: 1,
+      borderColor: theme.warningBorder,
+      borderRadius: 8,
+      padding: 12,
+      marginTop: 16,
+    },
+    disclaimerText: {
+      fontSize: 12,
+      color: theme.warning,
+      fontWeight: '600',
+      marginLeft: 8,
+      textAlign: 'center',
+      flex: 1,
+    },
     sectionTitle: {
       fontSize: 18,
       fontWeight: '700',
@@ -157,41 +186,45 @@ const AboutScreen = ({ onBack }) => {
       marginBottom: 16,
       marginTop: 8,
     },
-    featuresContainer: {
+    legalContainer: {
       marginBottom: 32,
     },
-    featureItem: {
-      flexDirection: 'row',
-      alignItems: 'flex-start',
+    legalSection: {
       backgroundColor: theme.surface,
-      padding: 16,
+      padding: 20,
       borderRadius: 12,
-      marginBottom: 12,
+      marginBottom: 16,
       borderWidth: 1,
       borderColor: theme.border,
     },
-    featureIcon: {
+    legalHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: 16,
+    },
+    legalIcon: {
       width: 40,
       height: 40,
       borderRadius: 20,
-      backgroundColor: theme.primaryLight,
+      backgroundColor: theme.warningLight,
       alignItems: 'center',
       justifyContent: 'center',
       marginRight: 16,
     },
-    featureContent: {
+    legalTitle: {
+      fontSize: 18,
+      fontWeight: '700',
+      color: theme.text,
       flex: 1,
     },
-    featureTitle: {
-      fontSize: 16,
-      fontWeight: '600',
-      color: theme.text,
-      marginBottom: 4,
+    legalContent: {
+      paddingLeft: 56,
     },
-    featureDescription: {
+    legalPoint: {
       fontSize: 14,
       color: theme.textSecondary,
-      lineHeight: 18,
+      lineHeight: 20,
+      marginBottom: 8,
     },
     linksContainer: {
       marginBottom: 32,
@@ -281,23 +314,39 @@ const AboutScreen = ({ onBack }) => {
             <Text style={styles.appName}>{APP_INFO.NAME}</Text>
             <Text style={styles.appVersion}>Version {APP_INFO.VERSION}</Text>
             <Text style={styles.appDescription}>
-              Professional Australian tax calculator designed to help you accurately
-              calculate your tax return for the {APP_INFO.FINANCIAL_YEAR} financial year.
-              Simple, secure, and ATO-compliant.
+              Professional Australian tax calculator designed to help you estimate
+              your tax return for the {APP_INFO.FINANCIAL_YEAR} financial year.
+              Simple, secure, and private - all data stays on your device.
             </Text>
+            <View style={styles.disclaimerBanner}>
+              <Ionicons name="warning" size={16} color={theme.warning} />
+              <Text style={styles.disclaimerText}>
+                Not affiliated with ATO • Estimates only • Consult a tax agent for final advice
+              </Text>
+            </View>
           </View>
 
-          {/* Features Section */}
-          <View style={styles.featuresContainer}>
-            <Text style={styles.sectionTitle}>Key Features</Text>
-            {features.map((feature, index) => (
-              <View key={index} style={styles.featureItem}>
-                <View style={styles.featureIcon}>
-                  <Ionicons name={feature.icon} size={20} color={theme.primary} />
+          {/* Legal Information Section */}
+          <View style={styles.legalContainer}>
+            <Text style={styles.sectionTitle}>Important Information</Text>
+            {legalSections.map((section, index) => (
+              <View key={index} style={styles.legalSection}>
+                <View style={styles.legalHeader}>
+                  <View style={styles.legalIcon}>
+                    <Ionicons
+                      name={section.icon}
+                      size={20}
+                      color={section.title === 'Privacy Policy' ? theme.accent : theme.warning}
+                    />
+                  </View>
+                  <Text style={styles.legalTitle}>{section.title}</Text>
                 </View>
-                <View style={styles.featureContent}>
-                  <Text style={styles.featureTitle}>{feature.title}</Text>
-                  <Text style={styles.featureDescription}>{feature.description}</Text>
+                <View style={styles.legalContent}>
+                  {section.content.map((point, pointIndex) => (
+                    <Text key={pointIndex} style={styles.legalPoint}>
+                      • {point}
+                    </Text>
+                  ))}
                 </View>
               </View>
             ))}
@@ -337,6 +386,8 @@ const AboutScreen = ({ onBack }) => {
             <Text style={styles.copyright}>© 2024 Tax Calculator</Text>
             {'\n'}Made with ❤️ for Australian taxpayers
             {'\n'}All calculations are estimates only
+            {'\n'}Not affiliated with the Australian Taxation Office
+            {'\n'}Use at your own discretion - consult a tax professional for advice
           </Text>
         </View>
       </ScrollView>
