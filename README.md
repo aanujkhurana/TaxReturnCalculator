@@ -418,6 +418,49 @@ The application follows modern React Native best practices with a modular archit
 }
 ```
 
+## 🎨 Design & Component System
+
+### Visual Design
+
+- **Modern Interface**: Clean, professional design following Material Design principles
+- **Dark/Light Theme Support**: Automatic system theme detection with manual override
+- **Responsive Layout**: Optimized for various screen sizes and orientations
+- **Intuitive Navigation**: Clear step progression with visual indicators
+- **Professional Color Scheme**: ATO-inspired blue theme with accessibility considerations
+
+### User Experience
+
+- **Progressive Disclosure**: Information revealed step-by-step to avoid overwhelming users
+- **Contextual Help**: Detailed explanations available for every input field with smart suggestions
+- **Real-time Feedback**: Immediate validation and calculation updates
+- **Error Prevention**: Comprehensive input validation prevents common mistakes
+- **Professional Output**: Clean, detailed PDF reports suitable for record-keeping
+- **Smart Input Features**: Auto-formatting, suggestions, and validation feedback
+
+### Component Architecture
+
+The app uses a modular component system for consistency and maintainability:
+
+#### **InputField Component** (`src/components/forms/InputField.js`)
+- Smart validation with real-time feedback
+- Contextual help integration with detailed explanations
+- Auto-formatting for currency and numbers
+- Smart suggestions based on field type
+- Accessibility support with proper labels
+- Prefix/suffix support ($ for currency, hrs for time)
+
+#### **HelpModal Component** (`src/components/ui/HelpModal.js`)
+- Comprehensive help system with examples and tips
+- Structured information display with clear sections
+- Easy-to-understand explanations for complex tax concepts
+- "Where to find" guidance for each field
+
+#### **Theme System** (`src/context/ThemeContext.js`)
+- Automatic dark/light mode detection
+- Consistent color schemes across all components
+- User preference persistence with AsyncStorage
+- Smooth theme transitions
+
 ## 📁 Project Structure
 
 The application follows a modular, maintainable architecture with clear separation of concerns:
