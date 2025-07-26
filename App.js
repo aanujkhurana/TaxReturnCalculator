@@ -1165,7 +1165,7 @@ const getStyles = (theme) => StyleSheet.create({
   },
 
   inputWithValue: {
-    backgroundColor: theme.primaryLight,
+    backgroundColor: theme.surfaceSecondary,
     borderColor: theme.primaryBorder,
   },
 
