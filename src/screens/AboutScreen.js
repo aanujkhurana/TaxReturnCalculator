@@ -38,33 +38,27 @@ const AboutScreen = ({ onBack }) => {
 
   const legalSections = [
     {
-      icon: 'shield-outline',
       title: 'Privacy Policy',
       content: [
-        'This application does not collect, store, or transmit any personal data to external servers.',
-        'All calculations and data remain on your device only.',
-        'No personal information, tax details, or usage data is shared with third parties.',
-        'The app may access device storage only to save your calculations locally.',
+        'This application does not collect, store, or transmit any personal data to external servers. All calculations and data remain on your device only.',
+        'No personal information, tax details, or usage data is shared with third parties. Your privacy is completely protected.',
+        'The app may access device storage only to save your calculations locally for your convenience. No data leaves your device.',
       ],
     },
     {
-      icon: 'warning-outline',
       title: 'Important Disclaimer',
       content: [
-        'This application is NOT affiliated with the Australian Taxation Office (ATO).',
-        'This app is NOT operated by a registered tax agent.',
-        'All calculations are estimates only and should not be considered as professional tax advice.',
-        'Results may not reflect your actual tax liability or refund amount.',
+        'This application is NOT affiliated with the Australian Taxation Office (ATO). This app is NOT operated by a registered tax agent.',
+        'All calculations are estimates only and should not be considered as professional tax advice. Results may not reflect your actual tax liability or refund amount.',
+        'The developers assume no responsibility for any financial decisions made based on the calculations provided by this application.',
       ],
     },
     {
-      icon: 'people-outline',
       title: 'Professional Advice',
       content: [
-        'For final accuracy and compliance, consult a registered tax agent.',
-        'Tax laws are complex and subject to change.',
-        'Individual circumstances may affect your tax obligations.',
-        'This tool is designed for general guidance only.',
+        'For final accuracy and compliance, consult a registered tax agent. Tax laws are complex and subject to change.',
+        'Individual circumstances may affect your tax obligations in ways this calculator cannot account for.',
+        'This tool is designed for general guidance only and should be used as a starting point for your tax planning.',
       ],
     },
   ];
@@ -157,22 +151,6 @@ const AboutScreen = ({ onBack }) => {
       shadowRadius: 6,
       alignItems: 'center',
     },
-    appIcon: {
-      width: 80,
-      height: 80,
-      borderRadius: 20,
-      backgroundColor: theme.primaryLight,
-      alignItems: 'center',
-      justifyContent: 'center',
-      marginBottom: 20,
-      borderWidth: 2,
-      borderColor: theme.primaryBorder,
-      elevation: 3,
-      shadowColor: theme.primary,
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.1,
-      shadowRadius: 4,
-    },
     appName: {
       fontSize: 28,
       fontWeight: '700',
@@ -246,49 +224,22 @@ const AboutScreen = ({ onBack }) => {
       shadowOpacity: 0.06,
       shadowRadius: 6,
     },
-    legalHeader: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      marginBottom: 16,
-      paddingVertical: 4,
-    },
-    legalIcon: {
-      width: 40,
-      height: 40,
-      borderRadius: 20,
-      alignItems: 'center',
-      justifyContent: 'center',
-      marginRight: 12,
-      borderWidth: 1,
-    },
-    legalIconPrivacy: {
-      backgroundColor: theme.accentLight,
-      borderColor: theme.accentBorder,
-    },
-    legalIconWarning: {
-      backgroundColor: theme.warningLight,
-      borderColor: theme.warningBorder,
-    },
-    legalIconAdvice: {
-      backgroundColor: theme.primaryLight,
-      borderColor: theme.primaryBorder,
-    },
     legalTitle: {
       fontSize: 18,
       fontWeight: '700',
       color: theme.text,
-      flex: 1,
       letterSpacing: 0.2,
+      marginBottom: 16,
     },
     legalContent: {
-      paddingLeft: 52,
+      gap: 12,
     },
-    legalPoint: {
+    legalParagraph: {
       fontSize: 14,
       color: theme.textSecondary,
-      lineHeight: 20,
-      marginBottom: 10,
+      lineHeight: 22,
       letterSpacing: 0.1,
+      marginBottom: 12,
     },
     linksContainer: {
       marginBottom: 20,
@@ -387,9 +338,6 @@ const AboutScreen = ({ onBack }) => {
         <View style={styles.content}>
           {/* App Info Section */}
           <View style={styles.appInfoSection}>
-            <View style={styles.appIcon}>
-              <Ionicons name="calculator" size={40} color={theme.primary} />
-            </View>
             <Text style={styles.appName}>{APP_INFO.NAME}</Text>
             <Text style={styles.appVersion}>Version {APP_INFO.VERSION}</Text>
             <Text style={styles.appDescription}>
@@ -408,41 +356,18 @@ const AboutScreen = ({ onBack }) => {
           {/* Legal Information Section */}
           <View style={styles.legalContainer}>
             <Text style={styles.sectionTitle}>Important Information</Text>
-            {legalSections.map((section, index) => {
-              const getIconStyle = () => {
-                if (section.title === 'Privacy Policy') return styles.legalIconPrivacy;
-                if (section.title === 'Important Disclaimer') return styles.legalIconWarning;
-                return styles.legalIconAdvice;
-              };
-
-              const getIconColor = () => {
-                if (section.title === 'Privacy Policy') return theme.accent;
-                if (section.title === 'Important Disclaimer') return theme.warning;
-                return theme.primary;
-              };
-
-              return (
-                <View key={index} style={styles.legalSection}>
-                  <View style={styles.legalHeader}>
-                    <View style={[styles.legalIcon, getIconStyle()]}>
-                      <Ionicons
-                        name={section.icon}
-                        size={20}
-                        color={getIconColor()}
-                      />
-                    </View>
-                    <Text style={styles.legalTitle}>{section.title}</Text>
-                  </View>
-                  <View style={styles.legalContent}>
-                    {section.content.map((point, pointIndex) => (
-                      <Text key={pointIndex} style={styles.legalPoint}>
-                        • {point}
-                      </Text>
-                    ))}
-                  </View>
+            {legalSections.map((section, index) => (
+              <View key={index} style={styles.legalSection}>
+                <Text style={styles.legalTitle}>{section.title}</Text>
+                <View style={styles.legalContent}>
+                  {section.content.map((paragraph, paragraphIndex) => (
+                    <Text key={paragraphIndex} style={styles.legalParagraph}>
+                      {paragraph}
+                    </Text>
+                  ))}
                 </View>
-              );
-            })}
+              </View>
+            ))}
           </View>
 
           {/* Useful Links Section */}
