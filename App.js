@@ -3741,12 +3741,68 @@ function AppContent() {
     );
   };
 
+  // Helper function to calculate rough tax estimate using proper 2024-25 brackets
+  const calculateRoughTaxEstimate = (income) => {
+    const taxableIncome = parseFloat(income || '0');
+    if (taxableIncome <= 0) return 0;
+
+    // 2024-25 tax brackets (simplified, no deductions considered)
+    let tax = 0;
+    if (taxableIncome > 180000) {
+      tax = 51667 + (taxableIncome - 180000) * 0.45;
+    } else if (taxableIncome > 120000) {
+      tax = 29467 + (taxableIncome - 120000) * 0.37;
+    } else if (taxableIncome > 45000) {
+      tax = (45000 - 18200) * 0.19 + (taxableIncome - 45000) * 0.325;
+    } else if (taxableIncome > 18200) {
+      tax = (taxableIncome - 18200) * 0.19;
+    }
+
+    // Add Medicare levy (2%)
+    if (taxableIncome > 27222) {
+      tax += taxableIncome * 0.02;
+    }
+
+    return Math.round(tax);
+  };
+
+  // Helper function to calculate tax savings from deductions using marginal tax rate
+  const calculateTaxSavings = (deductionAmount) => {
+    const deductions = parseFloat(deductionAmount || '0');
+    if (deductions <= 0) return 0;
+
+    // Get current total income to determine marginal tax rate
+    const parsedJobIncomes = jobIncomes.map((val) => parseFloat(val || '0'));
+    const totalTFNIncome = parsedJobIncomes.reduce((sum, curr) => sum + (isNaN(curr) ? 0 : curr), 0);
+    const abnIncomeNum = parseFloat(abnIncome || '0');
+    const totalIncome = totalTFNIncome + abnIncomeNum;
+
+    // Determine marginal tax rate based on income level (2024-25)
+    let marginalRate = 0;
+    if (totalIncome > 180000) {
+      marginalRate = 0.45 + 0.02; // 45% + 2% Medicare levy
+    } else if (totalIncome > 120000) {
+      marginalRate = 0.37 + 0.02; // 37% + 2% Medicare levy
+    } else if (totalIncome > 45000) {
+      marginalRate = 0.325 + 0.02; // 32.5% + 2% Medicare levy
+    } else if (totalIncome > 27222) {
+      marginalRate = 0.19 + 0.02; // 19% + 2% Medicare levy
+    } else if (totalIncome > 18200) {
+      marginalRate = 0.19; // 19% (below Medicare levy threshold)
+    } else {
+      marginalRate = 0; // Tax-free threshold
+    }
+
+    return Math.round(deductions * marginalRate);
+  };
+
   const renderIncomeTab = () => {
     const employmentTotal = jobIncomes.reduce((sum, income) => sum + parseFloat(income || '0'), 0);
     const abnTotal = parseFloat(abnIncome || '0');
     const paygTotal = parseFloat(taxWithheld || '0');
     const totalIncome = employmentTotal + abnTotal;
-    const estimatedTax = totalIncome * 0.325; // Rough estimate
+    // Use proper tax calculation instead of flat rate
+    const estimatedTax = calculateRoughTaxEstimate(totalIncome);
     const estimatedRefund = paygTotal - estimatedTax;
 
     return (
@@ -4195,7 +4251,7 @@ function AppContent() {
           <View style={styles.taxSavingsEstimate}>
             <Ionicons name="cash-outline" size={16} color={theme.success} />
             <Text style={styles.taxSavingsText}>
-              Estimated tax savings: {formatCurrency(grandTotal * 0.325)} (32.5% tax rate)
+              Estimated tax savings: {formatCurrency(calculateTaxSavings(grandTotal))} (marginal tax rate)
             </Text>
           </View>
 
