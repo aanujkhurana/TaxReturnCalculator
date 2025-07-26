@@ -18,6 +18,7 @@ import {
 } from 'react-native';
 import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
+import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
 
 import { Ionicons } from '@expo/vector-icons';
@@ -653,9 +654,34 @@ const getStyles = (theme) => StyleSheet.create({
     shadowColor: theme.shadow,
   },
   stepButtonCalculate: {
-    backgroundColor: theme.buttonCalculate,
-    borderColor: theme.buttonCalculateBorder,
-    shadowColor: theme.buttonCalculate,
+    borderRadius: 20,
+    overflow: 'hidden',
+    elevation: 10,
+    shadowColor: theme.accent,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.25,
+    shadowRadius: 12,
+    borderWidth: 1,
+    borderColor: theme.accentBorder,
+  },
+  stepButtonCalculateGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 16,
+    paddingHorizontal: 32,
+    minHeight: 56,
+  },
+  stepButtonCalculateIconContainer: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+    marginRight: 12,
   },
   stepButtonText: {
     fontSize: 16,
@@ -4448,7 +4474,7 @@ function AppContent() {
   const getDetailsCategoryColors = (categoryKey) => {
     const colorMap = {
       taxObligations: { primary: theme.categoryWork, light: theme.categoryWorkLight, accent: theme.categoryWork },
-      personalCircumstances: { primary: theme.categoryEducation, light: theme.categoryEducationLight, accent: theme.categoryEducation },
+      personalCircumstances: { primary: theme.categoryPink, light: theme.categoryPinkLight, accent: theme.categoryPink },
       disclaimer: { primary: theme.categoryDonations, light: theme.categoryDonationsLight, accent: theme.categoryDonations }
     };
     return colorMap[categoryKey] || colorMap.taxObligations;
@@ -4606,12 +4632,22 @@ function AppContent() {
         {/* Calculate Button */}
         <View style={styles.stepButtonContainer}>
           <TouchableOpacity
-            style={[styles.stepButton, styles.stepButtonCalculate, isCalculating && { opacity: 0.7 }]}
+            style={[styles.stepButtonCalculate, isCalculating && { opacity: 0.7 }]}
             onPress={estimateTax}
             disabled={isCalculating}
+            activeOpacity={0.8}
           >
-            <Ionicons name={isCalculating ? "hourglass-outline" : "calculator-outline"} size={20} color="#fff" />
-            <Text style={styles.stepButtonText}>{isCalculating ? 'Calculating...' : 'Calculate'}</Text>
+            <LinearGradient
+              colors={['#10B981', '#059669']}
+              style={styles.stepButtonCalculateGradient}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+            >
+              <View style={styles.stepButtonCalculateIconContainer}>
+                <Ionicons name={isCalculating ? "hourglass-outline" : "calculator-outline"} size={20} color="#fff" />
+              </View>
+              <Text style={styles.stepButtonText}>{isCalculating ? 'Calculating...' : 'Calculate'}</Text>
+            </LinearGradient>
           </TouchableOpacity>
         </View>
 
