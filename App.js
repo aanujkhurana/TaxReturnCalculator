@@ -1521,10 +1521,14 @@ const getStyles = (theme) => StyleSheet.create({
 
   atoFileReturnDescription: {
     fontSize: 14,
-    color: '#475569',
+    color: theme.text, // Use theme text color (white/black based on theme)
     textAlign: 'center',
-    marginBottom: 8,
+    marginTop: 24,
+    marginBottom: 6,
+    marginHorizontal: 16,
     fontWeight: '500',
+    letterSpacing: 0.1,
+    lineHeight: 20,
   },
 
   externalLinkIcon: {
