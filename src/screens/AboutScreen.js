@@ -12,6 +12,7 @@ import {
   StyleSheet,
   Linking,
   Alert,
+  Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -89,10 +90,10 @@ const AboutScreen = ({ onBack }) => {
       backgroundColor: theme.background,
     },
     header: {
-      paddingTop: 60,
+      paddingTop: Platform.OS === 'ios' ? 44 : 0,
       paddingHorizontal: 20,
-      paddingBottom: 20,
-      backgroundColor: theme.primary,
+      paddingBottom: 16,
+      backgroundColor: 'transparent',
     },
     headerContent: {
       flexDirection: 'row',
@@ -100,9 +101,19 @@ const AboutScreen = ({ onBack }) => {
       justifyContent: 'space-between',
     },
     backButton: {
-      padding: 8,
-      borderRadius: 20,
-      backgroundColor: 'rgba(255, 255, 255, 0.1)',
+      width: 44,
+      height: 44,
+      borderRadius: 22,
+      backgroundColor: theme.surface,
+      borderWidth: 1.5,
+      borderColor: theme.border,
+      alignItems: 'center',
+      justifyContent: 'center',
+      shadowColor: theme.shadow,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 4,
+      elevation: 3,
     },
     headerTextContainer: {
       flex: 1,
@@ -110,25 +121,41 @@ const AboutScreen = ({ onBack }) => {
       marginHorizontal: 16,
     },
     headerTitle: {
-      fontSize: 20,
+      fontSize: 24,
       fontWeight: '700',
-      color: '#FFFFFF',
-      marginBottom: 4,
+      color: theme.text,
+      letterSpacing: 0.2,
+      marginBottom: 2,
     },
     headerSubtitle: {
-      fontSize: 14,
-      color: 'rgba(255, 255, 255, 0.8)',
+      fontSize: 16,
+      color: theme.primary,
       fontWeight: '500',
+      letterSpacing: 0.1,
     },
     scrollContainer: {
       flex: 1,
+      backgroundColor: theme.background,
     },
     content: {
-      padding: 20,
+      paddingTop: 8,
+      paddingBottom: 40,
     },
     appInfoSection: {
+      backgroundColor: theme.surface,
+      marginHorizontal: 20,
+      marginTop: 0,
+      marginBottom: 20,
+      borderRadius: 16,
+      padding: 24,
+      borderWidth: 1,
+      borderColor: theme.border,
+      elevation: 2,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.06,
+      shadowRadius: 6,
       alignItems: 'center',
-      marginBottom: 32,
     },
     appIcon: {
       width: 80,
@@ -137,28 +164,36 @@ const AboutScreen = ({ onBack }) => {
       backgroundColor: theme.primaryLight,
       alignItems: 'center',
       justifyContent: 'center',
-      marginBottom: 16,
+      marginBottom: 20,
       borderWidth: 2,
       borderColor: theme.primaryBorder,
+      elevation: 3,
+      shadowColor: theme.primary,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 4,
     },
     appName: {
-      fontSize: 24,
+      fontSize: 28,
       fontWeight: '700',
       color: theme.text,
       marginBottom: 8,
       textAlign: 'center',
+      letterSpacing: 0.3,
     },
     appVersion: {
       fontSize: 16,
       color: theme.textSecondary,
       marginBottom: 4,
+      fontWeight: '500',
     },
     appDescription: {
-      fontSize: 14,
+      fontSize: 15,
       color: theme.textSecondary,
       textAlign: 'center',
-      lineHeight: 20,
-      marginTop: 8,
+      lineHeight: 22,
+      marginTop: 12,
+      marginBottom: 16,
     },
     disclaimerBanner: {
       flexDirection: 'row',
@@ -167,77 +202,112 @@ const AboutScreen = ({ onBack }) => {
       backgroundColor: theme.warningLight,
       borderWidth: 1,
       borderColor: theme.warningBorder,
-      borderRadius: 8,
-      padding: 12,
-      marginTop: 16,
+      borderRadius: 12,
+      padding: 16,
+      marginTop: 8,
+      elevation: 1,
+      shadowColor: theme.warning,
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.1,
+      shadowRadius: 2,
     },
     disclaimerText: {
-      fontSize: 12,
+      fontSize: 13,
       color: theme.warning,
       fontWeight: '600',
       marginLeft: 8,
       textAlign: 'center',
       flex: 1,
+      letterSpacing: 0.1,
     },
     sectionTitle: {
-      fontSize: 18,
-      fontWeight: '700',
+      fontSize: 17,
+      fontWeight: '600',
       color: theme.text,
       marginBottom: 16,
       marginTop: 8,
+      letterSpacing: 0.1,
+      paddingHorizontal: 20,
     },
     legalContainer: {
-      marginBottom: 32,
+      marginBottom: 20,
     },
     legalSection: {
       backgroundColor: theme.surface,
-      padding: 20,
-      borderRadius: 12,
+      marginHorizontal: 20,
       marginBottom: 16,
+      borderRadius: 16,
+      padding: 20,
       borderWidth: 1,
       borderColor: theme.border,
+      elevation: 2,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.06,
+      shadowRadius: 6,
     },
     legalHeader: {
       flexDirection: 'row',
       alignItems: 'center',
       marginBottom: 16,
+      paddingVertical: 4,
     },
     legalIcon: {
       width: 40,
       height: 40,
       borderRadius: 20,
-      backgroundColor: theme.warningLight,
       alignItems: 'center',
       justifyContent: 'center',
-      marginRight: 16,
+      marginRight: 12,
+      borderWidth: 1,
+    },
+    legalIconPrivacy: {
+      backgroundColor: theme.accentLight,
+      borderColor: theme.accentBorder,
+    },
+    legalIconWarning: {
+      backgroundColor: theme.warningLight,
+      borderColor: theme.warningBorder,
+    },
+    legalIconAdvice: {
+      backgroundColor: theme.primaryLight,
+      borderColor: theme.primaryBorder,
     },
     legalTitle: {
       fontSize: 18,
       fontWeight: '700',
       color: theme.text,
       flex: 1,
+      letterSpacing: 0.2,
     },
     legalContent: {
-      paddingLeft: 56,
+      paddingLeft: 52,
     },
     legalPoint: {
       fontSize: 14,
       color: theme.textSecondary,
       lineHeight: 20,
-      marginBottom: 8,
+      marginBottom: 10,
+      letterSpacing: 0.1,
     },
     linksContainer: {
-      marginBottom: 32,
+      marginBottom: 20,
     },
     linkItem: {
       flexDirection: 'row',
       alignItems: 'center',
       backgroundColor: theme.surface,
-      padding: 16,
-      borderRadius: 12,
+      marginHorizontal: 20,
       marginBottom: 12,
+      borderRadius: 16,
+      padding: 16,
       borderWidth: 1,
       borderColor: theme.border,
+      elevation: 2,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.04,
+      shadowRadius: 4,
     },
     linkIcon: {
       width: 40,
@@ -246,36 +316,45 @@ const AboutScreen = ({ onBack }) => {
       backgroundColor: theme.accentLight,
       alignItems: 'center',
       justifyContent: 'center',
-      marginRight: 16,
+      marginRight: 12,
+      borderWidth: 1,
+      borderColor: theme.accentBorder,
     },
     linkContent: {
       flex: 1,
+      paddingTop: 2,
     },
     linkTitle: {
-      fontSize: 16,
-      fontWeight: '600',
+      fontSize: 17,
+      fontWeight: '700',
       color: theme.text,
       marginBottom: 2,
+      letterSpacing: 0.2,
     },
     linkSubtitle: {
       fontSize: 13,
       color: theme.textSecondary,
+      fontWeight: '500',
+      letterSpacing: 0.1,
     },
     linkArrow: {
       marginLeft: 8,
     },
     footer: {
       alignItems: 'center',
-      paddingVertical: 24,
+      paddingVertical: 32,
+      paddingHorizontal: 20,
+      marginTop: 20,
+      backgroundColor: theme.surfaceSecondary,
       borderTopWidth: 1,
       borderTopColor: theme.border,
-      backgroundColor: theme.surfaceSecondary,
     },
     footerText: {
       fontSize: 12,
       color: theme.textTertiary,
       textAlign: 'center',
-      lineHeight: 16,
+      lineHeight: 18,
+      letterSpacing: 0.1,
     },
     copyright: {
       fontWeight: '600',
@@ -293,13 +372,13 @@ const AboutScreen = ({ onBack }) => {
             onPress={onBack}
             activeOpacity={0.7}
           >
-            <Ionicons name="arrow-back" size={20} color="#FFFFFF" />
+            <Ionicons name="arrow-back" size={20} color={theme.primary} />
           </TouchableOpacity>
           <View style={styles.headerTextContainer}>
             <Text style={styles.headerTitle}>About</Text>
             <Text style={styles.headerSubtitle}>App Information</Text>
           </View>
-          <View style={{ width: 36 }} />
+          <View style={{ width: 44 }} />
         </View>
       </View>
 
@@ -329,27 +408,41 @@ const AboutScreen = ({ onBack }) => {
           {/* Legal Information Section */}
           <View style={styles.legalContainer}>
             <Text style={styles.sectionTitle}>Important Information</Text>
-            {legalSections.map((section, index) => (
-              <View key={index} style={styles.legalSection}>
-                <View style={styles.legalHeader}>
-                  <View style={styles.legalIcon}>
-                    <Ionicons
-                      name={section.icon}
-                      size={20}
-                      color={section.title === 'Privacy Policy' ? theme.accent : theme.warning}
-                    />
+            {legalSections.map((section, index) => {
+              const getIconStyle = () => {
+                if (section.title === 'Privacy Policy') return styles.legalIconPrivacy;
+                if (section.title === 'Important Disclaimer') return styles.legalIconWarning;
+                return styles.legalIconAdvice;
+              };
+
+              const getIconColor = () => {
+                if (section.title === 'Privacy Policy') return theme.accent;
+                if (section.title === 'Important Disclaimer') return theme.warning;
+                return theme.primary;
+              };
+
+              return (
+                <View key={index} style={styles.legalSection}>
+                  <View style={styles.legalHeader}>
+                    <View style={[styles.legalIcon, getIconStyle()]}>
+                      <Ionicons
+                        name={section.icon}
+                        size={20}
+                        color={getIconColor()}
+                      />
+                    </View>
+                    <Text style={styles.legalTitle}>{section.title}</Text>
                   </View>
-                  <Text style={styles.legalTitle}>{section.title}</Text>
+                  <View style={styles.legalContent}>
+                    {section.content.map((point, pointIndex) => (
+                      <Text key={pointIndex} style={styles.legalPoint}>
+                        • {point}
+                      </Text>
+                    ))}
+                  </View>
                 </View>
-                <View style={styles.legalContent}>
-                  {section.content.map((point, pointIndex) => (
-                    <Text key={pointIndex} style={styles.legalPoint}>
-                      • {point}
-                    </Text>
-                  ))}
-                </View>
-              </View>
-            ))}
+              );
+            })}
           </View>
 
           {/* Useful Links Section */}
