@@ -1402,7 +1402,6 @@ const getStyles = (theme) => StyleSheet.create({
     borderRadius: 16,
     padding: 24,
     marginTop: 16,
-    borderWidth: 2,
     shadowColor: theme.shadow,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
@@ -5040,13 +5039,7 @@ function AppContent() {
         </View>
 
             {/* Action Buttons Section - Only visible in card view */}
-            <View style={styles.nextStepsContainer}>
-              <View style={styles.nextStepsHeader}>
-                <Ionicons name="options-outline" size={20} color={theme.primary} />
-                <Text style={styles.nextStepsTitle}>Export & Save Options</Text>
-              </View>
-
-              <View style={styles.quickAddGrid}>
+            <View style={styles.quickAddGrid}>
                 <TouchableOpacity style={[styles.quickAddButton, { backgroundColor: theme.error }]} onPress={exportPDF}>
                   <Ionicons name="document-outline" size={20} color={isDark ? "#000" : "#fff"} />
                   <Text style={[styles.quickAddButtonText, { color: isDark ? "#000" : '#fff', marginTop: 8 }]}>Export PDF</Text>
@@ -5074,7 +5067,6 @@ function AppContent() {
                   <Text style={[styles.quickAddButtonText, { color: isDark ? "#000" : '#fff', marginTop: 8 }]}>Edit Calculation</Text>
                 </TouchableOpacity>
               </View>
-            </View>
 
             {/* ATO File Tax Return Button - Only in card view */}
             <Text style={styles.atoFileReturnDescription}>
