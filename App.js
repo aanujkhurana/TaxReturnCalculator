@@ -2816,32 +2816,23 @@ function AppContent() {
       return '0';
     }
 
-    // Use a simplified withholding estimation based on TFN income brackets only
-    // This approximates what employers typically withhold from employment income
+    // Use the same calculation method as estimateTaxWithheld for consistency
+    // Australian tax brackets 2024-25
     let estimatedWithholding = 0;
-
-    if (totalTFNIncome <= 18200) {
-      // Tax-free threshold
-      estimatedWithholding = 0;
-    } else if (totalTFNIncome <= 45000) {
-      // 19% bracket - typically withhold around 15-20% due to tax-free threshold
-      estimatedWithholding = (totalTFNIncome - 18200) * 0.17;
-    } else if (totalTFNIncome <= 120000) {
-      // 32.5% bracket - withhold around 25-30%
-      const baseTax = (45000 - 18200) * 0.17;
-      estimatedWithholding = baseTax + (totalTFNIncome - 45000) * 0.28;
-    } else if (totalTFNIncome <= 180000) {
-      // 37% bracket - withhold around 32-35%
-      const baseTax = (45000 - 18200) * 0.17 + (120000 - 45000) * 0.28;
-      estimatedWithholding = baseTax + (totalTFNIncome - 120000) * 0.34;
-    } else {
-      // 45% bracket - withhold around 40-42%
-      const baseTax = (45000 - 18200) * 0.17 + (120000 - 45000) * 0.28 + (180000 - 120000) * 0.34;
-      estimatedWithholding = baseTax + (totalTFNIncome - 180000) * 0.42;
+    if (totalTFNIncome > 18200) {
+      if (totalTFNIncome <= 45000) {
+        estimatedWithholding = (totalTFNIncome - 18200) * 0.19;
+      } else if (totalTFNIncome <= 120000) {
+        estimatedWithholding = (45000 - 18200) * 0.19 + (totalTFNIncome - 45000) * 0.325;
+      } else if (totalTFNIncome <= 180000) {
+        estimatedWithholding = (45000 - 18200) * 0.19 + (120000 - 45000) * 0.325 + (totalTFNIncome - 120000) * 0.37;
+      } else {
+        estimatedWithholding = (45000 - 18200) * 0.19 + (120000 - 45000) * 0.325 + (180000 - 120000) * 0.37 + (totalTFNIncome - 180000) * 0.45;
+      }
     }
 
-    // Add Medicare levy estimation (2% of TFN income only)
-    if (totalTFNIncome > 27222) { // Medicare levy threshold for 2024-25
+    // Add Medicare levy (2% of TFN income only)
+    if (totalTFNIncome > 23226) { // Use same threshold as estimateTaxWithheld
       estimatedWithholding += totalTFNIncome * 0.02;
     }
 

@@ -213,12 +213,12 @@ Tax Refund/Owing = Tax Withheld - Final Tax
 When tax withheld is unknown, the app estimates based on **TFN employment income only** (excludes ABN income):
 
 - **Up to $18,200**: 0% withholding
-- **$18,201 - $45,000**: ~17% withholding
-- **$45,001 - $120,000**: ~28% withholding
-- **$120,001 - $180,000**: ~34% withholding
-- **$180,001+**: ~42% withholding
+- **$18,201 - $45,000**: 19% withholding
+- **$45,001 - $120,000**: 32.5% withholding (on amount over $45,000)
+- **$120,001 - $180,000**: 37% withholding (on amount over $120,000)
+- **$180,001+**: 45% withholding (on amount over $180,000)
 
-Plus estimated Medicare levy (2% for TFN income over threshold).
+Plus estimated Medicare levy (2% for TFN income over $23,226).
 
 **Important**: ABN/business income is excluded from PAYG estimation as employers don't withhold tax from business income.
 
