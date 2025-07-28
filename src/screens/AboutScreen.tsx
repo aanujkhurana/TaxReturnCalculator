@@ -18,11 +18,22 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../context/ThemeContext';
 import { APP_INFO } from '../constants/appConstants';
+import { Theme } from '../constants/themes';
 
-const AboutScreen = ({ onBack }) => {
+// Type definitions for AboutScreen props
+export interface AboutScreenProps {
+  onBack: () => void;
+}
+
+export interface LegalSection {
+  title: string;
+  content: string[];
+}
+
+const AboutScreen: React.FC<AboutScreenProps> = ({ onBack }) => {
   const { theme } = useTheme();
 
-  const openExternalURL = async (url) => {
+  const openExternalURL = async (url: string): Promise<void> => {
     try {
       const supported = await Linking.canOpenURL(url);
       if (supported) {
@@ -36,7 +47,7 @@ const AboutScreen = ({ onBack }) => {
     }
   };
 
-  const legalSections = [
+  const legalSections: LegalSection[] = [
     {
       title: 'Privacy Policy',
       content: [
