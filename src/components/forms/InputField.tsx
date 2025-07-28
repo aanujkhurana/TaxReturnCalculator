@@ -4,25 +4,41 @@
  */
 
 import React, { useState, useRef, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, KeyboardTypeOptions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../context/ThemeContext';
 import { HELP_TEXT } from '../../constants/helpText';
 import HelpModal from '../ui/HelpModal';
 
-const InputField = ({ 
-  label, 
-  value, 
-  onChangeText, 
-  placeholder, 
-  keyboardType = 'numeric', 
-  multiline = false, 
-  icon, 
-  helpKey, 
-  error, 
-  editable = true, 
-  prefix = '', 
-  suffix = '' 
+// Type definitions for InputField props
+export interface InputFieldProps {
+  label: string;
+  value: string;
+  onChangeText: (text: string) => void;
+  placeholder?: string;
+  keyboardType?: KeyboardTypeOptions;
+  multiline?: boolean;
+  icon?: keyof typeof Ionicons.glyphMap;
+  helpKey?: string;
+  error?: string;
+  editable?: boolean;
+  prefix?: string;
+  suffix?: string;
+}
+
+const InputField: React.FC<InputFieldProps> = ({
+  label,
+  value,
+  onChangeText,
+  placeholder,
+  keyboardType = 'numeric',
+  multiline = false,
+  icon,
+  helpKey,
+  error,
+  editable = true,
+  prefix = '',
+  suffix = ''
 }) => {
   const { theme } = useTheme();
   const [showHelpModal, setShowHelpModal] = useState(false);
@@ -48,8 +64,8 @@ const InputField = ({
   }, [displayValue]);
 
   // Smart suggestions based on field type
-  const getSmartSuggestions = (fieldKey) => {
-    const suggestions = {
+  const getSmartSuggestions = (fieldKey: string): string[] => {
+    const suggestions: { [key: string]: string[] } = {
       workRelatedTravel: ['450', '800', '1200', '2000'],
       workRelatedEquipment: ['500', '800', '1500', '3000'],
       workRelatedUniforms: ['200', '300', '500', '800'],
@@ -62,7 +78,7 @@ const InputField = ({
   };
 
   // Filter input for numeric fields to only allow numbers and decimal point
-  const handleTextChange = (text) => {
+  const handleTextChange = (text: string): void => {
     // Mark that user is actively typing
     isTypingRef.current = true;
 
@@ -72,11 +88,11 @@ const InputField = ({
     if (keyboardType === 'numeric') {
       // Allow numbers, decimal point, and empty string
       const numericText = text.replace(/[^0-9.]/g, '');
-      
+
       // Prevent multiple decimal points
       const parts = numericText.split('.');
-      const filteredText = parts.length > 2 
-        ? parts[0] + '.' + parts.slice(1).join('') 
+      const filteredText = parts.length > 2
+        ? parts[0] + '.' + parts.slice(1).join('')
         : numericText;
 
       onChangeText(filteredText);
@@ -85,16 +101,16 @@ const InputField = ({
     }
   };
 
-  const handleFocus = () => {
+  const handleFocus = (): void => {
     setIsFocused(true);
   };
 
-  const handleBlur = () => {
+  const handleBlur = (): void => {
     setIsFocused(false);
     isTypingRef.current = false;
   };
 
-  const openHelpModal = () => {
+  const openHelpModal = (): void => {
     if (helpKey && HELP_TEXT[helpKey]) {
       setShowHelpModal(true);
     }
@@ -105,7 +121,7 @@ const InputField = ({
   const helpData = helpKey ? HELP_TEXT[helpKey] : null;
 
   // Dynamic styles based on state
-  const getInputStyle = () => {
+  const getInputStyle = (): any => {
     const baseStyle = {
       backgroundColor: theme.surface,
       borderWidth: 1,
