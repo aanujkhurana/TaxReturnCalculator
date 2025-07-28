@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, memo, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useCallback, memo, useMemo, useRef } from 'react';
 import {
   View,
   Text,
@@ -14,12 +14,14 @@ import {
   Modal,
   Linking,
   Keyboard,
-  TouchableWithoutFeedback
+  TouchableWithoutFeedback,
+  SafeAreaView
 } from 'react-native';
 import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
+import { setStatusBarBackgroundColor } from 'expo-status-bar';
 
 import { Ionicons } from '@expo/vector-icons';
 import HomeScreen from './screens/HomeScreen';
@@ -33,13 +35,62 @@ import { formatCurrency } from './utils/formatters';
 import { HELP_TEXT } from './constants/helpText';
 import InputField from './components/forms/InputField';
 import HelpModal from './components/ui/HelpModal';
+import { Theme } from './constants/themes';
+
+// Type definitions for the main App component
+export interface JobIncome {
+  income: string;
+}
+
+export interface FormData {
+  jobIncomes: JobIncome[];
+  taxWithheld: string;
+  deductions: {
+    workRelated: {
+      travel: string;
+      equipment: string;
+      uniforms: string;
+      memberships: string;
+      other: string;
+    };
+    selfEducation: {
+      courseFees: string;
+      textbooks: string;
+      conferences: string;
+      certifications: string;
+      other: string;
+    };
+    donations: {
+      charitable: string;
+      disasterRelief: string;
+      religious: string;
+      other: string;
+    };
+    other: {
+      investment: string;
+      taxAgent: string;
+      incomeProtection: string;
+      bankFees: string;
+      other: string;
+    };
+  };
+  workFromHomeHours: string;
+  abnIncome: string;
+  hecsDebt: boolean;
+  medicareExemption: boolean;
+  dependents: string;
+  hasDependents: boolean;
+}
 
 // Styles definition - now a function that takes theme
-const getStyles = (theme) => StyleSheet.create({
+const getStyles = (theme: Theme) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.surfaceSecondary,
-    paddingTop: Platform.OS === 'ios' ? 50 : 40,
+  },
+  safeArea: {
+    flex: 1,
+    backgroundColor: theme.background,
   },
 
 
@@ -1823,28 +1874,35 @@ const getStyles = (theme) => StyleSheet.create({
 
 // HelpModal component is now imported from components/ui/HelpModal.js
 
-function AppContent() {
+const AppContent: React.FC = () => {
   // Theme hook
   const { theme, isDark, isLoading: themeLoading } = useTheme();
   const styles = getStyles(theme);
 
+  // Set status bar background color to match app theme
+  useEffect(() => {
+    if (Platform.OS === 'android') {
+      setStatusBarBackgroundColor(theme.background, false);
+    }
+  }, [theme.background]);
+
   // ScrollView ref for scroll to top functionality
-  const scrollViewRef = useRef(null);
+  const scrollViewRef = useRef<ScrollView>(null);
 
   // Show splash screen while theme is loading or during initial splash
-  const [showSplash, setShowSplash] = useState(true);
+  const [showSplash, setShowSplash] = useState<boolean>(true);
 
   // Navigation state
-  const [currentScreen, setCurrentScreen] = useState('splash'); // 'splash', 'home', 'about', or 'calculator'
-  const [viewingCalculation, setViewingCalculation] = useState(null);
+  const [currentScreen, setCurrentScreen] = useState<string>('splash'); // 'splash', 'home', 'about', or 'calculator'
+  const [viewingCalculation, setViewingCalculation] = useState<any>(null);
 
   // Step management
-  const [currentStep, setCurrentStep] = useState(1);
-  const totalSteps = 4;
+  const [currentStep, setCurrentStep] = useState<number>(1);
+  const totalSteps: number = 4;
 
   // Form data
-  const [jobIncomes, setJobIncomes] = useState(['']);
-  const [taxWithheld, setTaxWithheld] = useState('');
+  const [jobIncomes, setJobIncomes] = useState<string[]>(['']);
+  const [taxWithheld, setTaxWithheld] = useState<string>('');
   const [deductions, setDeductions] = useState({
     workRelated: {
       travel: '',
@@ -4560,34 +4618,39 @@ function AppContent() {
 
   if (currentScreen === 'home') {
     return (
-      <View style={styles.container}>
-        <StatusBar style="light" />
-        <HomeScreen
-          onCreateNew={navigateToCalculator}
-          onViewCalculation={viewCalculation}
-          onNavigate={handleNavigation}
-        />
-      </View>
+      <SafeAreaView style={styles.safeArea}>
+        <StatusBar style={isDark ? "light" : "dark"} backgroundColor={theme.background} />
+        <View style={styles.container}>
+          <HomeScreen
+            onCreateNew={navigateToCalculator}
+            onViewCalculation={viewCalculation}
+            onNavigate={handleNavigation}
+          />
+        </View>
+      </SafeAreaView>
     );
   }
 
   if (currentScreen === 'about') {
     return (
-      <View style={styles.container}>
-        <StatusBar style="light" />
-        <AboutScreen onBack={navigateToHome} />
-      </View>
+      <SafeAreaView style={styles.safeArea}>
+        <StatusBar style={isDark ? "light" : "dark"} backgroundColor={theme.background} />
+        <View style={styles.container}>
+          <AboutScreen onBack={navigateToHome} />
+        </View>
+      </SafeAreaView>
     );
   }
 
   // Calculator screen
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
-    >
-      <StatusBar style="light" />
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.surfaceSecondary }]}>
+      <StatusBar style={isDark ? "light" : "dark"} backgroundColor={theme.surfaceSecondary} />
+      <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+      >
 
       {showSuccessAnimation && (
         <Animated.View style={[
@@ -4619,16 +4682,18 @@ function AppContent() {
         </TouchableWithoutFeedback>
       </ScrollView>
 
-
-    </KeyboardAvoidingView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
 // Main App component with theme provider
-export default function App() {
+const App: React.FC = () => {
   return (
     <ThemeProvider>
       <AppContent />
     </ThemeProvider>
   );
-}
+};
+
+export default App;
