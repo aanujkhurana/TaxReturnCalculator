@@ -3,8 +3,38 @@
  * Tests all calculation fields and scenarios for the Australian Tax Return Calculator
  */
 
+// Type definitions for test suite
+interface TaxBracket {
+  min: number;
+  max: number;
+  rate: number;
+  base: number;
+}
+
+interface HecsThreshold {
+  min: number;
+  max: number;
+  rate: number;
+}
+
+interface MockReactNative {
+  Alert: {
+    alert: jest.Mock;
+    prompt: jest.Mock;
+  };
+  Dimensions: {
+    get: () => { width: number; height: number };
+  };
+  Platform: {
+    OS: string;
+  };
+  StatusBar: {
+    currentHeight: number;
+  };
+}
+
 // Mock React Native components for testing
-const mockReactNative = {
+const mockReactNative: MockReactNative = {
   Alert: { alert: jest.fn(), prompt: jest.fn() },
   Dimensions: { get: () => ({ width: 375, height: 812 }) },
   Platform: { OS: 'ios' },
@@ -13,6 +43,9 @@ const mockReactNative = {
 
 // Tax calculation functions extracted from App.js for testing
 class TaxCalculator {
+  private TAX_BRACKETS_2024_25: TaxBracket[];
+  private HECS_THRESHOLDS_2024_25: HecsThreshold[];
+
   constructor() {
     this.TAX_BRACKETS_2024_25 = [
       { min: 0, max: 18200, rate: 0, base: 0 },
@@ -37,7 +70,7 @@ class TaxCalculator {
     ];
   }
 
-  calculateIncomeTax(taxableIncome) {
+  calculateIncomeTax(taxableIncome: number): number {
     let tax = 0;
     if (taxableIncome > 180000) {
       tax = 51667 + (taxableIncome - 180000) * 0.45;
