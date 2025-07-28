@@ -1,11 +1,15 @@
 {
   "name": "taxmate-au",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "index.ts",
   "scripts": {
     "start": "expo start",
     "test": "node src/__tests__/run-tests.js",
-    "test:report": "node src/__tests__/run-tests.js && open test-report.html"
+    "test:report": "node src/__tests__/run-tests.js && open test-report.html",
+    "type-check": "npx tsc --noEmit",
+    "type-check:watch": "npx tsc --noEmit --watch",
+    "build": "npx tsc",
+    "build:watch": "npx tsc --watch"
   },
   "dependencies": {
     "@expo/metro-runtime": "~5.0.4",
@@ -24,5 +28,9 @@
   "overrides": {
     "react": "19.0.0",
     "react-dom": "19.0.0"
+  },
+  "devDependencies": {
+    "@types/react-native": "^0.73.0",
+    "typescript": "^5.8.3"
   }
 }
