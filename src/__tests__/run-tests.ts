@@ -5,48 +5,74 @@
  * Runs comprehensive tests and generates a detailed report
  */
 
-const fs = require('fs');
-const path = require('path');
+import * as fs from 'fs';
+import * as path from 'path';
+
+// Type definitions for test framework
+interface TestCase {
+  name: string;
+  fn: () => void;
+  describe: string;
+}
+
+interface DescribeBlock {
+  name: string;
+  tests: TestCase[];
+}
+
+interface TestResults {
+  total: number;
+  passed: number;
+  failed: number;
+  errors: Array<{ describe: string; error: string }>;
+}
+
+interface ExpectMatcher {
+  toBe: (expected: any) => void;
+  toEqual: (expected: any) => void;
+  toBeCloseTo: (expected: number, precision?: number) => void;
+  toBeGreaterThan: (expected: number) => void;
+  toBeLessThan: (expected: number) => void;
+  toThrow: () => void;
+}
 
 // Simple test framework implementation
 class TestFramework {
-  constructor() {
-    this.tests = [];
-    this.describes = [];
-    this.currentDescribe = null;
-    this.results = {
-      total: 0,
-      passed: 0,
-      failed: 0,
-      errors: []
-    };
-  }
+  private tests: TestCase[] = [];
+  private describes: DescribeBlock[] = [];
+  private currentDescribe: DescribeBlock | null = null;
+  private results: TestResults = {
+    total: 0,
+    passed: 0,
+    failed: 0,
+    errors: []
+  };
 
-  describe(name, fn) {
+  describe(name: string, fn: () => void): void {
     const previousDescribe = this.currentDescribe;
     this.currentDescribe = { name, tests: [] };
     this.describes.push(this.currentDescribe);
-    
+
     try {
       fn();
-    } catch (error) {
+    } catch (error: any) {
       this.results.errors.push({ describe: name, error: error.message });
     }
-    
+
     this.currentDescribe = previousDescribe;
   }
 
-  test(name, fn) {
-    const testCase = { name, fn, describe: this.currentDescribe?.name || 'Global' };
+  test(name: string, fn: () => void): void {
+    const testCase: TestCase = { name, fn, describe: this.currentDescribe?.name || 'Global' };
     this.tests.push(testCase);
     if (this.currentDescribe) {
       this.currentDescribe.tests.push(testCase);
     }
   }
 
-  expect(actual) {
+  expect(actual: any): ExpectMatcher {
     return {
-      toBe: (expected) => {
+      toBe: (expected: any): void => {
         if (actual !== expected) {
           throw new Error(`Expected ${expected}, but got ${actual}`);
         }
