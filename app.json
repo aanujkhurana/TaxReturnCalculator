@@ -1,0 +1,38 @@
+{
+  "expo": {
+    "name": "TaxMate AU",
+    "slug": "taxmate-au",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "resizeMode": "contain",
+      "backgroundColor": "#0F172A"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "statusBarStyle": "auto"
+    },
+    "android": {
+      "statusBar": {
+        "barStyle": "default",
+        "backgroundColor": "transparent",
+        "translucent": true
+      }
+    },
+    "web": {
+      "bundler": "metro"
+    },
+    "plugins": [
+      [
+        "expo-status-bar",
+        {
+          "style": "auto"
+        }
+      ]
+    ]
+  }
+}
