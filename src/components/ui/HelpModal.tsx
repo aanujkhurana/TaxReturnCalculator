@@ -4,18 +4,33 @@
  */
 
 import React from 'react';
-import { 
-  View, 
-  Text, 
-  Modal, 
-  TouchableOpacity, 
-  ScrollView, 
-  TouchableWithoutFeedback 
+import {
+  View,
+  Text,
+  Modal,
+  TouchableOpacity,
+  ScrollView,
+  TouchableWithoutFeedback
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../context/ThemeContext';
 
-const HelpModal = ({ visible, onClose, helpData }) => {
+// Type definitions for HelpModal props
+export interface HelpData {
+  title: string;
+  purpose: string;
+  examples?: string[];
+  tips?: string[];
+  whereToFind?: string;
+}
+
+export interface HelpModalProps {
+  visible: boolean;
+  onClose: () => void;
+  helpData: HelpData | null;
+}
+
+const HelpModal: React.FC<HelpModalProps> = ({ visible, onClose, helpData }) => {
   const { theme } = useTheme();
 
   if (!helpData) return null;
