@@ -1,6 +1,15 @@
-# Australia Tax Return Calculator
+# My Tax Return Au
 
 Australia Tax Return Calculator is a comprehensive mobile application designed to help Australian individuals quickly and accurately estimate their tax refunds or amounts owed to the Australian Taxation Office (ATO). Built with React Native and Expo, it provides a clean, intuitive interface that simplifies the complex process of tax calculations while maintaining accuracy with current Australian tax rates and regulations.
+
+
+<table>
+  <tr>
+    <td><img src="./mockups/1.png" alt="Mockup 1" width="300"/></td>
+    <td><img src="./mockups/2.png" alt="Mockup 2" width="300"/></td>
+    <td><img src="./mockups/3.png" alt="Mockup 3" width="300"/></td>
+  </tr>
+</table>
 
 ## 🎯 Project Overview
 
