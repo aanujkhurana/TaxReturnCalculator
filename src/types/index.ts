@@ -1,5 +1,5 @@
 /**
- * Global Type Definitions for TaxMate AU
+ * Global Type Definitions for MyTaxReturn AU
  */
 
 // Navigation types

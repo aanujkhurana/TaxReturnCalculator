@@ -2816,7 +2816,7 @@ const AppContent: React.FC = () => {
     ];
     
     const csv = `${headers.join(',')}\n${row.join(',')}`;
-    const filename = `TaxMate_${new Date().toISOString().split('T')[0]}.csv`;
+    const filename = `MyTaxReturn_${new Date().toISOString().split('T')[0]}.csv`;
     const path = FileSystem.documentDirectory + filename;
     
     try {

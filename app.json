@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "TaxMate AU",
-    "slug": "taxmate-au",
+    "name": "MyTaxReturn AU",
+    "slug": "MyTaxReturn-au",
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
@@ -25,14 +25,6 @@
     },
     "web": {
       "bundler": "metro"
-    },
-    "plugins": [
-      [
-        "expo-status-bar",
-        {
-          "style": "auto"
-        }
-      ]
-    ]
+    }
   }
 }

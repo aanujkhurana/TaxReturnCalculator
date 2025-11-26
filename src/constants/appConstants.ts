@@ -51,7 +51,7 @@ export const STORAGE_KEYS: StorageKeys = {
 
 // App information
 export const APP_INFO: AppInfo = {
-  NAME: 'TaxMate AU',
+  NAME: 'MyTaxReturn AU',
   VERSION: '1.0.0',
   FINANCIAL_YEAR: '2024-25'
 } as const;

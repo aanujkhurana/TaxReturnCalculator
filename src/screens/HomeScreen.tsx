@@ -266,7 +266,46 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ onCreateNew, onViewCalculation,
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
-        {/* Collapsible Tax Resources & Guidelines Section */}
+        {/* Saved Calculations Section */}
+        {savedCalculations.length === 0 ? (
+          <View style={styles.emptyState}>
+            <View style={styles.emptyStateIconContainer}>
+              <Ionicons name="calculator-outline" size={48} color={theme.primary} />
+            </View>
+            <Text style={styles.emptyStateTitle}>Ready to Calculate Your Tax Return?</Text>
+            <Text style={styles.emptyStateText}>
+              Get started with Australia's most comprehensive tax calculator.
+              We'll guide you through each step to maximize your refund.
+            </Text>
+            <View style={styles.emptyStateFeatures}>
+              <View style={styles.emptyStateFeature}>
+                <Ionicons name="checkmark-circle" size={16} color={theme.success} />
+                <Text style={styles.emptyStateFeatureText}>ATO compliant calculations</Text>
+              </View>
+              <View style={styles.emptyStateFeature}>
+                <Ionicons name="checkmark-circle" size={16} color={theme.success} />
+                <Text style={styles.emptyStateFeatureText}>Save and track multiple returns</Text>
+              </View>
+              <View style={styles.emptyStateFeature}>
+                <Ionicons name="checkmark-circle" size={16} color={theme.success} />
+                <Text style={styles.emptyStateFeatureText}>Professional guidance included</Text>
+              </View>
+            </View>
+          </View>
+        ) : (
+          <View style={styles.calculationsContainer}>
+            <View style={styles.calculationsHeader}>
+              <Text style={styles.calculationsTitle}>Your Tax Calculations</Text>
+              <Text style={styles.calculationsSubtitle}>
+                {savedCalculations.length} saved calculation{savedCalculations.length !== 1 ? 's' : ''}
+              </Text>
+            </View>
+            {savedCalculations.map(renderCalculationCard)}
+          </View>
+        )}
+
+
+                {/* Collapsible Tax Resources & Guidelines Section */}
         <View style={styles.resourcesContainer}>
           <TouchableOpacity
             style={styles.resourcesHeader}
@@ -332,44 +371,6 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ onCreateNew, onViewCalculation,
             </View>
           )}
         </View>
-
-        {/* Saved Calculations Section */}
-        {savedCalculations.length === 0 ? (
-          <View style={styles.emptyState}>
-            <View style={styles.emptyStateIconContainer}>
-              <Ionicons name="calculator-outline" size={48} color={theme.primary} />
-            </View>
-            <Text style={styles.emptyStateTitle}>Ready to Calculate Your Tax Return?</Text>
-            <Text style={styles.emptyStateText}>
-              Get started with Australia's most comprehensive tax calculator.
-              We'll guide you through each step to maximize your refund.
-            </Text>
-            <View style={styles.emptyStateFeatures}>
-              <View style={styles.emptyStateFeature}>
-                <Ionicons name="checkmark-circle" size={16} color={theme.success} />
-                <Text style={styles.emptyStateFeatureText}>ATO compliant calculations</Text>
-              </View>
-              <View style={styles.emptyStateFeature}>
-                <Ionicons name="checkmark-circle" size={16} color={theme.success} />
-                <Text style={styles.emptyStateFeatureText}>Save and track multiple returns</Text>
-              </View>
-              <View style={styles.emptyStateFeature}>
-                <Ionicons name="checkmark-circle" size={16} color={theme.success} />
-                <Text style={styles.emptyStateFeatureText}>Professional guidance included</Text>
-              </View>
-            </View>
-          </View>
-        ) : (
-          <View style={styles.calculationsContainer}>
-            <View style={styles.calculationsHeader}>
-              <Text style={styles.calculationsTitle}>Your Tax Calculations</Text>
-              <Text style={styles.calculationsSubtitle}>
-                {savedCalculations.length} saved calculation{savedCalculations.length !== 1 ? 's' : ''}
-              </Text>
-            </View>
-            {savedCalculations.map(renderCalculationCard)}
-          </View>
-        )}
       </ScrollView>
 
       {/* Enhanced Create New Button */}

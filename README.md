@@ -691,4 +691,4 @@ This project is for educational and estimation purposes only. Users should consu
 
 ---
 
-**TaxMate AU** - Simplifying Australian tax calculations with accuracy and ease.
+**MyTaxReturn AU** - Simplifying Australian tax calculations with accuracy and ease.
