@@ -84,6 +84,7 @@ export interface FormData {
   medicareExemption: boolean;
   hasSpouse: boolean;
   spouseIncome: string;
+  hasPrivateHospitalCover: boolean;
   dependents: string;
   hasDependents: boolean;
 }
@@ -168,6 +169,34 @@ const calculateStudyLoanRepayment = (repaymentIncome: number, hasStudyLoanDebt: 
   if (repaymentIncome <= 125000) return (repaymentIncome - 67000) * 0.15;
   if (repaymentIncome <= 179285) return 8700 + ((repaymentIncome - 125000) * 0.17);
   return repaymentIncome * 0.10;
+};
+
+const calculateMedicareLevySurcharge = (
+  taxableIncome: number,
+  familyIncome: number,
+  hasPrivateHospitalCover: boolean,
+  hasSpouse: boolean,
+  dependents: number
+): number => {
+  if (hasPrivateHospitalCover || taxableIncome <= 0) return 0;
+
+  const isFamily = hasSpouse || dependents > 0;
+  const familyDependentIncrease = isFamily ? Math.max(0, dependents - 1) * 1500 : 0;
+  const surchargeIncome = isFamily ? familyIncome : taxableIncome;
+  const baseThresholds = isFamily
+    ? [
+        { min: 194000 + familyDependentIncrease, max: 226000 + familyDependentIncrease, rate: 0.01 },
+        { min: 226001 + familyDependentIncrease, max: 302000 + familyDependentIncrease, rate: 0.0125 },
+        { min: 302001 + familyDependentIncrease, max: Infinity, rate: 0.015 }
+      ]
+    : [
+        { min: 97000, max: 113000, rate: 0.01 },
+        { min: 113001, max: 151000, rate: 0.0125 },
+        { min: 151001, max: Infinity, rate: 0.015 }
+      ];
+  const tier = baseThresholds.find(({ min, max }) => surchargeIncome >= min && surchargeIncome <= max);
+
+  return tier ? taxableIncome * tier.rate : 0;
 };
 
 // Styles definition - now a function that takes theme
@@ -2022,6 +2051,7 @@ const AppContent: React.FC = () => {
   const [medicareExemption, setMedicareExemption] = useState(false);
   const [hasSpouse, setHasSpouse] = useState(false);
   const [spouseIncome, setSpouseIncome] = useState('');
+  const [hasPrivateHospitalCover, setHasPrivateHospitalCover] = useState(false);
   const [dependents, setDependents] = useState('0');
   const [hasDependents, setHasDependents] = useState(false);
 
@@ -2160,6 +2190,7 @@ const AppContent: React.FC = () => {
     setMedicareExemption(calculation.formData.medicareExemption || false);
     setHasSpouse(calculation.formData.hasSpouse || false);
     setSpouseIncome(calculation.formData.spouseIncome || '');
+    setHasPrivateHospitalCover(calculation.formData.hasPrivateHospitalCover || false);
     setDependents(calculation.formData.dependents || '0');
     setHasDependents(calculation.formData.hasDependents || false);
     setResult(calculation.result);
@@ -2212,6 +2243,7 @@ const AppContent: React.FC = () => {
     setMedicareExemption(false);
     setHasSpouse(false);
     setSpouseIncome('');
+    setHasPrivateHospitalCover(false);
     setDependents('0');
     setHasDependents(false);
     setResult(null);
@@ -2252,6 +2284,7 @@ const AppContent: React.FC = () => {
                 medicareExemption,
                 hasSpouse,
                 spouseIncome,
+                hasPrivateHospitalCover,
                 dependents,
                 hasDependents,
                 result,
@@ -2799,7 +2832,15 @@ const AppContent: React.FC = () => {
       lito = 325 - ((taxableIncome - 45000) * 0.015);
     }
 
+    const familyIncomeForMedicare = taxableIncome + spouseIncomeNum;
     const medicare = calculateMedicareLevyAmount(taxableIncome, dependentsNum, medicareExemption, hasSpouse, spouseIncomeNum);
+    const medicareLevySurcharge = calculateMedicareLevySurcharge(
+      taxableIncome,
+      familyIncomeForMedicare,
+      hasPrivateHospitalCover,
+      hasSpouse,
+      dependentsNum
+    );
 
     const studyLoanRepaymentIncome = taxableIncome +
       reportableSuperNum +
@@ -2808,7 +2849,7 @@ const AppContent: React.FC = () => {
       exemptForeignIncomeNum;
     const hecsRepayment = calculateStudyLoanRepayment(studyLoanRepaymentIncome, hecsDebt);
 
-    const finalTax = Math.max(0, tax - lito + medicare + hecsRepayment);
+    const finalTax = Math.max(0, tax - lito + medicare + medicareLevySurcharge + hecsRepayment);
     const refund = taxWithheldNum - finalTax;
 
     setResult({
@@ -2827,8 +2868,10 @@ const AppContent: React.FC = () => {
       tax,
       lito,
       medicare,
+      medicareLevySurcharge,
       spouseIncome: spouseIncomeNum,
-      familyIncomeForMedicare: taxableIncome + spouseIncomeNum,
+      hasPrivateHospitalCover,
+      familyIncomeForMedicare,
       hecsRepayment,
       finalTax,
       totalTax: finalTax, // Add totalTax for HomeScreen display
@@ -2850,7 +2893,7 @@ const AppContent: React.FC = () => {
         setShowSuccessAnimation(false);
       }, 3000);
     }, 2400); // Complete after all loading steps
-  }, [jobIncomes, abnIncome, taxWithheld, deductions, workFromHomeHours, hecsDebt, reportableSuper, reportableFringeBenefits, netInvestmentLosses, exemptForeignIncome, medicareExemption, hasSpouse, spouseIncome, dependents, hasDependents]);
+  }, [jobIncomes, abnIncome, taxWithheld, deductions, workFromHomeHours, hecsDebt, reportableSuper, reportableFringeBenefits, netInvestmentLosses, exemptForeignIncome, medicareExemption, hasSpouse, spouseIncome, hasPrivateHospitalCover, dependents, hasDependents]);
 
   // Auto-calculate when reaching step 4 if no result exists
   useEffect(() => {
@@ -2866,7 +2909,7 @@ const AppContent: React.FC = () => {
     
     const headers = [
       'Date', 'TFN Income', 'ABN Income', 'WFH Deduction', 'Manual Deductions', 'Total Deductions',
-      'Taxable Income', 'Gross Tax', 'LITO', 'Medicare', 'HECS', 'Final Tax', 'Refund/Owing'
+      'Taxable Income', 'Gross Tax', 'LITO', 'Medicare', 'Medicare Surcharge', 'HECS', 'Final Tax', 'Refund/Owing'
     ];
     const row = [
       new Date().toLocaleDateString('en-AU'),
@@ -2879,6 +2922,7 @@ const AppContent: React.FC = () => {
       result.tax.toFixed(2),
       result.lito.toFixed(2),
       result.medicare.toFixed(2),
+      (result.medicareLevySurcharge || 0).toFixed(2),
       result.hecsRepayment.toFixed(2),
       result.finalTax.toFixed(2),
       result.refund.toFixed(2)
@@ -3020,6 +3064,7 @@ const AppContent: React.FC = () => {
               <tr><td>Income Tax</td><td>${formatCurrency(result.tax).replace('$', '$')}</td></tr>
               <tr><td>Low Income Tax Offset</td><td>-${formatCurrency(result.lito).replace('$', '$')}</td></tr>
               <tr><td>Medicare Levy</td><td>${formatCurrency(result.medicare).replace('$', '$')}</td></tr>
+              ${result.medicareLevySurcharge > 0 ? `<tr><td>Medicare Levy Surcharge</td><td>${formatCurrency(result.medicareLevySurcharge).replace('$', '$')}</td></tr>` : ''}
               ${result.hecsRepayment > 0 ? `<tr><td>HECS-HELP Repayment</td><td>${formatCurrency(result.hecsRepayment).replace('$', '$')}</td></tr>` : ''}
               <tr><td>Tax Withheld (PAYG)</td><td>-${formatCurrency(parseFloat(taxWithheld || '0')).replace('$', '$')}</td></tr>
               <tr class="total-row"><td>${result.refund >= 0 ? 'Tax Refund' : 'Tax Owing'}</td><td style="color: ${result.refund >= 0 ? '#28a745' : '#dc3545'}">${formatCurrency(Math.abs(result.refund)).replace('$', '$')}</td></tr>
@@ -4227,6 +4272,20 @@ const AppContent: React.FC = () => {
               )}
 
               <TouchableOpacity
+                style={[styles.toggleButton, hasPrivateHospitalCover && styles.toggleButtonActive]}
+                onPress={() => setHasPrivateHospitalCover(!hasPrivateHospitalCover)}
+              >
+                <Ionicons
+                  name={hasPrivateHospitalCover ? "checkbox-outline" : "square-outline"}
+                  size={24}
+                  color={hasPrivateHospitalCover ? "#4A90E2" : "#666"}
+                />
+                <Text style={[styles.toggleText, hasPrivateHospitalCover && styles.toggleTextActive]}>
+                  I had appropriate private hospital cover
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
                 style={[styles.toggleButton, hasDependents && styles.toggleButtonActive]}
                 onPress={() => {
                   setHasDependents(!hasDependents);
@@ -4319,6 +4378,10 @@ const AppContent: React.FC = () => {
       ['LITO Offset', formatCurrency(result.lito)],
       ['Medicare Levy', formatCurrency(result.medicare)],
     ];
+
+    if (result.medicareLevySurcharge > 0) {
+      tableData.push(['Medicare Levy Surcharge', formatCurrency(result.medicareLevySurcharge)]);
+    }
 
     // Add HECS repayment if applicable
     if (result.hecsRepayment > 0) {
@@ -4603,6 +4666,13 @@ const AppContent: React.FC = () => {
                 <Text style={styles.summaryBreakdownLabel}>Medicare Levy</Text>
                 <Text style={styles.summaryBreakdownValue}>+{formatCurrency(result.medicare)}</Text>
               </View>
+              {result.medicareLevySurcharge > 0 && (
+                <View style={styles.summaryBreakdownItem}>
+                  <View style={[styles.summaryBreakdownDot, { backgroundColor: theme.error }]} />
+                  <Text style={styles.summaryBreakdownLabel}>Medicare Levy Surcharge</Text>
+                  <Text style={styles.summaryBreakdownValue}>+{formatCurrency(result.medicareLevySurcharge)}</Text>
+                </View>
+              )}
               {result.familyIncomeForMedicare > result.taxableIncome && (
                 <View style={styles.summaryBreakdownItem}>
                   <View style={[styles.summaryBreakdownDot, { backgroundColor: theme.categoryHome }]} />

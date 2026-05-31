@@ -114,6 +114,27 @@ class TaxCalculator {
     return taxableIncome * 0.10;
   }
 
+  calculateMedicareLevySurcharge(taxableIncome, familyIncome, hasPrivateHospitalCover = false, hasSpouse = false, dependents = 0) {
+    if (hasPrivateHospitalCover || taxableIncome <= 0) return 0;
+
+    const isFamily = hasSpouse || dependents > 0;
+    const familyDependentIncrease = isFamily ? Math.max(0, dependents - 1) * 1500 : 0;
+    const surchargeIncome = isFamily ? familyIncome : taxableIncome;
+    const tiers = isFamily
+      ? [
+          { min: 194000 + familyDependentIncrease, max: 226000 + familyDependentIncrease, rate: 0.01 },
+          { min: 226001 + familyDependentIncrease, max: 302000 + familyDependentIncrease, rate: 0.0125 },
+          { min: 302001 + familyDependentIncrease, max: Infinity, rate: 0.015 }
+        ]
+      : [
+          { min: 97000, max: 113000, rate: 0.01 },
+          { min: 113001, max: 151000, rate: 0.0125 },
+          { min: 151001, max: Infinity, rate: 0.015 }
+        ];
+    const tier = tiers.find(t => surchargeIncome >= t.min && surchargeIncome <= t.max);
+    return tier ? taxableIncome * tier.rate : 0;
+  }
+
   calculateWorkFromHomeDeduction(hours) {
     return parseFloat(hours || '0') * 0.70;
   }
@@ -155,6 +176,7 @@ class TaxCalculator {
       medicareExemption = false,
       hasSpouse = false,
       spouseIncome = '',
+      hasPrivateHospitalCover = false,
       dependents = '0',
       hasDependents = false
     } = formData;
@@ -178,6 +200,8 @@ class TaxCalculator {
     const dependentsNum = hasDependents ? parseInt(dependents || '0') : 0;
     const spouseIncomeNum = hasSpouse ? (parseFloat(spouseIncome || '0') || 0) : 0;
     const medicare = this.calculateMedicareLevy(taxableIncome, dependentsNum, medicareExemption, hasSpouse, spouseIncomeNum);
+    const familyIncomeForMedicare = taxableIncome + spouseIncomeNum;
+    const medicareLevySurcharge = this.calculateMedicareLevySurcharge(taxableIncome, familyIncomeForMedicare, hasPrivateHospitalCover, hasSpouse, dependentsNum);
     const studyLoanRepaymentIncome = taxableIncome +
       (parseFloat(reportableSuper || '0') || 0) +
       (parseFloat(reportableFringeBenefits || '0') || 0) +
@@ -186,7 +210,7 @@ class TaxCalculator {
     const hecsRepayment = this.calculateHECSRepayment(studyLoanRepaymentIncome, hecsDebt);
 
     // Calculate final amounts
-    const finalTax = Math.max(0, tax - lito + medicare + hecsRepayment);
+    const finalTax = Math.max(0, tax - lito + medicare + medicareLevySurcharge + hecsRepayment);
     const taxWithheldNum = parseFloat(taxWithheld || '0');
     const refund = taxWithheldNum - finalTax;
 
@@ -202,8 +226,9 @@ class TaxCalculator {
       tax,
       lito,
       medicare,
+      medicareLevySurcharge,
       spouseIncome: spouseIncomeNum,
-      familyIncomeForMedicare: taxableIncome + spouseIncomeNum,
+      familyIncomeForMedicare,
       hecsRepayment,
       finalTax,
       taxWithheldNum,
@@ -305,6 +330,12 @@ describe('Australian Tax Calculator - Comprehensive Tests', () => {
     test('Family threshold includes spouse taxable income', () => {
       expect(calculator.calculateMedicareLevy(30000, 0, false, true, 12000)).toBe(0);
       expect(calculator.calculateMedicareLevy(30000, 0, false, true, 20000)).toBeCloseTo((50000 - 45907) * 0.1, 2);
+    });
+
+    test('Medicare levy surcharge applies without private hospital cover', () => {
+      expect(calculator.calculateMedicareLevySurcharge(100000, 100000, false, false, 0)).toBeCloseTo(1000, 2);
+      expect(calculator.calculateMedicareLevySurcharge(120000, 220000, false, true, 0)).toBeCloseTo(1200, 2);
+      expect(calculator.calculateMedicareLevySurcharge(120000, 220000, true, true, 0)).toBe(0);
     });
   });
 

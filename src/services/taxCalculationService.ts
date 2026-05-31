@@ -8,6 +8,7 @@ import {
   HECS_THRESHOLDS_2025_26,
   MEDICARE_LEVY_RATE,
   MEDICARE_LEVY_THRESHOLDS,
+  MEDICARE_LEVY_SURCHARGE,
   LOW_INCOME_TAX_OFFSET,
   WORK_FROM_HOME,
   TAX_FREE_THRESHOLD
@@ -23,6 +24,7 @@ export interface TaxCalculationResult {
   incomeTax: number;
   medicareLevy: number;
   hecsRepayment: number;
+  medicareLevySurcharge: number;
   lowIncomeTaxOffset: number;
   totalTax: number;
   taxWithheld: number;
@@ -41,6 +43,7 @@ export interface TaxCalculationResult {
     tax: {
       incomeTax: number;
       medicareLevy: number;
+      medicareLevySurcharge: number;
       hecsRepayment: number;
       totalBeforeOffsets: number;
       offsets: number;
@@ -61,6 +64,11 @@ export interface FormDataForTaxCalculation {
   netInvestmentLosses?: string;
   exemptForeignIncome?: string;
   medicareExemption?: boolean;
+  hasSpouse?: boolean;
+  spouseIncome?: string;
+  hasDependents?: boolean;
+  dependents?: string;
+  hasPrivateHospitalCover?: boolean;
 }
 
 /**
@@ -98,6 +106,32 @@ export const calculateMedicareLevy = (taxableIncome: number, medicareExemption: 
 
   const phaseInAmount = (taxableIncome - threshold) * MEDICARE_LEVY_THRESHOLDS.phaseInRate;
   return Math.min(phaseInAmount, taxableIncome * MEDICARE_LEVY_RATE);
+};
+
+export const calculateMedicareLevySurcharge = (
+  taxableIncome: number,
+  familyIncome: number,
+  hasPrivateHospitalCover: boolean = false,
+  hasSpouse: boolean = false,
+  dependents: number = 0
+): number => {
+  if (hasPrivateHospitalCover || taxableIncome <= 0) {
+    return 0;
+  }
+
+  const isFamily = hasSpouse || dependents > 0;
+  const familyDependentIncrease = isFamily ? Math.max(0, dependents - 1) * 1500 : 0;
+  const surchargeIncome = isFamily ? familyIncome : taxableIncome;
+  const tiers = isFamily
+    ? MEDICARE_LEVY_SURCHARGE.family.tiers.map(tier => ({
+        ...tier,
+        min: tier.min + familyDependentIncrease,
+        max: tier.max === Infinity ? Infinity : tier.max + familyDependentIncrease
+      }))
+    : MEDICARE_LEVY_SURCHARGE.single.tiers;
+  const tier = tiers.find(({ min, max }) => surchargeIncome >= min && surchargeIncome <= max);
+
+  return tier ? taxableIncome * tier.rate : 0;
 };
 
 /**
@@ -196,10 +230,21 @@ export const calculateTax = (formData: FormDataForTaxCalculation): TaxCalculatio
     const taxWithheld = parseFloat(formData.taxWithheld) || 0;
     const hasHecsDebt = formData.hecsDebt === true;
     const medicareExemption = formData.medicareExemption === true;
+    const hasSpouse = formData.hasSpouse === true;
+    const spouseIncome = hasSpouse ? (parseFloat(formData.spouseIncome) || 0) : 0;
+    const dependents = formData.hasDependents ? (parseInt(formData.dependents || '0') || 0) : 0;
+    const hasPrivateHospitalCover = formData.hasPrivateHospitalCover === true;
 
     // Calculate tax components
     const incomeTax = calculateIncomeTax(taxableIncome);
     const medicareLevy = calculateMedicareLevy(taxableIncome, medicareExemption);
+    const medicareLevySurcharge = calculateMedicareLevySurcharge(
+      taxableIncome,
+      taxableIncome + spouseIncome,
+      hasPrivateHospitalCover,
+      hasSpouse,
+      dependents
+    );
     const studyLoanRepaymentIncome = taxableIncome +
       (parseFloat(formData.reportableSuper) || 0) +
       (parseFloat(formData.reportableFringeBenefits) || 0) +
@@ -209,7 +254,7 @@ export const calculateTax = (formData: FormDataForTaxCalculation): TaxCalculatio
     const lowIncomeTaxOffset = calculateLowIncomeTaxOffset(taxableIncome);
 
     // Calculate total tax
-    const totalTaxBeforeOffsets = incomeTax + medicareLevy + hecsRepayment;
+    const totalTaxBeforeOffsets = incomeTax + medicareLevy + medicareLevySurcharge + hecsRepayment;
     const totalTax = Math.max(0, totalTaxBeforeOffsets - lowIncomeTaxOffset);
     
     // Calculate refund or amount owed
@@ -223,6 +268,7 @@ export const calculateTax = (formData: FormDataForTaxCalculation): TaxCalculatio
       taxableIncome,
       incomeTax,
       medicareLevy,
+      medicareLevySurcharge,
       hecsRepayment,
       lowIncomeTaxOffset,
       totalTax,
@@ -242,6 +288,7 @@ export const calculateTax = (formData: FormDataForTaxCalculation): TaxCalculatio
         tax: {
           incomeTax,
           medicareLevy,
+          medicareLevySurcharge,
           hecsRepayment,
           totalBeforeOffsets: totalTaxBeforeOffsets,
           offsets: lowIncomeTaxOffset,
