@@ -67,6 +67,19 @@ export interface TaxYearInfo {
   readonly note: string;
 }
 
+export interface TaxYearConfig {
+  readonly financialYear: string;
+  readonly taxBrackets: readonly TaxBracket[];
+  readonly helpRepaymentThresholds: readonly HecsThreshold[];
+  readonly medicareLevyThresholds: MedicareLevyThresholds;
+  readonly medicareLevySurcharge: MedicareLevySurcharge;
+  readonly lowIncomeTaxOffset: LowIncomeTaxOffset;
+  readonly workFromHome: WorkFromHome;
+  readonly standardDeductions: StandardDeductions;
+  readonly taxFreeThreshold: number;
+  readonly taxYearInfo: TaxYearInfo;
+}
+
 export interface WorkFromHome {
   readonly shortcutRate: number;
   readonly maxShortcutClaim: number;
@@ -94,8 +107,7 @@ export interface SeniorTaxOffset {
   readonly couple: SeniorTaxOffsetCategory;
 }
 
-// Tax brackets for 2025-26 financial year
-export const TAX_BRACKETS_2025_26: readonly TaxBracket[] = [
+const FY2025_26_TAX_BRACKETS: readonly TaxBracket[] = [
   { min: 0, max: 18200, rate: 0, base: 0 },
   { min: 18200, max: 45000, rate: 0.16, base: 0 },
   { min: 45000, max: 135000, rate: 0.30, base: 4288 },
@@ -105,7 +117,7 @@ export const TAX_BRACKETS_2025_26: readonly TaxBracket[] = [
 
 // HELP/STSL repayment thresholds for 2025-26.
 // From 2025-26 repayments are marginal until the top band.
-export const HECS_THRESHOLDS_2025_26: readonly HecsThreshold[] = [
+const FY2025_26_HECS_THRESHOLDS: readonly HecsThreshold[] = [
   { min: 0, max: 67000, rate: 0, base: 0 },
   { min: 67000, max: 125000, rate: 0.15, base: 0 },
   { min: 125000, max: 179285, rate: 0.17, base: 8700 },
@@ -117,7 +129,7 @@ export const MEDICARE_LEVY_RATE: number = 0.02 as const;
 
 // Medicare levy low-income thresholds from the 2024-25 legislation, applying
 // to 2024-25 and later income years until replaced.
-export const MEDICARE_LEVY_THRESHOLDS: MedicareLevyThresholds = {
+const FY2025_26_MEDICARE_LEVY_THRESHOLDS: MedicareLevyThresholds = {
   singleLower: 27222,
   singleUpper: 34027,
   familyLower: 45907,
@@ -129,7 +141,7 @@ export const MEDICARE_LEVY_THRESHOLDS: MedicareLevyThresholds = {
 } as const;
 
 // Medicare levy surcharge thresholds and rates
-export const MEDICARE_LEVY_SURCHARGE: MedicareLevySurcharge = {
+const FY2025_26_MEDICARE_LEVY_SURCHARGE: MedicareLevySurcharge = {
   single: {
     threshold: 97000,
     tiers: [
@@ -149,7 +161,7 @@ export const MEDICARE_LEVY_SURCHARGE: MedicareLevySurcharge = {
 } as const;
 
 // Low income tax offset thresholds
-export const LOW_INCOME_TAX_OFFSET: LowIncomeTaxOffset = {
+const FY2025_26_LOW_INCOME_TAX_OFFSET: LowIncomeTaxOffset = {
   maxOffset: 700,
   fullOffsetLimit: 37500,
   firstPhaseOutEnd: 45000,
@@ -160,33 +172,59 @@ export const LOW_INCOME_TAX_OFFSET: LowIncomeTaxOffset = {
 } as const;
 
 // Work from home deduction rates
-export const WORK_FROM_HOME: WorkFromHome = {
+const FY2025_26_WORK_FROM_HOME: WorkFromHome = {
   shortcutRate: 0.70, // per hour
   maxShortcutClaim: Infinity
 } as const;
 
-// Financial year
-export const FINANCIAL_YEAR: string = '2025-26' as const;
+const FY2025_26_FINANCIAL_YEAR = '2025-26' as const;
 
-export const TAX_YEAR_INFO: TaxYearInfo = {
-  current: FINANCIAL_YEAR,
+const FY2025_26_TAX_YEAR_INFO: TaxYearInfo = {
+  current: FY2025_26_FINANCIAL_YEAR,
   display: '2025-26',
   sourceYearForMedicareThresholds: '2024-25',
   note: 'Medicare levy low-income thresholds are the 2024-25 amounts that apply to 2024-25 and later income years until replaced.'
 } as const;
 
-export const PAYG_ESTIMATE: PaygEstimate = {
-  medicareEstimateThreshold: MEDICARE_LEVY_THRESHOLDS.singleLower
-} as const;
-
-// Tax-free threshold
-export const TAX_FREE_THRESHOLD: number = 18200 as const;
-
 // Standard deduction amounts (for reference)
-export const STANDARD_DEDUCTIONS: StandardDeductions = {
+const FY2025_26_STANDARD_DEDUCTIONS: StandardDeductions = {
   workClothes: 150,
   workFromHomeBasic: 300,
   carExpenseKmRate: 0.88 // per km for 2025-26
+} as const;
+
+export const ACTIVE_FINANCIAL_YEAR = '2025-26' as const;
+
+export const TAX_YEAR_CONFIGS: Record<string, TaxYearConfig> = {
+  '2025-26': {
+    financialYear: FY2025_26_FINANCIAL_YEAR,
+    taxBrackets: FY2025_26_TAX_BRACKETS,
+    helpRepaymentThresholds: FY2025_26_HECS_THRESHOLDS,
+    medicareLevyThresholds: FY2025_26_MEDICARE_LEVY_THRESHOLDS,
+    medicareLevySurcharge: FY2025_26_MEDICARE_LEVY_SURCHARGE,
+    lowIncomeTaxOffset: FY2025_26_LOW_INCOME_TAX_OFFSET,
+    workFromHome: FY2025_26_WORK_FROM_HOME,
+    standardDeductions: FY2025_26_STANDARD_DEDUCTIONS,
+    taxFreeThreshold: 18200,
+    taxYearInfo: FY2025_26_TAX_YEAR_INFO
+  }
+} as const;
+
+export const ACTIVE_TAX_YEAR_CONFIG = TAX_YEAR_CONFIGS[ACTIVE_FINANCIAL_YEAR];
+
+// Backward-compatible aliases for app code.
+export const FINANCIAL_YEAR: string = ACTIVE_TAX_YEAR_CONFIG.financialYear;
+export const TAX_YEAR_INFO: TaxYearInfo = ACTIVE_TAX_YEAR_CONFIG.taxYearInfo;
+export const TAX_BRACKETS_2025_26: readonly TaxBracket[] = ACTIVE_TAX_YEAR_CONFIG.taxBrackets;
+export const HECS_THRESHOLDS_2025_26: readonly HecsThreshold[] = ACTIVE_TAX_YEAR_CONFIG.helpRepaymentThresholds;
+export const MEDICARE_LEVY_THRESHOLDS: MedicareLevyThresholds = ACTIVE_TAX_YEAR_CONFIG.medicareLevyThresholds;
+export const MEDICARE_LEVY_SURCHARGE: MedicareLevySurcharge = ACTIVE_TAX_YEAR_CONFIG.medicareLevySurcharge;
+export const LOW_INCOME_TAX_OFFSET: LowIncomeTaxOffset = ACTIVE_TAX_YEAR_CONFIG.lowIncomeTaxOffset;
+export const WORK_FROM_HOME: WorkFromHome = ACTIVE_TAX_YEAR_CONFIG.workFromHome;
+export const STANDARD_DEDUCTIONS: StandardDeductions = ACTIVE_TAX_YEAR_CONFIG.standardDeductions;
+export const TAX_FREE_THRESHOLD: number = ACTIVE_TAX_YEAR_CONFIG.taxFreeThreshold;
+export const PAYG_ESTIMATE: PaygEstimate = {
+  medicareEstimateThreshold: MEDICARE_LEVY_THRESHOLDS.singleLower
 } as const;
 
 // Dependent spouse tax offset
