@@ -102,6 +102,30 @@ const MEDICARE_FAMILY_LOWER_THRESHOLD = 45907;
 const MEDICARE_DEPENDENT_LOWER_INCREASE = 4216;
 const MEDICARE_PHASE_IN_RATE = 0.10;
 
+const PAYG_SCALE_2_WEEKLY_COEFFICIENTS = [
+  { lessThan: 361, a: 0, b: 0 },
+  { lessThan: 500, a: 0.1600, b: 57.8462 },
+  { lessThan: 625, a: 0.2600, b: 107.8462 },
+  { lessThan: 721, a: 0.1800, b: 57.8462 },
+  { lessThan: 865, a: 0.1890, b: 64.3365 },
+  { lessThan: 1282, a: 0.3227, b: 180.0385 },
+  { lessThan: 2596, a: 0.3200, b: 176.5769 },
+  { lessThan: 3653, a: 0.3900, b: 358.3077 },
+  { lessThan: Infinity, a: 0.4700, b: 650.6154 }
+] as const;
+
+const calculatePaygWithholdingEstimate = (annualIncome: number): number => {
+  if (annualIncome <= 0) return 0;
+
+  const weeklyEarnings = annualIncome / 52;
+  const x = Math.floor(weeklyEarnings) + 0.99;
+  const coefficient = PAYG_SCALE_2_WEEKLY_COEFFICIENTS.find(({ lessThan }) => x < lessThan) ||
+    PAYG_SCALE_2_WEEKLY_COEFFICIENTS[PAYG_SCALE_2_WEEKLY_COEFFICIENTS.length - 1];
+  const weeklyWithholding = Math.max(0, Math.round((coefficient.a * x) - coefficient.b));
+
+  return Math.round(weeklyWithholding * 52);
+};
+
 const calculateResidentIncomeTax = (taxableIncome: number): number => {
   if (taxableIncome > 190000) {
     return 51638 + (taxableIncome - 190000) * 0.45;
@@ -2285,15 +2309,7 @@ const AppContent: React.FC = () => {
       return '0';
     }
 
-    // Use 2025-26 resident rates for the rough withholding estimate.
-    let estimatedWithholding = calculateResidentIncomeTax(totalTFNIncome);
-
-    // Add Medicare levy (2% of TFN income only)
-    if (totalTFNIncome > MEDICARE_SINGLE_LOWER_THRESHOLD) {
-      estimatedWithholding += totalTFNIncome * 0.02;
-    }
-
-    return Math.round(estimatedWithholding).toString();
+    return calculatePaygWithholdingEstimate(totalTFNIncome).toString();
   }, [jobIncomes]);
 
   // Handle PAYG unknown checkbox toggle
@@ -2382,14 +2398,7 @@ const AppContent: React.FC = () => {
     const annualIncome = parseFloat(String(income || '0'));
     if (annualIncome <= 0) return 0;
 
-    let tax = calculateResidentIncomeTax(annualIncome);
-
-    // Add Medicare levy (2%)
-    if (annualIncome > MEDICARE_SINGLE_LOWER_THRESHOLD) {
-      tax += annualIncome * 0.02;
-    }
-
-    return Math.round(tax);
+    return calculatePaygWithholdingEstimate(annualIncome);
   }
 
   const updateJobIncome = useCallback((index, value) => {

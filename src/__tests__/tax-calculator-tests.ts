@@ -44,6 +44,7 @@ const mockReactNative: MockReactNative = {
 // Tax calculation functions extracted from App.js for testing
 class TaxCalculator {
   private TAX_BRACKETS_2025_26: TaxBracket[];
+  private PAYG_SCALE_2_WEEKLY_COEFFICIENTS;
 
   constructor() {
     this.TAX_BRACKETS_2025_26 = [
@@ -52,6 +53,18 @@ class TaxCalculator {
       { min: 45000, max: 135000, rate: 0.30, base: 4288 },
       { min: 135000, max: 190000, rate: 0.37, base: 31288 },
       { min: 190000, max: Infinity, rate: 0.45, base: 51638 }
+    ];
+
+    this.PAYG_SCALE_2_WEEKLY_COEFFICIENTS = [
+      { lessThan: 361, a: 0, b: 0 },
+      { lessThan: 500, a: 0.1600, b: 57.8462 },
+      { lessThan: 625, a: 0.2600, b: 107.8462 },
+      { lessThan: 721, a: 0.1800, b: 57.8462 },
+      { lessThan: 865, a: 0.1890, b: 64.3365 },
+      { lessThan: 1282, a: 0.3227, b: 180.0385 },
+      { lessThan: 2596, a: 0.3200, b: 176.5769 },
+      { lessThan: 3653, a: 0.3900, b: 358.3077 },
+      { lessThan: Infinity, a: 0.4700, b: 650.6154 }
     ];
   }
 
@@ -103,6 +116,14 @@ class TaxCalculator {
 
   calculateWorkFromHomeDeduction(hours) {
     return parseFloat(hours || '0') * 0.70;
+  }
+
+  calculatePaygWithholdingEstimate(annualIncome) {
+    if (annualIncome <= 0) return 0;
+
+    const x = Math.floor(annualIncome / 52) + 0.99;
+    const coefficient = this.PAYG_SCALE_2_WEEKLY_COEFFICIENTS.find(({ lessThan }) => x < lessThan);
+    return Math.round(Math.max(0, Math.round((coefficient.a * x) - coefficient.b)) * 52);
   }
 
   calculateTotalDeductions(deductions, workFromHomeHours) {
@@ -332,6 +353,14 @@ describe('Australian Tax Calculator - Comprehensive Tests', () => {
       expect(calculator.calculateWorkFromHomeDeduction('200')).toBe(140);
       expect(calculator.calculateWorkFromHomeDeduction('0')).toBe(0);
       expect(calculator.calculateWorkFromHomeDeduction('')).toBe(0);
+    });
+  });
+
+  describe('PAYG Withholding Estimate Tests', () => {
+    test('Uses ATO weekly scale 2 coefficients', () => {
+      expect(calculator.calculatePaygWithholdingEstimate(0)).toBe(0);
+      expect(calculator.calculatePaygWithholdingEstimate(75000)).toBe(14820);
+      expect(calculator.calculatePaygWithholdingEstimate(150000)).toBe(39884);
     });
   });
 
