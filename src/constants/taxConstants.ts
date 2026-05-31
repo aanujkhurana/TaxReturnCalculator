@@ -1,6 +1,6 @@
 /**
  * Tax calculation constants for Australian tax system
- * Contains tax brackets, thresholds, and rates for the 2024-25 financial year
+ * Contains tax brackets, thresholds, and rates for the 2025-26 financial year
  */
 
 // Type definitions for tax constants
@@ -15,6 +15,8 @@ export interface HecsThreshold {
   readonly min: number;
   readonly max: number;
   readonly rate: number;
+  readonly base?: number;
+  readonly rateAppliesToTotalIncome?: boolean;
 }
 
 export interface MedicareLevySurchargeTier {
@@ -35,8 +37,34 @@ export interface MedicareLevySurcharge {
 
 export interface LowIncomeTaxOffset {
   readonly maxOffset: number;
-  readonly phaseOutStart: number;
-  readonly phaseOutEnd: number;
+  readonly fullOffsetLimit: number;
+  readonly firstPhaseOutEnd: number;
+  readonly firstPhaseOutRate: number;
+  readonly secondPhaseOutEnd: number;
+  readonly secondPhaseOutBase: number;
+  readonly secondPhaseOutRate: number;
+}
+
+export interface MedicareLevyThresholds {
+  readonly singleLower: number;
+  readonly singleUpper: number;
+  readonly familyLower: number;
+  readonly familyUpper: number;
+  readonly dependentChildLowerIncrease: number;
+  readonly dependentChildUpperIncrease: number;
+  readonly phaseInRate: number;
+  readonly rate: number;
+}
+
+export interface PaygEstimate {
+  readonly medicareEstimateThreshold: number;
+}
+
+export interface TaxYearInfo {
+  readonly current: string;
+  readonly display: string;
+  readonly sourceYearForMedicareThresholds: string;
+  readonly note: string;
 }
 
 export interface WorkFromHome {
@@ -66,39 +94,39 @@ export interface SeniorTaxOffset {
   readonly couple: SeniorTaxOffsetCategory;
 }
 
-// Tax brackets for 2024-25 financial year
-export const TAX_BRACKETS_2024_25: readonly TaxBracket[] = [
+// Tax brackets for 2025-26 financial year
+export const TAX_BRACKETS_2025_26: readonly TaxBracket[] = [
   { min: 0, max: 18200, rate: 0, base: 0 },
-  { min: 18200, max: 45000, rate: 0.19, base: 0 },
-  { min: 45000, max: 120000, rate: 0.325, base: 5092 },
-  { min: 120000, max: 180000, rate: 0.37, base: 29467 },
-  { min: 180000, max: Infinity, rate: 0.45, base: 51667 }
+  { min: 18200, max: 45000, rate: 0.16, base: 0 },
+  { min: 45000, max: 135000, rate: 0.30, base: 4288 },
+  { min: 135000, max: 190000, rate: 0.37, base: 31288 },
+  { min: 190000, max: Infinity, rate: 0.45, base: 51638 }
 ] as const;
 
-// HECS-HELP repayment thresholds for 2024-25
-export const HECS_THRESHOLDS_2024_25: readonly HecsThreshold[] = [
-  { min: 51550, max: 59518, rate: 0.01 },
-  { min: 59519, max: 63089, rate: 0.02 },
-  { min: 63090, max: 66875, rate: 0.025 },
-  { min: 66876, max: 70888, rate: 0.03 },
-  { min: 70889, max: 75140, rate: 0.035 },
-  { min: 75141, max: 79649, rate: 0.04 },
-  { min: 79650, max: 84429, rate: 0.045 },
-  { min: 84430, max: 89494, rate: 0.05 },
-  { min: 89495, max: 94865, rate: 0.055 },
-  { min: 94866, max: 100557, rate: 0.06 },
-  { min: 100558, max: 106590, rate: 0.065 },
-  { min: 106591, max: 112985, rate: 0.07 },
-  { min: 112986, max: 119764, rate: 0.075 },
-  { min: 119765, max: 126950, rate: 0.08 },
-  { min: 126951, max: 134568, rate: 0.085 },
-  { min: 134569, max: 142642, rate: 0.09 },
-  { min: 142643, max: 151200, rate: 0.095 },
-  { min: 151201, max: Infinity, rate: 0.10 }
+// HELP/STSL repayment thresholds for 2025-26.
+// From 2025-26 repayments are marginal until the top band.
+export const HECS_THRESHOLDS_2025_26: readonly HecsThreshold[] = [
+  { min: 0, max: 67000, rate: 0, base: 0 },
+  { min: 67000, max: 125000, rate: 0.15, base: 0 },
+  { min: 125000, max: 179285, rate: 0.17, base: 8700 },
+  { min: 179286, max: Infinity, rate: 0.10, base: 0, rateAppliesToTotalIncome: true }
 ] as const;
 
 // Medicare levy rate
 export const MEDICARE_LEVY_RATE: number = 0.02 as const;
+
+// Medicare levy low-income thresholds from the 2024-25 legislation, applying
+// to 2024-25 and later income years until replaced.
+export const MEDICARE_LEVY_THRESHOLDS: MedicareLevyThresholds = {
+  singleLower: 27222,
+  singleUpper: 34027,
+  familyLower: 45907,
+  familyUpper: 57383,
+  dependentChildLowerIncrease: 4216,
+  dependentChildUpperIncrease: 5270,
+  phaseInRate: 0.10,
+  rate: MEDICARE_LEVY_RATE
+} as const;
 
 // Medicare levy surcharge thresholds and rates
 export const MEDICARE_LEVY_SURCHARGE: MedicareLevySurcharge = {
@@ -123,18 +151,33 @@ export const MEDICARE_LEVY_SURCHARGE: MedicareLevySurcharge = {
 // Low income tax offset thresholds
 export const LOW_INCOME_TAX_OFFSET: LowIncomeTaxOffset = {
   maxOffset: 700,
-  phaseOutStart: 45000,
-  phaseOutEnd: 66667
+  fullOffsetLimit: 37500,
+  firstPhaseOutEnd: 45000,
+  firstPhaseOutRate: 0.05,
+  secondPhaseOutEnd: 66667,
+  secondPhaseOutBase: 325,
+  secondPhaseOutRate: 0.015
 } as const;
 
 // Work from home deduction rates
 export const WORK_FROM_HOME: WorkFromHome = {
-  shortcutRate: 0.67, // per hour
-  maxShortcutClaim: 1000
+  shortcutRate: 0.70, // per hour
+  maxShortcutClaim: Infinity
 } as const;
 
 // Financial year
-export const FINANCIAL_YEAR: string = '2024-25' as const;
+export const FINANCIAL_YEAR: string = '2025-26' as const;
+
+export const TAX_YEAR_INFO: TaxYearInfo = {
+  current: FINANCIAL_YEAR,
+  display: '2025-26',
+  sourceYearForMedicareThresholds: '2024-25',
+  note: 'Medicare levy low-income thresholds are the 2024-25 amounts that apply to 2024-25 and later income years until replaced.'
+} as const;
+
+export const PAYG_ESTIMATE: PaygEstimate = {
+  medicareEstimateThreshold: MEDICARE_LEVY_THRESHOLDS.singleLower
+} as const;
 
 // Tax-free threshold
 export const TAX_FREE_THRESHOLD: number = 18200 as const;
@@ -143,7 +186,7 @@ export const TAX_FREE_THRESHOLD: number = 18200 as const;
 export const STANDARD_DEDUCTIONS: StandardDeductions = {
   workClothes: 150,
   workFromHomeBasic: 300,
-  carExpenseKmRate: 0.85 // per km for 2024-25
+  carExpenseKmRate: 0.88 // per km for 2025-26
 } as const;
 
 // Dependent spouse tax offset

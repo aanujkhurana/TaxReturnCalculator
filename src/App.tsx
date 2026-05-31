@@ -82,6 +82,60 @@ export interface FormData {
   hasDependents: boolean;
 }
 
+type DeductionsState = FormData['deductions'];
+type ValidationErrors = Record<string, string>;
+type CategoryTotals = Record<string, string>;
+type CollapsedCategories = Record<string, boolean>;
+type TaxResult = any;
+
+const TAX_YEAR = '2025-26';
+const WFH_FIXED_RATE = 0.70;
+const MEDICARE_RATE = 0.02;
+const MEDICARE_SINGLE_LOWER_THRESHOLD = 27222;
+const MEDICARE_FAMILY_LOWER_THRESHOLD = 45907;
+const MEDICARE_DEPENDENT_LOWER_INCREASE = 4216;
+const MEDICARE_PHASE_IN_RATE = 0.10;
+
+const calculateResidentIncomeTax = (taxableIncome: number): number => {
+  if (taxableIncome > 190000) {
+    return 51638 + (taxableIncome - 190000) * 0.45;
+  }
+  if (taxableIncome > 135000) {
+    return 31288 + (taxableIncome - 135000) * 0.37;
+  }
+  if (taxableIncome > 45000) {
+    return 4288 + (taxableIncome - 45000) * 0.30;
+  }
+  if (taxableIncome > 18200) {
+    return (taxableIncome - 18200) * 0.16;
+  }
+  return 0;
+};
+
+const calculateMedicareLevyAmount = (
+  taxableIncome: number,
+  dependents: number = 0,
+  medicareExemption: boolean = false
+): number => {
+  if (medicareExemption) return 0;
+
+  const threshold = dependents > 0
+    ? MEDICARE_FAMILY_LOWER_THRESHOLD + (dependents * MEDICARE_DEPENDENT_LOWER_INCREASE)
+    : MEDICARE_SINGLE_LOWER_THRESHOLD;
+
+  if (taxableIncome <= threshold) return 0;
+
+  const phaseInAmount = (taxableIncome - threshold) * MEDICARE_PHASE_IN_RATE;
+  return Math.min(phaseInAmount, taxableIncome * MEDICARE_RATE);
+};
+
+const calculateStudyLoanRepayment = (repaymentIncome: number, hasStudyLoanDebt: boolean): number => {
+  if (!hasStudyLoanDebt || repaymentIncome <= 67000) return 0;
+  if (repaymentIncome <= 125000) return (repaymentIncome - 67000) * 0.15;
+  if (repaymentIncome <= 179285) return 8700 + ((repaymentIncome - 125000) * 0.17);
+  return repaymentIncome * 0.10;
+};
+
 // Styles definition - now a function that takes theme
 const getStyles = (theme: Theme) => StyleSheet.create({
   container: {
@@ -483,14 +537,6 @@ const getStyles = (theme: Theme) => StyleSheet.create({
     fontWeight: '600',
     letterSpacing: 0.2,
     textTransform: 'uppercase',
-  },
-  summaryAmount: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: theme.text,
-    textAlign: 'center',
-    letterSpacing: 0.3,
-    lineHeight: 26,
   },
   breakdownSection: {
     marginBottom: 24,
@@ -1903,7 +1949,7 @@ const AppContent: React.FC = () => {
   // Form data
   const [jobIncomes, setJobIncomes] = useState<string[]>(['']);
   const [taxWithheld, setTaxWithheld] = useState<string>('');
-  const [deductions, setDeductions] = useState({
+  const [deductions, setDeductions] = useState<DeductionsState>({
     workRelated: {
       travel: '',
       equipment: '',
@@ -1942,17 +1988,17 @@ const AppContent: React.FC = () => {
   // PAYG estimation feature
   const [paygUnknown, setPaygUnknown] = useState(false);
   const [estimatedPayg, setEstimatedPayg] = useState('');
-  const [result, setResult] = useState(null);
+  const [result, setResult] = useState<TaxResult | null>(null);
   const [isCalculating, setIsCalculating] = useState(false);
   const [loadingStep, setLoadingStep] = useState(0);
   const [showSuccessAnimation, setShowSuccessAnimation] = useState(false);
   const [resultsViewMode, setResultsViewMode] = useState('card'); // 'card' or 'table'
 
   // Form validation errors
-  const [validationErrors, setValidationErrors] = useState({});
+  const [validationErrors, setValidationErrors] = useState<ValidationErrors>({});
 
   // Deduction category collapse state
-  const [collapsedCategories, setCollapsedCategories] = useState({
+  const [collapsedCategories, setCollapsedCategories] = useState<CollapsedCategories>({
     workRelated: false,
     selfEducation: true,
     donations: true,
@@ -1961,14 +2007,14 @@ const AppContent: React.FC = () => {
   });
 
   // Income category collapse state - all expanded by default
-  const [incomeCollapsedCategories, setIncomeCollapsedCategories] = useState({
+  const [incomeCollapsedCategories, setIncomeCollapsedCategories] = useState<CollapsedCategories>({
     employment: false,
     abn: false,
     payg: false
   });
 
   // Details category collapse state
-  const [detailsCollapsedCategories, setDetailsCollapsedCategories] = useState({
+  const [detailsCollapsedCategories, setDetailsCollapsedCategories] = useState<CollapsedCategories>({
     hecsDebt: false,
     medicareLevy: false,
     disclaimer: true
@@ -2205,23 +2251,11 @@ const AppContent: React.FC = () => {
       return '0';
     }
 
-    // Use the same calculation method as estimateTaxWithheld for consistency
-    // Australian tax brackets 2024-25
-    let estimatedWithholding = 0;
-    if (totalTFNIncome > 18200) {
-      if (totalTFNIncome <= 45000) {
-        estimatedWithholding = (totalTFNIncome - 18200) * 0.19;
-      } else if (totalTFNIncome <= 120000) {
-        estimatedWithholding = (45000 - 18200) * 0.19 + (totalTFNIncome - 45000) * 0.325;
-      } else if (totalTFNIncome <= 180000) {
-        estimatedWithholding = (45000 - 18200) * 0.19 + (120000 - 45000) * 0.325 + (totalTFNIncome - 120000) * 0.37;
-      } else {
-        estimatedWithholding = (45000 - 18200) * 0.19 + (120000 - 45000) * 0.325 + (180000 - 120000) * 0.37 + (totalTFNIncome - 180000) * 0.45;
-      }
-    }
+    // Use 2025-26 resident rates for the rough withholding estimate.
+    let estimatedWithholding = calculateResidentIncomeTax(totalTFNIncome);
 
     // Add Medicare levy (2% of TFN income only)
-    if (totalTFNIncome > 23226) { // Use same threshold as estimateTaxWithheld
+    if (totalTFNIncome > MEDICARE_SINGLE_LOWER_THRESHOLD) {
       estimatedWithholding += totalTFNIncome * 0.02;
     }
 
@@ -2308,12 +2342,21 @@ const AppContent: React.FC = () => {
     }
   }, [isCalculating, loadingPulseAnim]);
 
-  // Auto-calculate when reaching step 4 if no result exists
-  useEffect(() => {
-    if (currentStep === 4 && !result) {
-      estimateTax();
+  // Helper function to estimate tax withheld based on TFN employment income only
+  // Note: This should only be used for employment income, not ABN/business income
+  function estimateTaxWithheld(income: string | number): number {
+    const annualIncome = parseFloat(String(income || '0'));
+    if (annualIncome <= 0) return 0;
+
+    let tax = calculateResidentIncomeTax(annualIncome);
+
+    // Add Medicare levy (2%)
+    if (annualIncome > MEDICARE_SINGLE_LOWER_THRESHOLD) {
+      tax += annualIncome * 0.02;
     }
-  }, [currentStep, result, estimateTax]);
+
+    return Math.round(tax);
+  }
 
   const updateJobIncome = useCallback((index, value) => {
     setJobIncomes(prevIncomes => {
@@ -2403,16 +2446,6 @@ const AppContent: React.FC = () => {
       scrollViewRef.current.scrollTo({ y: 0, animated: true });
     }
   }, []);
-
-  // Step navigation functions
-  const nextStep = useCallback(() => {
-    console.log('Next step clicked. Current values:', { jobIncomes, abnIncome, taxWithheld });
-    if (validateCurrentStep()) {
-      setCurrentStep(prev => Math.min(prev + 1, totalSteps));
-      // Scroll to top when moving to next step
-      setTimeout(() => scrollToTop(), 100);
-    }
-  }, [totalSteps, validateCurrentStep, jobIncomes, abnIncome, taxWithheld, scrollToTop]);
 
   const prevStep = useCallback(() => {
     setCurrentStep(prev => Math.max(prev - 1, 1));
@@ -2592,6 +2625,16 @@ const AppContent: React.FC = () => {
     }
   }, [currentStep, jobIncomes, abnIncome, taxWithheld, paygUnknown, calculateEstimatedPayg, setEstimatedPayg, setTaxWithheld]);
 
+  // Step navigation functions
+  const nextStep = useCallback(() => {
+    console.log('Next step clicked. Current values:', { jobIncomes, abnIncome, taxWithheld });
+    if (validateCurrentStep()) {
+      setCurrentStep(prev => Math.min(prev + 1, totalSteps));
+      // Scroll to top when moving to next step
+      setTimeout(() => scrollToTop(), 100);
+    }
+  }, [totalSteps, validateCurrentStep, jobIncomes, abnIncome, taxWithheld, scrollToTop]);
+
   const validateInputs = () => {
     clearAllErrors(); // Clear previous errors
     let hasErrors = false;
@@ -2676,18 +2719,18 @@ const AppContent: React.FC = () => {
     const dependentsNum = hasDependents ? parseInt(dependents || '0') : 0;
 
     // Calculate total deductions
-    const workFromHomeDeduction = wfhHours * 0.67;
+    const workFromHomeDeduction = wfhHours * WFH_FIXED_RATE;
 
     // Calculate total manual deductions from nested structure
-    const totalManualDeductions = Object.values(deductions).reduce((categorySum, category) => {
+    const totalManualDeductions = Object.values(deductions).reduce((categorySum: number, category) => {
       if (typeof category === 'object' && category !== null) {
         // New nested structure
-        return categorySum + Object.values(category).reduce((subSum, val) => {
-          return subSum + (parseFloat(val || '0'));
+        return categorySum + Object.values(category as CategoryTotals).reduce((subSum: number, val) => {
+          return subSum + parseFloat(String(val || '0'));
         }, 0);
       } else {
         // Backward compatibility for old flat structure
-        return categorySum + (parseFloat(category || '0'));
+        return categorySum + parseFloat(String(category || '0'));
       }
     }, 0);
 
@@ -2696,19 +2739,9 @@ const AppContent: React.FC = () => {
     const totalIncome = totalTFNIncome + abnIncomeNum;
     const taxableIncome = Math.max(0, totalIncome - totalDeductions);
 
-    // 2024-25 tax brackets
-    let tax = 0;
-    if (taxableIncome > 180000) {
-      tax = 51667 + (taxableIncome - 180000) * 0.45;
-    } else if (taxableIncome > 120000) {
-      tax = 29467 + (taxableIncome - 120000) * 0.37;
-    } else if (taxableIncome > 45000) {
-      tax = (45000 - 18200) * 0.19 + (taxableIncome - 45000) * 0.325;
-    } else if (taxableIncome > 18200) {
-      tax = (taxableIncome - 18200) * 0.19;
-    }
+    const tax = calculateResidentIncomeTax(taxableIncome);
 
-    // Low Income Tax Offset (LITO) for 2024-25
+    // Low Income Tax Offset (LITO)
     let lito = 0;
     if (taxableIncome <= 37500) {
       lito = 700;
@@ -2718,40 +2751,11 @@ const AppContent: React.FC = () => {
       lito = 325 - ((taxableIncome - 45000) * 0.015);
     }
 
-    // Medicare Levy
-    const medicareThreshold = dependentsNum > 0 ? 45907 + (dependentsNum * 4216) : 27222;
-    let medicare = 0;
-    if (!medicareExemption && taxableIncome > medicareThreshold) {
-      if (taxableIncome <= medicareThreshold * 1.1) {
-        // Medicare levy reduction
-        medicare = (taxableIncome * 0.02) * ((taxableIncome - medicareThreshold) / (medicareThreshold * 0.1));
-      } else {
-        medicare = taxableIncome * 0.02;
-      }
-    }
+    const medicare = calculateMedicareLevyAmount(taxableIncome, dependentsNum, medicareExemption);
 
-    // HECS-HELP repayment for 2024-25
-    let hecsRepayment = 0;
-    if (hecsDebt) {
-      if (taxableIncome >= 51000) {
-        const hecsThresholds = [
-          { min: 51000, max: 59999, rate: 0.01 },
-          { min: 60000, max: 67999, rate: 0.02 },
-          { min: 68000, max: 71999, rate: 0.025 },
-          { min: 72000, max: 78999, rate: 0.03 },
-          { min: 79000, max: 88999, rate: 0.035 },
-          { min: 89000, max: 97999, rate: 0.04 },
-          { min: 98000, max: 109999, rate: 0.045 },
-          { min: 110000, max: 124999, rate: 0.05 },
-          { min: 125000, max: 139999, rate: 0.055 },
-          { min: 140000, max: 151999, rate: 0.06 },
-          { min: 152000, max: Infinity, rate: 0.065 }
-        ];
-        
-        const threshold = hecsThresholds.find(t => taxableIncome >= t.min && taxableIncome <= t.max);
-        hecsRepayment = threshold ? taxableIncome * threshold.rate : 0;
-      }
-    }
+    // HELP/STSL repayment for 2025-26. This app currently uses taxable income
+    // as a proxy for repayment income because reportable extras are not captured.
+    const hecsRepayment = calculateStudyLoanRepayment(taxableIncome, hecsDebt);
 
     const finalTax = Math.max(0, tax - lito + medicare + hecsRepayment);
     const refund = taxWithheldNum - finalTax;
@@ -2789,6 +2793,13 @@ const AppContent: React.FC = () => {
       }, 3000);
     }, 2400); // Complete after all loading steps
   }, [jobIncomes, abnIncome, taxWithheld, deductions, workFromHomeHours, hecsDebt, medicareExemption, dependents, hasDependents]);
+
+  // Auto-calculate when reaching step 4 if no result exists
+  useEffect(() => {
+    if (currentStep === 4 && !result) {
+      estimateTax();
+    }
+  }, [currentStep, result, estimateTax]);
 
 
 
@@ -3130,26 +3141,16 @@ const AppContent: React.FC = () => {
     );
   };
 
-  // Helper function to calculate rough tax estimate using proper 2024-25 brackets
+  // Helper function to calculate rough tax estimate using 2025-26 brackets
   const calculateRoughTaxEstimate = (income) => {
     const taxableIncome = parseFloat(income || '0');
     if (taxableIncome <= 0) return 0;
 
-    // 2024-25 tax brackets (simplified, no deductions considered)
-    let tax = 0;
-    if (taxableIncome > 180000) {
-      tax = 51667 + (taxableIncome - 180000) * 0.45;
-    } else if (taxableIncome > 120000) {
-      tax = 29467 + (taxableIncome - 120000) * 0.37;
-    } else if (taxableIncome > 45000) {
-      tax = (45000 - 18200) * 0.19 + (taxableIncome - 45000) * 0.325;
-    } else if (taxableIncome > 18200) {
-      tax = (taxableIncome - 18200) * 0.19;
-    }
+    let tax = calculateResidentIncomeTax(taxableIncome);
 
     // Add Medicare levy (2%)
-    if (taxableIncome > 27222) {
-      tax += taxableIncome * 0.02;
+    if (taxableIncome > MEDICARE_SINGLE_LOWER_THRESHOLD) {
+      tax += taxableIncome * MEDICARE_RATE;
     }
 
     return Math.round(tax);
@@ -3166,18 +3167,18 @@ const AppContent: React.FC = () => {
     const abnIncomeNum = parseFloat(abnIncome || '0');
     const totalIncome = totalTFNIncome + abnIncomeNum;
 
-    // Determine marginal tax rate based on income level (2024-25)
+    // Determine marginal tax rate based on income level (2025-26)
     let marginalRate = 0;
-    if (totalIncome > 180000) {
+    if (totalIncome > 190000) {
       marginalRate = 0.45 + 0.02; // 45% + 2% Medicare levy
-    } else if (totalIncome > 120000) {
+    } else if (totalIncome > 135000) {
       marginalRate = 0.37 + 0.02; // 37% + 2% Medicare levy
     } else if (totalIncome > 45000) {
-      marginalRate = 0.325 + 0.02; // 32.5% + 2% Medicare levy
-    } else if (totalIncome > 27222) {
-      marginalRate = 0.19 + 0.02; // 19% + 2% Medicare levy
+      marginalRate = 0.30 + 0.02; // 30% + 2% Medicare levy
+    } else if (totalIncome > MEDICARE_SINGLE_LOWER_THRESHOLD) {
+      marginalRate = 0.16 + 0.02; // 16% + 2% Medicare levy
     } else if (totalIncome > 18200) {
-      marginalRate = 0.19; // 19% (below Medicare levy threshold)
+      marginalRate = 0.16; // 16% (below Medicare levy threshold)
     } else {
       marginalRate = 0; // Tax-free threshold
     }
@@ -3395,50 +3396,20 @@ const AppContent: React.FC = () => {
   };
 
   // Helper function to calculate category totals
-  const calculateCategoryTotal = (categoryData) => {
-    return Object.values(categoryData).reduce((sum, value) => {
+  const calculateCategoryTotal = (categoryData: CategoryTotals): number => {
+    return Object.values(categoryData).reduce((sum: number, value) => {
       const num = parseFloat(value || '0');
       return sum + (isNaN(num) ? 0 : num);
     }, 0);
   };
 
-  // Helper function to estimate tax withheld based on TFN employment income only
-  // Note: This should only be used for employment income, not ABN/business income
-  const estimateTaxWithheld = (income) => {
-    const annualIncome = parseFloat(income || '0');
-    if (annualIncome <= 0) return 0;
-
-    // Australian tax brackets 2024-25
-    let tax = 0;
-    if (annualIncome > 18200) {
-      if (annualIncome <= 45000) {
-        tax = (annualIncome - 18200) * 0.19;
-      } else if (annualIncome <= 120000) {
-        tax = (45000 - 18200) * 0.19 + (annualIncome - 45000) * 0.325;
-      } else if (annualIncome <= 180000) {
-        tax = (45000 - 18200) * 0.19 + (120000 - 45000) * 0.325 + (annualIncome - 120000) * 0.37;
-      } else {
-        tax = (45000 - 18200) * 0.19 + (120000 - 45000) * 0.325 + (180000 - 120000) * 0.37 + (annualIncome - 180000) * 0.45;
-      }
-    }
-
-    // Add Medicare levy (2%)
-    if (annualIncome > 23226) {
-      tax += annualIncome * 0.02;
-    }
-
-    return Math.round(tax);
-  };
-
-
-
   // Helper function to check if category has any values
-  const categoryHasValues = (categoryData) => {
+  const categoryHasValues = (categoryData: CategoryTotals): boolean => {
     return Object.values(categoryData).some(value => value && value.trim() !== '');
   };
 
   // Toggle category collapse state
-  const toggleCategory = (categoryKey) => {
+  const toggleCategory = (categoryKey: string) => {
     setCollapsedCategories(prev => ({
       ...prev,
       [categoryKey]: !prev[categoryKey]
@@ -3446,7 +3417,7 @@ const AppContent: React.FC = () => {
   };
 
   // Category color mapping for better visual hierarchy
-  const getCategoryColors = (categoryKey) => {
+  const getCategoryColors = (categoryKey: string) => {
     const colorMap = {
       workRelated: { primary: theme.categoryWork, light: theme.categoryWorkLight, accent: theme.categoryWork },
       selfEducation: { primary: theme.categoryEducation, light: theme.categoryEducationLight, accent: theme.categoryEducation },
@@ -3458,7 +3429,13 @@ const AppContent: React.FC = () => {
   };
 
   // Render collapsible category header with enhanced visual design
-  const renderCategoryHeader = (categoryKey, title, description, icon, total) => {
+  const renderCategoryHeader = (
+    categoryKey: string,
+    title: string,
+    description: string,
+    icon: React.ComponentProps<typeof Ionicons>['name'],
+    total: number
+  ) => {
     const isCollapsed = collapsedCategories[categoryKey];
     // For work from home, use the total parameter; for others, check the deductions object
     const hasValues = categoryKey === 'workFromHome' ? total > 0 : categoryHasValues(deductions[categoryKey] || {});
@@ -3514,7 +3491,7 @@ const AppContent: React.FC = () => {
     const selfEducationTotal = calculateCategoryTotal(deductions.selfEducation);
     const donationsTotal = calculateCategoryTotal(deductions.donations);
     const otherTotal = calculateCategoryTotal(deductions.other);
-    const wfhTotal = parseFloat(workFromHomeHours || '0') * 0.67;
+    const wfhTotal = parseFloat(workFromHomeHours || '0') * WFH_FIXED_RATE;
     const grandTotal = workRelatedTotal + selfEducationTotal + donationsTotal + otherTotal + wfhTotal;
 
     return (
@@ -3926,7 +3903,7 @@ const AppContent: React.FC = () => {
         {renderCategoryHeader(
           'workFromHome',
           'Work From Home',
-          'Simplified method: $0.67 per hour worked from home',
+          'Fixed rate method: $0.70 per hour worked from home',
           'home-outline',
           wfhTotal
         )}
@@ -3937,7 +3914,7 @@ const AppContent: React.FC = () => {
               label="Work From Home Hours"
               value={workFromHomeHours}
               onChangeText={setWorkFromHomeHours}
-              placeholder="Total WFH hours (e.g., 400 = $268 deduction)"
+              placeholder="Total WFH hours (e.g., 400 = $280 deduction)"
               icon="home-outline"
               helpKey="workFromHome"
               suffix=" hrs"
@@ -3946,7 +3923,7 @@ const AppContent: React.FC = () => {
             <View style={styles.wfhInfo}>
               <Ionicons name="information-circle-outline" size={16} color="#666" />
               <Text style={styles.infoText}>
-                Work from home calculated at $0.67/hour (ATO shortcut method)
+                Work from home calculated at $0.70/hour (ATO fixed rate method)
               </Text>
             </View>
           </View>
@@ -4083,7 +4060,7 @@ const AppContent: React.FC = () => {
                     </Text>
                   </View>
                   <Text style={styles.toggleSubtext}>
-                    HECS-HELP repayments are automatically calculated based on your taxable income. Repayment rates range from 1% to 10%, with a minimum threshold of $51,550 for 2024-25. Check your myGov account for your current debt balance.
+                    HECS-HELP repayments use the 2025-26 marginal method. This calculator uses taxable income as a repayment-income proxy; check myGov for your current debt balance.
                   </Text>
                 </View>
               </TouchableOpacity>
@@ -4162,7 +4139,7 @@ const AppContent: React.FC = () => {
         <View style={styles.warningCard}>
           <Ionicons name="warning" size={20} color={theme.warning} />
           <Text style={styles.warningCardText}>
-            This calculator uses 2024-25 tax rates and thresholds. Results are estimates only and should not replace professional tax advice.
+            This calculator uses 2025-26 tax rates and thresholds. Results are estimates only and should not replace professional tax advice.
           </Text>
         </View>
 
@@ -4322,7 +4299,7 @@ const AppContent: React.FC = () => {
 
               <View style={styles.loadingFooter}>
                 <Text style={styles.loadingFooterText}>
-                  Using 2024-25 ATO tax rates and thresholds{'\n'}
+                  Using 2025-26 ATO tax rates and thresholds{'\n'}
                   Calculations typically complete within 3-5 seconds
                 </Text>
               </View>
@@ -4368,7 +4345,7 @@ const AppContent: React.FC = () => {
             <Ionicons name="checkmark-circle" size={20} color={theme.success} />
             <Text style={styles.summaryTitle}>Tax Estimation Complete</Text>
             <View style={styles.summaryBadge}>
-              <Text style={styles.summaryBadgeText}>2024-25</Text>
+              <Text style={styles.summaryBadgeText}>{TAX_YEAR}</Text>
             </View>
           </View>
 
@@ -4391,7 +4368,7 @@ const AppContent: React.FC = () => {
               Effective Tax Rate: {result.effectiveTaxRate.toFixed(1)}%
             </Text>
             <Text style={styles.resultMainFinancialYear}>
-              Financial Year 2024-25
+              Financial Year {TAX_YEAR}
             </Text>
           </View>
         </View>
@@ -4514,7 +4491,7 @@ const AppContent: React.FC = () => {
             <View style={[styles.taxSavingsEstimate, { backgroundColor: theme.warningLight, borderColor: theme.warning }]}>
               <Ionicons name="information-circle" size={16} color={theme.warning} />
               <Text style={[styles.taxSavingsText, { color: theme.warning }]}>
-                Tax withheld: {formatCurrency(parseFloat(taxWithheld || '0'))} • Calculated using 2024-25 ATO rates
+                Tax withheld: {formatCurrency(parseFloat(taxWithheld || '0'))} • Calculated using {TAX_YEAR} ATO rates
               </Text>
             </View>
           </View>

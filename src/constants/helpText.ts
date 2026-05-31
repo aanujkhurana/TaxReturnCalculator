@@ -139,7 +139,7 @@ export const HELP_TEXT: HelpTextData = {
       "Occasional WFH: ~100 hours"
     ],
     tips: [
-      "ATO shortcut method: $0.67 per hour (max $1,000)",
+      "ATO fixed rate method: $0.70 per hour",
       "Keep a diary or log of work from home hours",
       "Must be for employment duties, not personal use",
       "Alternative: claim actual expenses with detailed records"
@@ -173,7 +173,7 @@ export const HELP_TEXT: HelpTextData = {
     tips: [
       "HECS-HELP repayments are calculated automatically based on your income",
       "Repayment rates range from 1% to 10% of your taxable income",
-      "Minimum repayment threshold is $51,550 for 2024-25",
+      "Minimum repayment threshold is $67,000 for 2025-26",
       "Check your myGov account for current debt balance"
     ],
     whereToFind: "Check your myGov account, ATO online services, or previous tax returns"

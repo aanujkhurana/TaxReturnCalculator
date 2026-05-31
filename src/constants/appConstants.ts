@@ -53,7 +53,7 @@ export const STORAGE_KEYS: StorageKeys = {
 export const APP_INFO: AppInfo = {
   NAME: 'MyTaxReturn AU',
   VERSION: '1.0.0',
-  FINANCIAL_YEAR: '2024-25'
+  FINANCIAL_YEAR: '2025-26'
 } as const;
 
 // Step configuration for the tax calculator wizard

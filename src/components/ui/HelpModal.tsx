@@ -10,7 +10,8 @@ import {
   Modal,
   TouchableOpacity,
   ScrollView,
-  TouchableWithoutFeedback
+  TouchableWithoutFeedback,
+  StyleSheet
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../context/ThemeContext';
@@ -19,8 +20,8 @@ import { useTheme } from '../../context/ThemeContext';
 export interface HelpData {
   title: string;
   purpose: string;
-  examples?: string[];
-  tips?: string[];
+  examples?: readonly string[];
+  tips?: readonly string[];
   whereToFind?: string;
 }
 
@@ -35,7 +36,7 @@ const HelpModal: React.FC<HelpModalProps> = ({ visible, onClose, helpData }) => 
 
   if (!helpData) return null;
 
-  const styles = {
+  const styles = StyleSheet.create({
     overlay: {
       flex: 1,
       backgroundColor: 'rgba(0, 0, 0, 0.5)',
@@ -125,7 +126,7 @@ const HelpModal: React.FC<HelpModalProps> = ({ visible, onClose, helpData }) => 
       fontStyle: 'italic',
       lineHeight: 20,
     },
-  };
+  });
 
   return (
     <Modal

@@ -16,7 +16,7 @@ Australia Tax Return Calculator is a comprehensive mobile application designed t
 This calculator eliminates the complexity of traditional tax estimation tools by providing:
 - **Step-by-step guidance** through income, deductions, and personal details
 - **Real-time validation** with helpful error messages and tips
-- **Comprehensive calculations** using 2024-25 Australian tax brackets and rates
+- **Comprehensive calculations** using 2025-26 Australian tax brackets and rates
 - **Professional reporting** with detailed breakdowns and PDF export capability
 - **Smart estimation** features for unknown PAYG withholding amounts
 - **Calculation history** with local storage for managing multiple tax calculations
@@ -25,11 +25,11 @@ This calculator eliminates the complexity of traditional tax estimation tools by
 ## ✨ Key Features
 
 ### Tax Calculations
-- **Income Tax Calculation** using 2024-25 Australian tax brackets
+- **Income Tax Calculation** using 2025-26 Australian tax brackets
 - **Low Income Tax Offset (LITO)** automatic application
 - **Medicare Levy** calculation (2% of taxable income)
 - **HECS-HELP Repayment** calculations based on income thresholds
-- **Work from Home Deductions** using ATO-approved rates ($0.67/hour)
+- **Work from Home Deductions** using ATO-approved rates ($0.70/hour)
 - **Multiple Income Sources** support (employment + ABN income)
 - **PAYG Withholding Estimation** for unknown tax withheld amounts
 
@@ -122,7 +122,7 @@ This calculator eliminates the complexity of traditional tax estimation tools by
 - **Format**: Numeric value with `hrs` suffix
 - **Purpose**: Total hours worked from home during the financial year
 - **Validation**: Must be positive number, reasonable for work schedule
-- **Calculation**: Automatically multiplied by $0.67 per hour (ATO rate)
+- **Calculation**: Automatically multiplied by $0.70 per hour (ATO fixed rate)
 - **Examples**:
   - Full-time WFH: 1,800-2,000 hours
   - Part-time WFH: 900-1,000 hours
@@ -161,7 +161,7 @@ Total Income = Sum of Employment Income + ABN Income
 
 #### 2. Deduction Calculation
 ```
-Work From Home Deduction = Work From Home Hours × $0.67
+Work From Home Deduction = Work From Home Hours × $0.70
 Total Deductions = Work Related + Self Education + Donations + Other + WFH Deduction
 ```
 
@@ -170,12 +170,12 @@ Total Deductions = Work Related + Self Education + Donations + Other + WFH Deduc
 Taxable Income = Max(0, Total Income - Total Deductions)
 ```
 
-#### 4. Income Tax Calculation (2024-25 Tax Brackets)
+#### 4. Income Tax Calculation (2025-26 Tax Brackets)
 - **$0 - $18,200**: 0% (Tax-free threshold)
-- **$18,201 - $45,000**: 19%
-- **$45,001 - $120,000**: 32.5%
-- **$120,001 - $180,000**: 37%
-- **$180,001+**: 45%
+- **$18,201 - $45,000**: 16%
+- **$45,001 - $135,000**: 30%
+- **$135,001 - $190,000**: 37%
+- **$190,001+**: 45%
 
 #### 5. Low Income Tax Offset (LITO)
 - **Up to $37,500**: $700 offset
@@ -185,31 +185,17 @@ Taxable Income = Max(0, Total Income - Total Deductions)
 
 #### 6. Medicare Levy
 - **Rate**: 2% of taxable income
-- **Base Threshold**: $27,222 (2024-25)
+- **Base Threshold**: $27,222 (2024-25 threshold applies to later years until replaced)
 - **Family Threshold**: $45,907 + ($4,216 × dependents)
-- **Phase-in**: Progressive application from threshold to threshold × 1.1
+- **Phase-in**: 10c for each $1 above the relevant low-income threshold, capped at 2% of taxable income
 - **Exemptions**: Available for foreign residents and certain visa holders
 
 #### 7. HECS-HELP Repayment
-Progressive rates based on income:
-- **$51,550 - $59,518**: 1%
-- **$59,519 - $63,089**: 2%
-- **$63,090 - $66,875**: 2.5%
-- **$66,876 - $70,888**: 3%
-- **$70,889 - $75,140**: 3.5%
-- **$75,141 - $79,649**: 4%
-- **$79,650 - $84,429**: 4.5%
-- **$84,430 - $89,494**: 5%
-- **$89,495 - $94,865**: 5.5%
-- **$94,866 - $100,557**: 6%
-- **$100,558 - $106,590**: 6.5%
-- **$106,591 - $112,985**: 7%
-- **$112,986 - $119,764**: 7.5%
-- **$119,765 - $126,950**: 8%
-- **$126,951 - $134,568**: 8.5%
-- **$134,569 - $142,642**: 9%
-- **$142,643 - $151,200**: 9.5%
-- **$151,201+**: 10%
+From 2025-26, compulsory repayments use marginal rates:
+- **$0 - $67,000**: Nil
+- **$67,001 - $125,000**: 15c for each $1 over $67,000
+- **$125,001 - $179,285**: $8,700 plus 17c for each $1 over $125,000
+- **$179,286+**: 10% of total repayment income
 
 #### 8. Final Calculation
 ```
@@ -222,12 +208,12 @@ Tax Refund/Owing = Tax Withheld - Final Tax
 When tax withheld is unknown, the app estimates based on **TFN employment income only** (excludes ABN income):
 
 - **Up to $18,200**: 0% withholding
-- **$18,201 - $45,000**: 19% withholding
-- **$45,001 - $120,000**: 32.5% withholding (on amount over $45,000)
-- **$120,001 - $180,000**: 37% withholding (on amount over $120,000)
-- **$180,001+**: 45% withholding (on amount over $180,000)
+- **$18,201 - $45,000**: 16% withholding
+- **$45,001 - $135,000**: 30% withholding (on amount over $45,000)
+- **$135,001 - $190,000**: 37% withholding (on amount over $135,000)
+- **$190,001+**: 45% withholding (on amount over $190,000)
 
-Plus estimated Medicare levy (2% for TFN income over $23,226).
+Plus estimated Medicare levy (2% for TFN income over $27,222).
 
 **Important**: ABN/business income is excluded from PAYG estimation as employers don't withhold tax from business income.
 
@@ -357,7 +343,7 @@ The application follows modern React Native best practices with a modular archit
    - Receipts required for donations over $2
 
 4. **Work From Home**: Enter total hours worked from home
-   - App automatically calculates deduction at $0.67/hour
+   - App automatically calculates deduction at $0.70/hour
    - Based on ATO simplified method
 
 #### Step 3: Personal Details
@@ -533,7 +519,7 @@ The application is organized into distinct layers for maximum maintainability:
 - `ThemeToggle`: Theme switching with system preference detection
 
 **Services:**
-- `taxCalculationService`: Complete tax calculation engine with 2024-25 rates
+- `taxCalculationService`: Complete tax calculation engine with 2025-26 rates
 - `storageService`: Secure local data persistence using AsyncStorage
 - `pdfService`: Professional PDF report generation and sharing
 
@@ -630,7 +616,7 @@ npm run test:report
 - Input validation and error handling
 
 **✅ Boundary Value Tests**
-- Tax bracket boundaries (18200, 45000, 120000, 180000)
+- Tax bracket boundaries (18200, 45000, 135000, 190000)
 - Medicare levy thresholds
 - LITO (Low Income Tax Offset) boundaries
 - HECS-HELP repayment thresholds
@@ -674,7 +660,7 @@ npm run test:report
 ### Accuracy and Limitations
 
 - **Estimates Only**: Results are estimates and should not replace professional tax advice
-- **2024-25 Rates**: Uses current Australian tax rates and thresholds
+- **2025-26 Rates**: Uses current Australian tax rates and thresholds
 - **Simplified Calculations**: Some complex scenarios may require professional consultation
 - **ATO Compliance**: Calculations follow ATO guidelines but may not cover all edge cases
 

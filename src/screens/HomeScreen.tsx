@@ -172,7 +172,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ onCreateNew, onViewCalculation,
                 {calculation.name || `Tax Calculation ${calculation.id.slice(-4)}`}
               </Text>
               <Text style={styles.cardSubtitle}>
-                Financial Year 2024-25
+                Financial Year 2025-26
               </Text>
             </View>
           </View>

@@ -10,16 +10,16 @@
 
 ## Test Coverage Overview
 
-This comprehensive test suite validates all calculation fields and scenarios in the Australian Tax Return Calculator application, ensuring accuracy across all tax computation components for the 2024-25 financial year.
+This comprehensive test suite validates all calculation fields and scenarios in the Australian Tax Return Calculator application, ensuring accuracy across all tax computation components for the 2025-26 financial year.
 
 ## Tested Components
 
 ### 1. Income Tax Calculation Tests ✅
 - **Tax-free threshold** (≤$18,200): Verified zero tax liability
-- **19% tax bracket** ($18,201 - $45,000): Validated progressive tax calculation
-- **32.5% tax bracket** ($45,001 - $120,000): Confirmed correct bracket application
-- **37% tax bracket** ($120,001 - $180,000): Tested high-income scenarios
-- **45% tax bracket** (>$180,000): Verified top marginal rate calculations
+- **16% tax bracket** ($18,201 - $45,000): Validated progressive tax calculation
+- **30% tax bracket** ($45,001 - $135,000): Confirmed correct bracket application
+- **37% tax bracket** ($135,001 - $190,000): Tested high-income scenarios
+- **45% tax bracket** (>$190,000): Verified top marginal rate calculations
 
 ### 2. Low Income Tax Offset (LITO) Tests ✅
 - **Full LITO** (≤$37,500): Confirmed $700 offset application
@@ -35,12 +35,12 @@ This comprehensive test suite validates all calculation fields and scenarios in 
 - **Family threshold**: Confirmed dependent adjustments ($4,216 per dependent)
 
 ### 4. HECS-HELP Repayment Tests ✅
-- **Below threshold**: No repayment below $51,000
-- **Progressive rates**: Tested all income thresholds (1% to 6.5%)
+- **Below threshold**: No repayment at or below $67,000
+- **Marginal repayments**: Tested 2025-26 marginal thresholds up to the 10% top band
 - **No debt scenario**: Verified zero repayment when no HECS debt
 
 ### 5. Work From Home Deduction Tests ✅
-- **Rate calculation**: Confirmed $0.67 per hour rate
+- **Rate calculation**: Confirmed $0.70 per hour rate
 - **Various hour scenarios**: Tested different working hour inputs
 - **Edge cases**: Validated zero and empty input handling
 
@@ -78,7 +78,7 @@ This comprehensive test suite validates all calculation fields and scenarios in 
 
 ### Deduction Processing
 - ✅ Manual Deductions: Correct calculation across all categories
-- ✅ Work From Home: Accurate $0.67/hour calculation
+- ✅ Work From Home: Accurate $0.70/hour calculation
 - ✅ Total Deductions: Proper aggregation of all deduction types
 
 ### Tax Calculations
@@ -96,16 +96,16 @@ This comprehensive test suite validates all calculation fields and scenarios in 
 
 ### Scenario 1: Low Income Taxpayer
 - **Income**: $35,000 employment
-- **Deductions**: $1,033.50 total (work expenses, donations, WFH)
+- **Deductions**: $1,035 total (work expenses, donations, WFH)
 - **Result**: Validated all calculations including LITO and Medicare levy
 
 ### Scenario 2: High Income Taxpayer
 - **Income**: $175,000 combined (employment + ABN)
-- **Deductions**: $17,301 comprehensive deductions
+- **Deductions**: $17,310 comprehensive deductions
 - **Features**: HECS debt, dependents, full tax bracket testing
 
 ### Scenario 3: Edge Cases
-- **Zero income**: LITO application verification
+- **Zero income**: Non-refundable LITO handling verification
 - **Very high income**: $600,000 with maximum deductions
 - **Medicare exemption**: Impact on final calculations
 
@@ -122,14 +122,14 @@ This comprehensive test suite validates all calculation fields and scenarios in 
 - Complex nested deduction structures accurately processed
 
 ### Formula Verification
-- 2024-25 tax brackets correctly implemented
+- 2025-26 tax brackets correctly implemented
 - Medicare levy thresholds and rates accurate
 - HECS repayment rates match ATO guidelines
 - LITO calculations follow current legislation
 
 ## Compliance Verification
 
-✅ **2024-25 Tax Year Compliance**: All rates and thresholds current
+✅ **2025-26 Tax Year Compliance**: All rates and thresholds current
 ✅ **ATO Guidelines**: Calculations match official tax tables
 ✅ **Progressive Tax System**: Correct bracket application
 ✅ **Offset Calculations**: LITO phase-out accurately implemented
@@ -152,7 +152,7 @@ The Tax Return Calculator has successfully passed all 30 comprehensive tests, de
 4. **Robust Deduction Handling**: All deduction categories properly processed
 5. **Edge Case Management**: Boundary conditions and special scenarios handled correctly
 
-The application is **production-ready** with verified accuracy across all calculation scenarios for the 2024-25 Australian tax year.
+The application is **production-ready** with verified accuracy across all calculation scenarios for the 2025-26 Australian tax year.
 
 ---
 

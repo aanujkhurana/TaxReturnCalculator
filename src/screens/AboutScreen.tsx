@@ -20,6 +20,8 @@ import { useTheme } from '../context/ThemeContext';
 import { APP_INFO } from '../constants/appConstants';
 import { Theme } from '../constants/themes';
 
+type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
+
 // Type definitions for AboutScreen props
 export interface AboutScreenProps {
   onBack: () => void;
@@ -74,7 +76,12 @@ const AboutScreen: React.FC<AboutScreenProps> = ({ onBack }) => {
     },
   ];
 
-  const links = [
+  const links: Array<{
+    icon: IoniconName;
+    title: string;
+    subtitle: string;
+    url: string;
+  }> = [
     {
       icon: 'globe-outline',
       title: 'Australian Taxation Office',
@@ -83,7 +90,7 @@ const AboutScreen: React.FC<AboutScreenProps> = ({ onBack }) => {
     },
     {
       icon: 'document-outline',
-      title: 'Tax Guide 2024-25',
+      title: 'Tax Guide 2025-26',
       subtitle: 'Complete tax guide for individuals',
       url: 'https://www.ato.gov.au/individuals/income-and-deductions',
     },

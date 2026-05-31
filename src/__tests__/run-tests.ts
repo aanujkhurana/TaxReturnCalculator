@@ -5,8 +5,7 @@
  * Runs comprehensive tests and generates a detailed report
  */
 
-import * as fs from 'fs';
-import * as path from 'path';
+const fs = require('fs');
 
 // Type definitions for test framework
 interface TestCase {
@@ -277,7 +276,7 @@ global.jest = {
 
 // Load and run the tests
 try {
-  require('./tax-calculator-tests.js');
+  require('./tax-calculator-tests.ts');
   framework.runTests();
 } catch (error) {
   console.error('Error loading tests:', error.message);

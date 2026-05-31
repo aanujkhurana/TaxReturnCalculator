@@ -4,10 +4,10 @@
  */
 
 import {
-  TAX_BRACKETS_2024_25,
-  HECS_THRESHOLDS_2024_25,
+  TAX_BRACKETS_2025_26,
+  HECS_THRESHOLDS_2025_26,
   MEDICARE_LEVY_RATE,
-  MEDICARE_LEVY_SURCHARGE,
+  MEDICARE_LEVY_THRESHOLDS,
   LOW_INCOME_TAX_OFFSET,
   WORK_FROM_HOME,
   TAX_FREE_THRESHOLD
@@ -67,14 +67,14 @@ export const calculateIncomeTax = (taxableIncome: number): number => {
     return 0;
   }
 
-  for (const bracket of TAX_BRACKETS_2024_25) {
+  for (const bracket of TAX_BRACKETS_2025_26) {
     if (taxableIncome > bracket.min && taxableIncome <= bracket.max) {
       return bracket.base + (taxableIncome - bracket.min) * bracket.rate;
     }
   }
 
   // For income above the highest bracket
-  const highestBracket = TAX_BRACKETS_2024_25[TAX_BRACKETS_2024_25.length - 1];
+  const highestBracket = TAX_BRACKETS_2025_26[TAX_BRACKETS_2025_26.length - 1];
   return highestBracket.base + (taxableIncome - highestBracket.min) * highestBracket.rate;
 };
 
@@ -86,21 +86,14 @@ export const calculateMedicareLevy = (taxableIncome: number, medicareExemption: 
     return 0;
   }
 
-  // Medicare levy threshold for 2024-25
-  const threshold = 29207;
-  const shadeOutEnd = 36508;
+  const threshold = MEDICARE_LEVY_THRESHOLDS.singleLower;
 
   if (taxableIncome <= threshold) {
     return 0;
   }
 
-  if (taxableIncome <= shadeOutEnd) {
-    // Shade-out range calculation
-    const shadeOutAmount = (taxableIncome - threshold) * 0.1;
-    return Math.min(shadeOutAmount, taxableIncome * MEDICARE_LEVY_RATE);
-  }
-
-  return taxableIncome * MEDICARE_LEVY_RATE;
+  const phaseInAmount = (taxableIncome - threshold) * MEDICARE_LEVY_THRESHOLDS.phaseInRate;
+  return Math.min(phaseInAmount, taxableIncome * MEDICARE_LEVY_RATE);
 };
 
 /**
@@ -111,9 +104,12 @@ export const calculateHecsRepayment = (taxableIncome: number, hasHecsDebt: boole
     return 0;
   }
 
-  for (const threshold of HECS_THRESHOLDS_2024_25) {
+  for (const threshold of HECS_THRESHOLDS_2025_26) {
     if (taxableIncome >= threshold.min && taxableIncome <= threshold.max) {
-      return taxableIncome * threshold.rate;
+      if (threshold.rateAppliesToTotalIncome) {
+        return taxableIncome * threshold.rate;
+      }
+      return (threshold.base || 0) + ((taxableIncome - threshold.min) * threshold.rate);
     }
   }
 
@@ -124,19 +120,29 @@ export const calculateHecsRepayment = (taxableIncome: number, hasHecsDebt: boole
  * Calculate low income tax offset
  */
 export const calculateLowIncomeTaxOffset = (taxableIncome: number): number => {
-  const { maxOffset, phaseOutStart, phaseOutEnd } = LOW_INCOME_TAX_OFFSET;
+  const {
+    maxOffset,
+    fullOffsetLimit,
+    firstPhaseOutEnd,
+    firstPhaseOutRate,
+    secondPhaseOutEnd,
+    secondPhaseOutBase,
+    secondPhaseOutRate
+  } = LOW_INCOME_TAX_OFFSET;
 
-  if (taxableIncome <= phaseOutStart) {
+  if (taxableIncome <= fullOffsetLimit) {
     return maxOffset;
   }
 
-  if (taxableIncome >= phaseOutEnd) {
-    return 0;
+  if (taxableIncome <= firstPhaseOutEnd) {
+    return Math.max(0, maxOffset - ((taxableIncome - fullOffsetLimit) * firstPhaseOutRate));
   }
 
-  // Phase out calculation
-  const phaseOutAmount = (taxableIncome - phaseOutStart) * 0.05;
-  return Math.max(0, maxOffset - phaseOutAmount);
+  if (taxableIncome <= secondPhaseOutEnd) {
+    return Math.max(0, secondPhaseOutBase - ((taxableIncome - firstPhaseOutEnd) * secondPhaseOutRate));
+  }
+
+  return 0;
 };
 
 /**
@@ -159,6 +165,11 @@ export const calculateTotalDeductions = (deductions: { [key: string]: any }, wor
   const workFromHomeDeduction = calculateWorkFromHomeDeduction(workFromHomeHours);
 
   const totalDeductions = Object.values(deductions).reduce((sum: number, amount: any) => {
+    if (typeof amount === 'object' && amount !== null) {
+      return sum + Object.values(amount).reduce<number>((categorySum: number, value: any) => {
+        return categorySum + (parseFloat(value) || 0);
+      }, 0);
+    }
     return sum + (parseFloat(amount) || 0);
   }, 0);
 
