@@ -56,6 +56,10 @@ export interface FormDataForTaxCalculation {
   workFromHomeHours?: string;
   taxWithheld?: string;
   hecsDebt?: boolean;
+  reportableSuper?: string;
+  reportableFringeBenefits?: string;
+  netInvestmentLosses?: string;
+  exemptForeignIncome?: string;
   medicareExemption?: boolean;
 }
 
@@ -196,7 +200,12 @@ export const calculateTax = (formData: FormDataForTaxCalculation): TaxCalculatio
     // Calculate tax components
     const incomeTax = calculateIncomeTax(taxableIncome);
     const medicareLevy = calculateMedicareLevy(taxableIncome, medicareExemption);
-    const hecsRepayment = calculateHecsRepayment(taxableIncome, hasHecsDebt);
+    const studyLoanRepaymentIncome = taxableIncome +
+      (parseFloat(formData.reportableSuper) || 0) +
+      (parseFloat(formData.reportableFringeBenefits) || 0) +
+      (parseFloat(formData.netInvestmentLosses) || 0) +
+      (parseFloat(formData.exemptForeignIncome) || 0);
+    const hecsRepayment = calculateHecsRepayment(studyLoanRepaymentIncome, hasHecsDebt);
     const lowIncomeTaxOffset = calculateLowIncomeTaxOffset(taxableIncome);
 
     // Calculate total tax

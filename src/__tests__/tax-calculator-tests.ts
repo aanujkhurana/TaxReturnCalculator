@@ -125,6 +125,10 @@ class TaxCalculator {
       deductions = {},
       workFromHomeHours = '',
       hecsDebt = false,
+      reportableSuper = '',
+      reportableFringeBenefits = '',
+      netInvestmentLosses = '',
+      exemptForeignIncome = '',
       medicareExemption = false,
       dependents = '0',
       hasDependents = false
@@ -148,7 +152,12 @@ class TaxCalculator {
     const lito = this.calculateLITO(taxableIncome);
     const dependentsNum = hasDependents ? parseInt(dependents || '0') : 0;
     const medicare = this.calculateMedicareLevy(taxableIncome, dependentsNum, medicareExemption);
-    const hecsRepayment = this.calculateHECSRepayment(taxableIncome, hecsDebt);
+    const studyLoanRepaymentIncome = taxableIncome +
+      (parseFloat(reportableSuper || '0') || 0) +
+      (parseFloat(reportableFringeBenefits || '0') || 0) +
+      (parseFloat(netInvestmentLosses || '0') || 0) +
+      (parseFloat(exemptForeignIncome || '0') || 0);
+    const hecsRepayment = this.calculateHECSRepayment(studyLoanRepaymentIncome, hecsDebt);
 
     // Calculate final amounts
     const finalTax = Math.max(0, tax - lito + medicare + hecsRepayment);
@@ -163,6 +172,7 @@ class TaxCalculator {
       workFromHomeDeduction,
       totalDeductions,
       taxableIncome,
+      studyLoanRepaymentIncome,
       tax,
       lito,
       medicare,
@@ -279,6 +289,28 @@ describe('Australian Tax Calculator - Comprehensive Tests', () => {
 
     test('No HECS repayment when no debt', () => {
       expect(calculator.calculateHECSRepayment(100000, false)).toBe(0);
+    });
+
+    test('HELP repayment uses repayment-income adjustments', () => {
+      const result = calculator.calculateCompleteTax({
+        jobIncomes: ['60000'],
+        abnIncome: '',
+        taxWithheld: '10000',
+        deductions: {},
+        workFromHomeHours: '',
+        hecsDebt: true,
+        reportableSuper: '5000',
+        reportableFringeBenefits: '3000',
+        netInvestmentLosses: '2000',
+        exemptForeignIncome: '1000',
+        medicareExemption: false,
+        dependents: '0',
+        hasDependents: false
+      });
+
+      expect(result.taxableIncome).toBe(60000);
+      expect(result.studyLoanRepaymentIncome).toBe(71000);
+      expect(result.hecsRepayment).toBeCloseTo((71000 - 67000) * 0.15, 2);
     });
   });
 

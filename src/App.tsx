@@ -77,6 +77,10 @@ export interface FormData {
   workFromHomeHours: string;
   abnIncome: string;
   hecsDebt: boolean;
+  reportableSuper: string;
+  reportableFringeBenefits: string;
+  netInvestmentLosses: string;
+  exemptForeignIncome: string;
   medicareExemption: boolean;
   dependents: string;
   hasDependents: boolean;
@@ -1981,6 +1985,10 @@ const AppContent: React.FC = () => {
   const [workFromHomeHours, setWorkFromHomeHours] = useState('');
   const [abnIncome, setAbnIncome] = useState('');
   const [hecsDebt, setHecsDebt] = useState(false);
+  const [reportableSuper, setReportableSuper] = useState('');
+  const [reportableFringeBenefits, setReportableFringeBenefits] = useState('');
+  const [netInvestmentLosses, setNetInvestmentLosses] = useState('');
+  const [exemptForeignIncome, setExemptForeignIncome] = useState('');
   const [medicareExemption, setMedicareExemption] = useState(false);
   const [dependents, setDependents] = useState('0');
   const [hasDependents, setHasDependents] = useState(false);
@@ -2113,6 +2121,10 @@ const AppContent: React.FC = () => {
     setWorkFromHomeHours(calculation.formData.workFromHomeHours || '');
     setAbnIncome(calculation.formData.abnIncome || '');
     setHecsDebt(calculation.formData.hecsDebt || false);
+    setReportableSuper(calculation.formData.reportableSuper || '');
+    setReportableFringeBenefits(calculation.formData.reportableFringeBenefits || '');
+    setNetInvestmentLosses(calculation.formData.netInvestmentLosses || '');
+    setExemptForeignIncome(calculation.formData.exemptForeignIncome || '');
     setMedicareExemption(calculation.formData.medicareExemption || false);
     setDependents(calculation.formData.dependents || '0');
     setHasDependents(calculation.formData.hasDependents || false);
@@ -2159,6 +2171,10 @@ const AppContent: React.FC = () => {
     setWorkFromHomeHours('');
     setAbnIncome('');
     setHecsDebt(false);
+    setReportableSuper('');
+    setReportableFringeBenefits('');
+    setNetInvestmentLosses('');
+    setExemptForeignIncome('');
     setMedicareExemption(false);
     setDependents('0');
     setHasDependents(false);
@@ -2193,6 +2209,10 @@ const AppContent: React.FC = () => {
                 workFromHomeHours,
                 abnIncome,
                 hecsDebt,
+                reportableSuper,
+                reportableFringeBenefits,
+                netInvestmentLosses,
+                exemptForeignIncome,
                 medicareExemption,
                 dependents,
                 hasDependents,
@@ -2717,6 +2737,10 @@ const AppContent: React.FC = () => {
     const taxWithheldNum = parseFloat(taxWithheld || '0');
     const wfhHours = parseFloat(workFromHomeHours || '0');
     const dependentsNum = hasDependents ? parseInt(dependents || '0') : 0;
+    const reportableSuperNum = parseFloat(reportableSuper || '0') || 0;
+    const reportableFringeBenefitsNum = parseFloat(reportableFringeBenefits || '0') || 0;
+    const netInvestmentLossesNum = parseFloat(netInvestmentLosses || '0') || 0;
+    const exemptForeignIncomeNum = parseFloat(exemptForeignIncome || '0') || 0;
 
     // Calculate total deductions
     const workFromHomeDeduction = wfhHours * WFH_FIXED_RATE;
@@ -2753,9 +2777,12 @@ const AppContent: React.FC = () => {
 
     const medicare = calculateMedicareLevyAmount(taxableIncome, dependentsNum, medicareExemption);
 
-    // HELP/STSL repayment for 2025-26. This app currently uses taxable income
-    // as a proxy for repayment income because reportable extras are not captured.
-    const hecsRepayment = calculateStudyLoanRepayment(taxableIncome, hecsDebt);
+    const studyLoanRepaymentIncome = taxableIncome +
+      reportableSuperNum +
+      reportableFringeBenefitsNum +
+      netInvestmentLossesNum +
+      exemptForeignIncomeNum;
+    const hecsRepayment = calculateStudyLoanRepayment(studyLoanRepaymentIncome, hecsDebt);
 
     const finalTax = Math.max(0, tax - lito + medicare + hecsRepayment);
     const refund = taxWithheldNum - finalTax;
@@ -2768,6 +2795,11 @@ const AppContent: React.FC = () => {
       totalManualDeductions,
       totalDeductions,
       taxableIncome,
+      studyLoanRepaymentIncome,
+      reportableSuper: reportableSuperNum,
+      reportableFringeBenefits: reportableFringeBenefitsNum,
+      netInvestmentLosses: netInvestmentLossesNum,
+      exemptForeignIncome: exemptForeignIncomeNum,
       tax,
       lito,
       medicare,
@@ -2792,7 +2824,7 @@ const AppContent: React.FC = () => {
         setShowSuccessAnimation(false);
       }, 3000);
     }, 2400); // Complete after all loading steps
-  }, [jobIncomes, abnIncome, taxWithheld, deductions, workFromHomeHours, hecsDebt, medicareExemption, dependents, hasDependents]);
+  }, [jobIncomes, abnIncome, taxWithheld, deductions, workFromHomeHours, hecsDebt, reportableSuper, reportableFringeBenefits, netInvestmentLosses, exemptForeignIncome, medicareExemption, dependents, hasDependents]);
 
   // Auto-calculate when reaching step 4 if no result exists
   useEffect(() => {
@@ -4060,10 +4092,46 @@ const AppContent: React.FC = () => {
                     </Text>
                   </View>
                   <Text style={styles.toggleSubtext}>
-                    HECS-HELP repayments use the 2025-26 marginal method. This calculator uses taxable income as a repayment-income proxy; check myGov for your current debt balance.
+                    HECS-HELP repayments use the 2025-26 marginal method and include repayment-income adjustments below.
                   </Text>
                 </View>
               </TouchableOpacity>
+              {hecsDebt && (
+                <>
+                  <InputField
+                    label="Reportable Super Contributions"
+                    value={reportableSuper}
+                    onChangeText={setReportableSuper}
+                    placeholder="Salary sacrifice super (e.g., 5000)"
+                    icon="wallet-outline"
+                    prefix="$"
+                  />
+                  <InputField
+                    label="Reportable Fringe Benefits"
+                    value={reportableFringeBenefits}
+                    onChangeText={setReportableFringeBenefits}
+                    placeholder="Reportable fringe benefits (e.g., 3500)"
+                    icon="briefcase-outline"
+                    prefix="$"
+                  />
+                  <InputField
+                    label="Net Investment Losses"
+                    value={netInvestmentLosses}
+                    onChangeText={setNetInvestmentLosses}
+                    placeholder="Rental/investment losses (e.g., 2000)"
+                    icon="trending-down-outline"
+                    prefix="$"
+                  />
+                  <InputField
+                    label="Exempt Foreign Income"
+                    value={exemptForeignIncome}
+                    onChangeText={setExemptForeignIncome}
+                    placeholder="Exempt foreign income (e.g., 10000)"
+                    icon="earth-outline"
+                    prefix="$"
+                  />
+                </>
+              )}
             </View>
           )}
         </View>
@@ -4483,6 +4551,13 @@ const AppContent: React.FC = () => {
                   <View style={[styles.summaryBreakdownDot, { backgroundColor: theme.categoryOther }]} />
                   <Text style={styles.summaryBreakdownLabel}>HECS-HELP Repayment</Text>
                   <Text style={styles.summaryBreakdownValue}>+{formatCurrency(result.hecsRepayment)}</Text>
+                </View>
+              )}
+              {result.studyLoanRepaymentIncome > result.taxableIncome && (
+                <View style={styles.summaryBreakdownItem}>
+                  <View style={[styles.summaryBreakdownDot, { backgroundColor: theme.categoryEducation }]} />
+                  <Text style={styles.summaryBreakdownLabel}>HELP Repayment Income</Text>
+                  <Text style={styles.summaryBreakdownValue}>{formatCurrency(result.studyLoanRepaymentIncome)}</Text>
                 </View>
               )}
             </View>
