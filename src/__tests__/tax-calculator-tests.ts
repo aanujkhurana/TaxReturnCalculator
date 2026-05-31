@@ -81,13 +81,15 @@ class TaxCalculator {
     return lito;
   }
 
-  calculateMedicareLevy(taxableIncome, dependents = 0, medicareExemption = false) {
+  calculateMedicareLevy(taxableIncome, dependents = 0, medicareExemption = false, hasSpouse = false, spouseIncome = 0) {
     if (medicareExemption) return 0;
     
-    const medicareThreshold = dependents > 0 ? 45907 + (dependents * 4216) : 27222;
-    if (taxableIncome <= medicareThreshold) return 0;
+    const useFamilyThreshold = hasSpouse || dependents > 0;
+    const medicareThreshold = useFamilyThreshold ? 45907 + (dependents * 4216) : 27222;
+    const thresholdIncome = useFamilyThreshold ? taxableIncome + spouseIncome : taxableIncome;
+    if (thresholdIncome <= medicareThreshold) return 0;
 
-    return Math.min((taxableIncome - medicareThreshold) * 0.1, taxableIncome * 0.02);
+    return Math.min((thresholdIncome - medicareThreshold) * 0.1, taxableIncome * 0.02);
   }
 
   calculateHECSRepayment(taxableIncome, hasHECSDebt = false) {
@@ -130,6 +132,8 @@ class TaxCalculator {
       netInvestmentLosses = '',
       exemptForeignIncome = '',
       medicareExemption = false,
+      hasSpouse = false,
+      spouseIncome = '',
       dependents = '0',
       hasDependents = false
     } = formData;
@@ -151,7 +155,8 @@ class TaxCalculator {
     const tax = this.calculateIncomeTax(taxableIncome);
     const lito = this.calculateLITO(taxableIncome);
     const dependentsNum = hasDependents ? parseInt(dependents || '0') : 0;
-    const medicare = this.calculateMedicareLevy(taxableIncome, dependentsNum, medicareExemption);
+    const spouseIncomeNum = hasSpouse ? (parseFloat(spouseIncome || '0') || 0) : 0;
+    const medicare = this.calculateMedicareLevy(taxableIncome, dependentsNum, medicareExemption, hasSpouse, spouseIncomeNum);
     const studyLoanRepaymentIncome = taxableIncome +
       (parseFloat(reportableSuper || '0') || 0) +
       (parseFloat(reportableFringeBenefits || '0') || 0) +
@@ -176,6 +181,8 @@ class TaxCalculator {
       tax,
       lito,
       medicare,
+      spouseIncome: spouseIncomeNum,
+      familyIncomeForMedicare: taxableIncome + spouseIncomeNum,
       hecsRepayment,
       finalTax,
       taxWithheldNum,
@@ -272,6 +279,11 @@ describe('Australian Tax Calculator - Comprehensive Tests', () => {
       const dependents = 2;
       const familyThreshold = 45907 + (dependents * 4216); // = 54339
       expect(calculator.calculateMedicareLevy(income, dependents)).toBeCloseTo((income - familyThreshold) * 0.1, 2);
+    });
+
+    test('Family threshold includes spouse taxable income', () => {
+      expect(calculator.calculateMedicareLevy(30000, 0, false, true, 12000)).toBe(0);
+      expect(calculator.calculateMedicareLevy(30000, 0, false, true, 20000)).toBeCloseTo((50000 - 45907) * 0.1, 2);
     });
   });
 

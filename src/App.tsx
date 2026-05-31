@@ -82,6 +82,8 @@ export interface FormData {
   netInvestmentLosses: string;
   exemptForeignIncome: string;
   medicareExemption: boolean;
+  hasSpouse: boolean;
+  spouseIncome: string;
   dependents: string;
   hasDependents: boolean;
 }
@@ -119,17 +121,21 @@ const calculateResidentIncomeTax = (taxableIncome: number): number => {
 const calculateMedicareLevyAmount = (
   taxableIncome: number,
   dependents: number = 0,
-  medicareExemption: boolean = false
+  medicareExemption: boolean = false,
+  hasSpouse: boolean = false,
+  spouseIncome: number = 0
 ): number => {
   if (medicareExemption) return 0;
 
-  const threshold = dependents > 0
+  const useFamilyThreshold = hasSpouse || dependents > 0;
+  const threshold = useFamilyThreshold
     ? MEDICARE_FAMILY_LOWER_THRESHOLD + (dependents * MEDICARE_DEPENDENT_LOWER_INCREASE)
     : MEDICARE_SINGLE_LOWER_THRESHOLD;
+  const thresholdIncome = useFamilyThreshold ? taxableIncome + spouseIncome : taxableIncome;
 
-  if (taxableIncome <= threshold) return 0;
+  if (thresholdIncome <= threshold) return 0;
 
-  const phaseInAmount = (taxableIncome - threshold) * MEDICARE_PHASE_IN_RATE;
+  const phaseInAmount = (thresholdIncome - threshold) * MEDICARE_PHASE_IN_RATE;
   return Math.min(phaseInAmount, taxableIncome * MEDICARE_RATE);
 };
 
@@ -1990,6 +1996,8 @@ const AppContent: React.FC = () => {
   const [netInvestmentLosses, setNetInvestmentLosses] = useState('');
   const [exemptForeignIncome, setExemptForeignIncome] = useState('');
   const [medicareExemption, setMedicareExemption] = useState(false);
+  const [hasSpouse, setHasSpouse] = useState(false);
+  const [spouseIncome, setSpouseIncome] = useState('');
   const [dependents, setDependents] = useState('0');
   const [hasDependents, setHasDependents] = useState(false);
 
@@ -2126,6 +2134,8 @@ const AppContent: React.FC = () => {
     setNetInvestmentLosses(calculation.formData.netInvestmentLosses || '');
     setExemptForeignIncome(calculation.formData.exemptForeignIncome || '');
     setMedicareExemption(calculation.formData.medicareExemption || false);
+    setHasSpouse(calculation.formData.hasSpouse || false);
+    setSpouseIncome(calculation.formData.spouseIncome || '');
     setDependents(calculation.formData.dependents || '0');
     setHasDependents(calculation.formData.hasDependents || false);
     setResult(calculation.result);
@@ -2176,6 +2186,8 @@ const AppContent: React.FC = () => {
     setNetInvestmentLosses('');
     setExemptForeignIncome('');
     setMedicareExemption(false);
+    setHasSpouse(false);
+    setSpouseIncome('');
     setDependents('0');
     setHasDependents(false);
     setResult(null);
@@ -2214,6 +2226,8 @@ const AppContent: React.FC = () => {
                 netInvestmentLosses,
                 exemptForeignIncome,
                 medicareExemption,
+                hasSpouse,
+                spouseIncome,
                 dependents,
                 hasDependents,
                 result,
@@ -2737,6 +2751,7 @@ const AppContent: React.FC = () => {
     const taxWithheldNum = parseFloat(taxWithheld || '0');
     const wfhHours = parseFloat(workFromHomeHours || '0');
     const dependentsNum = hasDependents ? parseInt(dependents || '0') : 0;
+    const spouseIncomeNum = hasSpouse ? (parseFloat(spouseIncome || '0') || 0) : 0;
     const reportableSuperNum = parseFloat(reportableSuper || '0') || 0;
     const reportableFringeBenefitsNum = parseFloat(reportableFringeBenefits || '0') || 0;
     const netInvestmentLossesNum = parseFloat(netInvestmentLosses || '0') || 0;
@@ -2775,7 +2790,7 @@ const AppContent: React.FC = () => {
       lito = 325 - ((taxableIncome - 45000) * 0.015);
     }
 
-    const medicare = calculateMedicareLevyAmount(taxableIncome, dependentsNum, medicareExemption);
+    const medicare = calculateMedicareLevyAmount(taxableIncome, dependentsNum, medicareExemption, hasSpouse, spouseIncomeNum);
 
     const studyLoanRepaymentIncome = taxableIncome +
       reportableSuperNum +
@@ -2803,6 +2818,8 @@ const AppContent: React.FC = () => {
       tax,
       lito,
       medicare,
+      spouseIncome: spouseIncomeNum,
+      familyIncomeForMedicare: taxableIncome + spouseIncomeNum,
       hecsRepayment,
       finalTax,
       totalTax: finalTax, // Add totalTax for HomeScreen display
@@ -2824,7 +2841,7 @@ const AppContent: React.FC = () => {
         setShowSuccessAnimation(false);
       }, 3000);
     }, 2400); // Complete after all loading steps
-  }, [jobIncomes, abnIncome, taxWithheld, deductions, workFromHomeHours, hecsDebt, reportableSuper, reportableFringeBenefits, netInvestmentLosses, exemptForeignIncome, medicareExemption, dependents, hasDependents]);
+  }, [jobIncomes, abnIncome, taxWithheld, deductions, workFromHomeHours, hecsDebt, reportableSuper, reportableFringeBenefits, netInvestmentLosses, exemptForeignIncome, medicareExemption, hasSpouse, spouseIncome, dependents, hasDependents]);
 
   // Auto-calculate when reaching step 4 if no result exists
   useEffect(() => {
@@ -4170,6 +4187,37 @@ const AppContent: React.FC = () => {
               </TouchableOpacity>
 
               <TouchableOpacity
+                style={[styles.toggleButton, hasSpouse && styles.toggleButtonActive]}
+                onPress={() => {
+                  setHasSpouse(!hasSpouse);
+                  if (hasSpouse) {
+                    setSpouseIncome('');
+                  }
+                }}
+              >
+                <Ionicons
+                  name={hasSpouse ? "checkbox-outline" : "square-outline"}
+                  size={24}
+                  color={hasSpouse ? "#4A90E2" : "#666"}
+                />
+                <Text style={[styles.toggleText, hasSpouse && styles.toggleTextActive]}>
+                  I had a spouse for Medicare levy purposes
+                </Text>
+              </TouchableOpacity>
+
+              {hasSpouse && (
+                <InputField
+                  label="Spouse Taxable Income"
+                  value={spouseIncome}
+                  onChangeText={setSpouseIncome}
+                  placeholder="Spouse taxable income (e.g., 42000)"
+                  keyboardType="numeric"
+                  icon="person-outline"
+                  prefix="$"
+                />
+              )}
+
+              <TouchableOpacity
                 style={[styles.toggleButton, hasDependents && styles.toggleButtonActive]}
                 onPress={() => {
                   setHasDependents(!hasDependents);
@@ -4546,6 +4594,13 @@ const AppContent: React.FC = () => {
                 <Text style={styles.summaryBreakdownLabel}>Medicare Levy</Text>
                 <Text style={styles.summaryBreakdownValue}>+{formatCurrency(result.medicare)}</Text>
               </View>
+              {result.familyIncomeForMedicare > result.taxableIncome && (
+                <View style={styles.summaryBreakdownItem}>
+                  <View style={[styles.summaryBreakdownDot, { backgroundColor: theme.categoryHome }]} />
+                  <Text style={styles.summaryBreakdownLabel}>Family Income for Medicare</Text>
+                  <Text style={styles.summaryBreakdownValue}>{formatCurrency(result.familyIncomeForMedicare)}</Text>
+                </View>
+              )}
               {result.hecsRepayment > 0 && (
                 <View style={styles.summaryBreakdownItem}>
                   <View style={[styles.summaryBreakdownDot, { backgroundColor: theme.categoryOther }]} />
