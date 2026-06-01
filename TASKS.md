@@ -34,9 +34,10 @@ Make the Australian tax return calculator more valuable, trustworthy, and produc
 
 ## Priority 1 - Production Readiness
 
-- [ ] Add CI checks.
+- [x] Add CI checks.
   - Run type-check, calculation tests, and linting on every pull request.
   - Acceptance: GitHub Actions blocks merges when tests or type-checking fail.
+  - Completed: added a GitHub Actions workflow for pull requests and `main` pushes that runs install, lint, format check, type-check, and calculation tests.
 
 - [x] Add linting and formatting.
   - Add ESLint and Prettier using React Native/TypeScript-friendly defaults.
