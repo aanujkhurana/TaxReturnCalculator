@@ -22,9 +22,10 @@ Make the Australian tax return calculator more valuable, trustworthy, and produc
   - Acceptance: users can inspect assumptions before saving/exporting a result.
   - Completed: added a results-screen assumptions card before save/export actions and included the assumptions in saved calculation data, CSV export, and HTML report export.
 
-- [ ] Add tax-year selection to the UI.
+- [x] Add tax-year selection to the UI.
   - Use the existing annual tax-year config so users can choose supported years.
   - Acceptance: switching years updates labels, thresholds, calculations, exports, and saved calculation metadata.
+  - Completed: added a tax-year selector backed by `TAX_YEAR_CONFIGS`, with selected year flowing through result labels, assumptions, CSV/report export, and saved calculation metadata.
 
 - [ ] Add saved-result versioning.
   - Store the app version, tax year, config version, and calculation engine version with each saved result.

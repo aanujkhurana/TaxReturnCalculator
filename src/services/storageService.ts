@@ -7,6 +7,7 @@ export interface SavedCalculation {
   name: string | null;
   savedDate: string;
   formData: {
+    financialYear?: string;
     jobIncomes?: any[];
     taxWithheld?: string;
     paygUnknown?: boolean;
@@ -56,6 +57,7 @@ export const saveCalculation = async (calculationData: any, customName: string |
       name: customName,
       savedDate: new Date().toISOString(),
       formData: {
+        financialYear: calculationData.financialYear,
         jobIncomes: calculationData.jobIncomes,
         taxWithheld: calculationData.taxWithheld,
         paygUnknown: calculationData.paygUnknown,

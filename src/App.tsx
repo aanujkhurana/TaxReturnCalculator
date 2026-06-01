@@ -33,6 +33,7 @@ import { calculateTax } from './services/taxCalculationService';
 import { generateAndSharePDF } from './services/pdfService';
 import { formatCurrency } from './utils/formatters';
 import { HELP_TEXT } from './constants/helpText';
+import { ACTIVE_FINANCIAL_YEAR, ACTIVE_TAX_YEAR_CONFIG, TAX_YEAR_CONFIGS } from './constants/taxConstants';
 import InputField from './components/forms/InputField';
 import HelpModal from './components/ui/HelpModal';
 import { Theme } from './constants/themes';
@@ -43,6 +44,7 @@ export interface JobIncome {
 }
 
 export interface FormData {
+  financialYear: string;
   jobIncomes: JobIncome[];
   taxWithheld: string;
   paygUnknown: boolean;
@@ -102,14 +104,12 @@ interface CalculationAssumption {
   detail: string;
 }
 
-const TAX_YEAR = '2025-26';
-const WFH_FIXED_RATE = 0.70;
-const MEDICARE_RATE = 0.02;
-const MEDICARE_SINGLE_LOWER_THRESHOLD = 27222;
-const MEDICARE_FAMILY_LOWER_THRESHOLD = 45907;
-const MEDICARE_DEPENDENT_LOWER_INCREASE = 4216;
-const MEDICARE_PHASE_IN_RATE = 0.10;
-
+const DEFAULT_FINANCIAL_YEAR = ACTIVE_FINANCIAL_YEAR;
+const SUPPORTED_TAX_YEAR_OPTIONS = Object.values(TAX_YEAR_CONFIGS).map(config => ({
+  value: config.financialYear,
+  label: config.taxYearInfo.display,
+  note: config.taxYearInfo.note
+}));
 const PAYG_SCALE_2_WEEKLY_COEFFICIENTS = [
   { lessThan: 361, a: 0, b: 0 },
   { lessThan: 500, a: 0.1600, b: 57.8462 },
@@ -134,18 +134,40 @@ const calculatePaygWithholdingEstimate = (annualIncome: number): number => {
   return Math.round(weeklyWithholding * 52);
 };
 
-const calculateResidentIncomeTax = (taxableIncome: number): number => {
-  if (taxableIncome > 190000) {
-    return 51638 + (taxableIncome - 190000) * 0.45;
+const calculateResidentIncomeTax = (taxableIncome: number, taxYearConfig = ACTIVE_TAX_YEAR_CONFIG): number => {
+  if (taxableIncome <= taxYearConfig.taxFreeThreshold) {
+    return 0;
   }
-  if (taxableIncome > 135000) {
-    return 31288 + (taxableIncome - 135000) * 0.37;
+
+  for (const bracket of taxYearConfig.taxBrackets) {
+    if (taxableIncome > bracket.min && taxableIncome <= bracket.max) {
+      return bracket.base + ((taxableIncome - bracket.min) * bracket.rate);
+    }
   }
-  if (taxableIncome > 45000) {
-    return 4288 + (taxableIncome - 45000) * 0.30;
+
+  const highestBracket = taxYearConfig.taxBrackets[taxYearConfig.taxBrackets.length - 1];
+  return highestBracket.base + ((taxableIncome - highestBracket.min) * highestBracket.rate);
+};
+
+const calculateLowIncomeTaxOffset = (taxableIncome: number, taxYearConfig = ACTIVE_TAX_YEAR_CONFIG): number => {
+  const {
+    maxOffset,
+    fullOffsetLimit,
+    firstPhaseOutEnd,
+    firstPhaseOutRate,
+    secondPhaseOutEnd,
+    secondPhaseOutBase,
+    secondPhaseOutRate
+  } = taxYearConfig.lowIncomeTaxOffset;
+
+  if (taxableIncome <= fullOffsetLimit) {
+    return maxOffset;
   }
-  if (taxableIncome > 18200) {
-    return (taxableIncome - 18200) * 0.16;
+  if (taxableIncome <= firstPhaseOutEnd) {
+    return Math.max(0, maxOffset - ((taxableIncome - fullOffsetLimit) * firstPhaseOutRate));
+  }
+  if (taxableIncome <= secondPhaseOutEnd) {
+    return Math.max(0, secondPhaseOutBase - ((taxableIncome - firstPhaseOutEnd) * secondPhaseOutRate));
   }
   return 0;
 };
@@ -155,27 +177,37 @@ const calculateMedicareLevyAmount = (
   dependents: number = 0,
   medicareExemption: boolean = false,
   hasSpouse: boolean = false,
-  spouseIncome: number = 0
+  spouseIncome: number = 0,
+  taxYearConfig = ACTIVE_TAX_YEAR_CONFIG
 ): number => {
   if (medicareExemption) return 0;
 
+  const medicareThresholds = taxYearConfig.medicareLevyThresholds;
   const useFamilyThreshold = hasSpouse || dependents > 0;
   const threshold = useFamilyThreshold
-    ? MEDICARE_FAMILY_LOWER_THRESHOLD + (dependents * MEDICARE_DEPENDENT_LOWER_INCREASE)
-    : MEDICARE_SINGLE_LOWER_THRESHOLD;
+    ? medicareThresholds.familyLower + (dependents * medicareThresholds.dependentChildLowerIncrease)
+    : medicareThresholds.singleLower;
   const thresholdIncome = useFamilyThreshold ? taxableIncome + spouseIncome : taxableIncome;
 
   if (thresholdIncome <= threshold) return 0;
 
-  const phaseInAmount = (thresholdIncome - threshold) * MEDICARE_PHASE_IN_RATE;
-  return Math.min(phaseInAmount, taxableIncome * MEDICARE_RATE);
+  const phaseInAmount = (thresholdIncome - threshold) * medicareThresholds.phaseInRate;
+  return Math.min(phaseInAmount, taxableIncome * medicareThresholds.rate);
 };
 
-const calculateStudyLoanRepayment = (repaymentIncome: number, hasStudyLoanDebt: boolean): number => {
-  if (!hasStudyLoanDebt || repaymentIncome <= 67000) return 0;
-  if (repaymentIncome <= 125000) return (repaymentIncome - 67000) * 0.15;
-  if (repaymentIncome <= 179285) return 8700 + ((repaymentIncome - 125000) * 0.17);
-  return repaymentIncome * 0.10;
+const calculateStudyLoanRepayment = (
+  repaymentIncome: number,
+  hasStudyLoanDebt: boolean,
+  taxYearConfig = ACTIVE_TAX_YEAR_CONFIG
+): number => {
+  if (!hasStudyLoanDebt) return 0;
+
+  const threshold = taxYearConfig.helpRepaymentThresholds.find(({ min, max }) => repaymentIncome >= min && repaymentIncome <= max);
+  if (!threshold) return 0;
+  if (threshold.rateAppliesToTotalIncome) {
+    return repaymentIncome * threshold.rate;
+  }
+  return (threshold.base || 0) + ((repaymentIncome - threshold.min) * threshold.rate);
 };
 
 const calculateMedicareLevySurcharge = (
@@ -183,7 +215,8 @@ const calculateMedicareLevySurcharge = (
   familyIncome: number,
   hasPrivateHospitalCover: boolean,
   hasSpouse: boolean,
-  dependents: number
+  dependents: number,
+  taxYearConfig = ACTIVE_TAX_YEAR_CONFIG
 ): number => {
   if (hasPrivateHospitalCover || taxableIncome <= 0) return 0;
 
@@ -191,16 +224,12 @@ const calculateMedicareLevySurcharge = (
   const familyDependentIncrease = isFamily ? Math.max(0, dependents - 1) * 1500 : 0;
   const surchargeIncome = isFamily ? familyIncome : taxableIncome;
   const baseThresholds = isFamily
-    ? [
-        { min: 202001 + familyDependentIncrease, max: 236000 + familyDependentIncrease, rate: 0.01 },
-        { min: 236001 + familyDependentIncrease, max: 316000 + familyDependentIncrease, rate: 0.0125 },
-        { min: 316001 + familyDependentIncrease, max: Infinity, rate: 0.015 }
-      ]
-    : [
-        { min: 101001, max: 118000, rate: 0.01 },
-        { min: 118001, max: 158000, rate: 0.0125 },
-        { min: 158001, max: Infinity, rate: 0.015 }
-      ];
+    ? taxYearConfig.medicareLevySurcharge.family.tiers.map(tier => ({
+        ...tier,
+        min: tier.min + familyDependentIncrease,
+        max: tier.max === Infinity ? Infinity : tier.max + familyDependentIncrease
+      }))
+    : taxYearConfig.medicareLevySurcharge.single.tiers;
   const tier = baseThresholds.find(({ min, max }) => surchargeIncome >= min && surchargeIncome <= max);
 
   return tier ? taxableIncome * tier.rate : 0;
@@ -1696,6 +1725,40 @@ const getStyles = (theme: Theme) => StyleSheet.create({
     lineHeight: 18,
   },
 
+  taxYearOptionGrid: {
+    gap: 10,
+  },
+
+  taxYearOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: theme.border,
+    backgroundColor: theme.surface,
+  },
+
+  taxYearOptionActive: {
+    borderColor: theme.primary,
+    backgroundColor: theme.primaryLight,
+  },
+
+  taxYearOptionText: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: theme.text,
+  },
+
+  taxYearOptionSubtext: {
+    fontSize: 12,
+    color: theme.textSecondary,
+    lineHeight: 16,
+    marginTop: 3,
+  },
+
   // Enhanced Results Screen styles
   resultMainCard: {
     backgroundColor: theme.surface,
@@ -2072,6 +2135,7 @@ const AppContent: React.FC = () => {
   const totalSteps: number = 4;
 
   // Form data
+  const [selectedFinancialYear, setSelectedFinancialYear] = useState<string>(DEFAULT_FINANCIAL_YEAR);
   const [jobIncomes, setJobIncomes] = useState<string[]>(['']);
   const [taxWithheld, setTaxWithheld] = useState<string>('');
   const [deductions, setDeductions] = useState<DeductionsState>({
@@ -2125,6 +2189,9 @@ const AppContent: React.FC = () => {
   const [loadingStep, setLoadingStep] = useState(0);
   const [showSuccessAnimation, setShowSuccessAnimation] = useState(false);
   const [resultsViewMode, setResultsViewMode] = useState('card'); // 'card' or 'table'
+  const selectedTaxYearConfig = TAX_YEAR_CONFIGS[selectedFinancialYear] || ACTIVE_TAX_YEAR_CONFIG;
+  const selectedTaxYearDisplay = selectedTaxYearConfig.taxYearInfo.display;
+  const selectedWfhFixedRate = selectedTaxYearConfig.workFromHome.shortcutRate;
 
   // Form validation errors
   const [validationErrors, setValidationErrors] = useState<ValidationErrors>({});
@@ -2147,6 +2214,7 @@ const AppContent: React.FC = () => {
 
   // Details category collapse state
   const [detailsCollapsedCategories, setDetailsCollapsedCategories] = useState<CollapsedCategories>({
+    taxYear: false,
     hecsDebt: false,
     medicareLevy: false,
     disclaimer: true
@@ -2211,6 +2279,7 @@ const AppContent: React.FC = () => {
   const viewCalculation = async (calculation) => {
     setViewingCalculation(calculation);
     // Load the calculation data into the form
+    setSelectedFinancialYear(calculation.formData.financialYear || DEFAULT_FINANCIAL_YEAR);
     setJobIncomes(calculation.formData.jobIncomes || ['']);
     setTaxWithheld(calculation.formData.taxWithheld || '');
     setDeductions(calculation.formData.deductions || {
@@ -2266,6 +2335,7 @@ const AppContent: React.FC = () => {
 
   const resetForm = () => {
     setCurrentStep(1);
+    setSelectedFinancialYear(DEFAULT_FINANCIAL_YEAR);
     setJobIncomes(['']);
     setTaxWithheld('');
     setDeductions({
@@ -2335,6 +2405,7 @@ const AppContent: React.FC = () => {
           onPress: async (name) => {
             try {
               const calculationData = {
+                financialYear: selectedFinancialYear,
                 jobIncomes,
                 taxWithheld,
                 paygUnknown,
@@ -2867,7 +2938,7 @@ const AppContent: React.FC = () => {
     const exemptForeignIncomeNum = parseFloat(exemptForeignIncome || '0') || 0;
 
     // Calculate total deductions
-    const workFromHomeDeduction = wfhHours * WFH_FIXED_RATE;
+    const workFromHomeDeduction = wfhHours * selectedWfhFixedRate;
 
     // Calculate total manual deductions from nested structure
     const totalManualDeductions = Object.values(deductions).reduce((categorySum: number, category) => {
@@ -2887,26 +2958,19 @@ const AppContent: React.FC = () => {
     const totalIncome = totalTFNIncome + abnIncomeNum;
     const taxableIncome = Math.max(0, totalIncome - totalDeductions);
 
-    const tax = calculateResidentIncomeTax(taxableIncome);
+    const tax = calculateResidentIncomeTax(taxableIncome, selectedTaxYearConfig);
 
-    // Low Income Tax Offset (LITO)
-    let lito = 0;
-    if (taxableIncome <= 37500) {
-      lito = 700;
-    } else if (taxableIncome <= 45000) {
-      lito = 700 - ((taxableIncome - 37500) * 0.05);
-    } else if (taxableIncome <= 66667) {
-      lito = Math.max(0, 325 - ((taxableIncome - 45000) * 0.015));
-    }
+    const lito = calculateLowIncomeTaxOffset(taxableIncome, selectedTaxYearConfig);
 
     const familyIncomeForMedicare = taxableIncome + spouseIncomeNum;
-    const medicare = calculateMedicareLevyAmount(taxableIncome, dependentsNum, medicareExemption, hasSpouse, spouseIncomeNum);
+    const medicare = calculateMedicareLevyAmount(taxableIncome, dependentsNum, medicareExemption, hasSpouse, spouseIncomeNum, selectedTaxYearConfig);
     const medicareLevySurcharge = calculateMedicareLevySurcharge(
       taxableIncome,
       familyIncomeForMedicare,
       hasPrivateHospitalCover,
       hasSpouse,
-      dependentsNum
+      dependentsNum,
+      selectedTaxYearConfig
     );
 
     const studyLoanRepaymentIncome = taxableIncome +
@@ -2914,12 +2978,13 @@ const AppContent: React.FC = () => {
       reportableFringeBenefitsNum +
       netInvestmentLossesNum +
       exemptForeignIncomeNum;
-    const hecsRepayment = calculateStudyLoanRepayment(studyLoanRepaymentIncome, hecsDebt);
+    const hecsRepayment = calculateStudyLoanRepayment(studyLoanRepaymentIncome, hecsDebt, selectedTaxYearConfig);
 
     const finalTax = Math.max(0, tax - lito + medicare + medicareLevySurcharge + hecsRepayment);
     const refund = taxWithheldNum - finalTax;
 
     setResult({
+      financialYear: selectedFinancialYear,
       totalTFNIncome,
       abnIncomeNum,
       totalIncome, // Add totalIncome for HomeScreen display
@@ -2960,7 +3025,7 @@ const AppContent: React.FC = () => {
         setShowSuccessAnimation(false);
       }, 3000);
     }, 2400); // Complete after all loading steps
-  }, [jobIncomes, abnIncome, taxWithheld, deductions, workFromHomeHours, hecsDebt, reportableSuper, reportableFringeBenefits, netInvestmentLosses, exemptForeignIncome, medicareExemption, hasSpouse, spouseIncome, hasPrivateHospitalCover, dependents, hasDependents]);
+  }, [jobIncomes, abnIncome, taxWithheld, deductions, workFromHomeHours, hecsDebt, reportableSuper, reportableFringeBenefits, netInvestmentLosses, exemptForeignIncome, medicareExemption, hasSpouse, spouseIncome, hasPrivateHospitalCover, dependents, hasDependents, selectedFinancialYear, selectedTaxYearConfig, selectedWfhFixedRate]);
 
   const getCalculationAssumptions = useCallback((): CalculationAssumption[] => {
     const dependentsNum = hasDependents ? parseInt(dependents || '0') || 0 : 0;
@@ -2979,7 +3044,7 @@ const AppContent: React.FC = () => {
       },
       {
         label: 'Residency and tax year',
-        detail: `Uses ${TAX_YEAR} Australian resident individual tax rates and assumes the taxpayer is an Australian resident for the full financial year.`
+        detail: `Uses ${selectedTaxYearDisplay} Australian resident individual tax rates and assumes the taxpayer is an Australian resident for the full financial year.`
       },
       {
         label: 'Deductions',
@@ -3030,6 +3095,7 @@ const AppContent: React.FC = () => {
     reportableFringeBenefits,
     reportableSuper,
     result,
+    selectedTaxYearDisplay,
     spouseIncome
   ]);
 
@@ -3053,11 +3119,12 @@ const AppContent: React.FC = () => {
     const assumptions = getCalculationAssumptions();
     
     const headers = [
-      'Date', 'TFN Income', 'ABN Income', 'WFH Deduction', 'Manual Deductions', 'Total Deductions',
+      'Date', 'Financial Year', 'TFN Income', 'ABN Income', 'WFH Deduction', 'Manual Deductions', 'Total Deductions',
       'Taxable Income', 'Gross Tax', 'LITO', 'Medicare', 'Medicare Surcharge', 'HECS', 'Final Tax', 'Refund/Owing'
     ];
     const row = [
       new Date().toLocaleDateString('en-AU'),
+      selectedTaxYearDisplay,
       result.totalTFNIncome.toFixed(2),
       result.abnIncomeNum.toFixed(2),
       result.workFromHomeDeduction.toFixed(2),
@@ -3131,6 +3198,7 @@ const AppContent: React.FC = () => {
         <body>
           <div class="header">
             <div class="title">Australian Tax Calculation Report</div>
+            <div class="date">Financial Year ${selectedTaxYearDisplay}</div>
             <div class="date">Generated on ${new Date().toLocaleDateString('en-AU', {
               weekday: 'long',
               year: 'numeric',
@@ -3415,16 +3483,15 @@ const AppContent: React.FC = () => {
     );
   };
 
-  // Helper function to calculate rough tax estimate using 2025-26 brackets
+  // Helper function to calculate rough tax estimate using the selected year.
   const calculateRoughTaxEstimate = (income) => {
     const taxableIncome = parseFloat(income || '0');
     if (taxableIncome <= 0) return 0;
 
-    let tax = calculateResidentIncomeTax(taxableIncome);
+    let tax = calculateResidentIncomeTax(taxableIncome, selectedTaxYearConfig);
 
-    // Add Medicare levy (2%)
-    if (taxableIncome > MEDICARE_SINGLE_LOWER_THRESHOLD) {
-      tax += taxableIncome * MEDICARE_RATE;
+    if (taxableIncome > selectedTaxYearConfig.medicareLevyThresholds.singleLower) {
+      tax += taxableIncome * selectedTaxYearConfig.medicareLevyThresholds.rate;
     }
 
     return Math.round(tax);
@@ -3441,21 +3508,13 @@ const AppContent: React.FC = () => {
     const abnIncomeNum = parseFloat(abnIncome || '0');
     const totalIncome = totalTFNIncome + abnIncomeNum;
 
-    // Determine marginal tax rate based on income level (2025-26)
-    let marginalRate = 0;
-    if (totalIncome > 190000) {
-      marginalRate = 0.45 + 0.02; // 45% + 2% Medicare levy
-    } else if (totalIncome > 135000) {
-      marginalRate = 0.37 + 0.02; // 37% + 2% Medicare levy
-    } else if (totalIncome > 45000) {
-      marginalRate = 0.30 + 0.02; // 30% + 2% Medicare levy
-    } else if (totalIncome > MEDICARE_SINGLE_LOWER_THRESHOLD) {
-      marginalRate = 0.16 + 0.02; // 16% + 2% Medicare levy
-    } else if (totalIncome > 18200) {
-      marginalRate = 0.16; // 16% (below Medicare levy threshold)
-    } else {
-      marginalRate = 0; // Tax-free threshold
-    }
+    const taxBracket = [...selectedTaxYearConfig.taxBrackets]
+      .reverse()
+      .find(bracket => totalIncome > bracket.min);
+    const medicareRate = totalIncome > selectedTaxYearConfig.medicareLevyThresholds.singleLower
+      ? selectedTaxYearConfig.medicareLevyThresholds.rate
+      : 0;
+    const marginalRate = (taxBracket?.rate || 0) + medicareRate;
 
     return Math.round(deductions * marginalRate);
   };
@@ -3765,7 +3824,7 @@ const AppContent: React.FC = () => {
     const selfEducationTotal = calculateCategoryTotal(deductions.selfEducation);
     const donationsTotal = calculateCategoryTotal(deductions.donations);
     const otherTotal = calculateCategoryTotal(deductions.other);
-    const wfhTotal = parseFloat(workFromHomeHours || '0') * WFH_FIXED_RATE;
+    const wfhTotal = parseFloat(workFromHomeHours || '0') * selectedWfhFixedRate;
     const grandTotal = workRelatedTotal + selfEducationTotal + donationsTotal + otherTotal + wfhTotal;
 
     return (
@@ -3826,7 +3885,7 @@ const AppContent: React.FC = () => {
             >
               <Ionicons name="home" size={20} color={theme.error} />
               <Text style={styles.quickAddButtonText}>WFH</Text>
-              <Text style={styles.quickAddButtonAmount}>$268</Text>
+              <Text style={styles.quickAddButtonAmount}>{formatCurrency(400 * selectedWfhFixedRate)}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -4177,7 +4236,7 @@ const AppContent: React.FC = () => {
         {renderCategoryHeader(
           'workFromHome',
           'Work From Home',
-          'Fixed rate method: $0.70 per hour worked from home',
+          `Fixed rate method: ${formatCurrency(selectedWfhFixedRate)} per hour worked from home`,
           'home-outline',
           wfhTotal
         )}
@@ -4197,7 +4256,7 @@ const AppContent: React.FC = () => {
             <View style={styles.wfhInfo}>
               <Ionicons name="information-circle-outline" size={16} color="#666" />
               <Text style={styles.infoText}>
-                Work from home calculated at $0.70/hour (ATO fixed rate method)
+                Work from home calculated at {formatCurrency(selectedWfhFixedRate)}/hour (ATO fixed rate method)
               </Text>
             </View>
           </View>
@@ -4233,6 +4292,7 @@ const AppContent: React.FC = () => {
   // Additional details category color mapping
   const getDetailsCategoryColors = (categoryKey) => {
     const colorMap = {
+      taxYear: { primary: theme.primary, light: theme.primaryLight, accent: theme.primary },
       hecsDebt: { primary: theme.categoryWork, light: theme.categoryWorkLight, accent: theme.categoryWork },
       medicareLevy: { primary: theme.categoryPink, light: theme.categoryPinkLight, accent: theme.categoryPink },
       disclaimer: { primary: theme.categoryDonations, light: theme.categoryDonationsLight, accent: theme.categoryDonations }
@@ -4293,6 +4353,52 @@ const AppContent: React.FC = () => {
     );
   };
 
+  const handleTaxYearSelection = (financialYear: string) => {
+    if (financialYear === selectedFinancialYear) return;
+    setSelectedFinancialYear(financialYear);
+    setResult(null);
+  };
+
+  const renderTaxYearSelector = () => (
+    <View style={styles.deductionCategory}>
+      {renderDetailsCategoryHeader(
+        'taxYear',
+        'Tax Year',
+        'Rates and thresholds used for this estimate',
+        'calendar-outline',
+        true
+      )}
+
+      {!detailsCollapsedCategories.taxYear && (
+        <View style={styles.categoryContent}>
+          <View style={styles.taxYearOptionGrid}>
+            {SUPPORTED_TAX_YEAR_OPTIONS.map(option => {
+              const isSelected = option.value === selectedFinancialYear;
+              return (
+                <TouchableOpacity
+                  key={option.value}
+                  style={[styles.taxYearOption, isSelected && styles.taxYearOptionActive]}
+                  onPress={() => handleTaxYearSelection(option.value)}
+                  activeOpacity={0.75}
+                >
+                  <View style={{ flex: 1, paddingRight: 12 }}>
+                    <Text style={styles.taxYearOptionText}>Financial Year {option.label}</Text>
+                    <Text style={styles.taxYearOptionSubtext}>{option.note}</Text>
+                  </View>
+                  <Ionicons
+                    name={isSelected ? 'checkmark-circle' : 'ellipse-outline'}
+                    size={22}
+                    color={isSelected ? theme.primary : theme.textSecondary}
+                  />
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </View>
+      )}
+    </View>
+  );
+
   const renderDetailsTab = () => {
     const hecsCompleted = hecsDebt;
     const medicareCompleted = medicareExemption || hasDependents;
@@ -4302,9 +4408,7 @@ const AppContent: React.FC = () => {
       <View style={styles.tabContent}>
         <Text style={styles.sectionTitle}>Additional Details</Text>
 
-
-
-
+        {renderTaxYearSelector()}
 
         {/* HECS-HELP Debt Section */}
         <View style={styles.deductionCategory}>
@@ -4494,7 +4598,7 @@ const AppContent: React.FC = () => {
         <View style={styles.warningCard}>
           <Ionicons name="warning" size={20} color={theme.warning} />
           <Text style={styles.warningCardText}>
-            This calculator uses 2025-26 tax rates and thresholds. Results are estimates only and should not replace professional tax advice.
+            This calculator uses {selectedTaxYearDisplay} tax rates and thresholds. Results are estimates only and should not replace professional tax advice.
           </Text>
         </View>
 
@@ -4728,7 +4832,7 @@ const AppContent: React.FC = () => {
             <Ionicons name="checkmark-circle" size={20} color={theme.success} />
             <Text style={styles.summaryTitle}>Tax Estimation Complete</Text>
             <View style={styles.summaryBadge}>
-              <Text style={styles.summaryBadgeText}>{TAX_YEAR}</Text>
+              <Text style={styles.summaryBadgeText}>{selectedTaxYearDisplay}</Text>
             </View>
           </View>
 
@@ -4751,7 +4855,7 @@ const AppContent: React.FC = () => {
               Effective Tax Rate: {result.effectiveTaxRate.toFixed(1)}%
             </Text>
             <Text style={styles.resultMainFinancialYear}>
-              Financial Year {TAX_YEAR}
+              Financial Year {selectedTaxYearDisplay}
             </Text>
           </View>
         </View>
@@ -4895,7 +4999,7 @@ const AppContent: React.FC = () => {
             <View style={[styles.taxSavingsEstimate, { backgroundColor: theme.warningLight, borderColor: theme.warning }]}>
               <Ionicons name="information-circle" size={16} color={theme.warning} />
               <Text style={[styles.taxSavingsText, { color: theme.warning }]}>
-                Tax withheld: {formatCurrency(parseFloat(taxWithheld || '0'))} • Calculated using {TAX_YEAR} ATO rates
+                Tax withheld: {formatCurrency(parseFloat(taxWithheld || '0'))} • Calculated using {selectedTaxYearDisplay} ATO rates
               </Text>
             </View>
           </View>
