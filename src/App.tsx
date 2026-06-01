@@ -2829,7 +2829,7 @@ const AppContent: React.FC = () => {
     } else if (taxableIncome <= 45000) {
       lito = 700 - ((taxableIncome - 37500) * 0.05);
     } else if (taxableIncome <= 66667) {
-      lito = 325 - ((taxableIncome - 45000) * 0.015);
+      lito = Math.max(0, 325 - ((taxableIncome - 45000) * 0.015));
     }
 
     const familyIncomeForMedicare = taxableIncome + spouseIncomeNum;

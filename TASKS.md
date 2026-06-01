@@ -11,9 +11,10 @@ Make the Australian tax return calculator more valuable, trustworthy, and produc
   - Acceptance: every tax constant in `src/constants/taxConstants.ts` can be traced to an official source note.
   - Completed: added structured source audit metadata in `src/constants/taxConstants.ts` and corrected the 2025-26 Medicare levy surcharge thresholds from the official ATO private health insurance threshold page.
 
-- [ ] Add calculation snapshot tests for each major income band.
+- [x] Add calculation snapshot tests for each major income band.
   - Cover resident tax rates, LITO, Medicare levy phase-in, family Medicare levy reduction, HELP repayment income, Medicare levy surcharge tiers, and PAYG withholding.
   - Acceptance: tests fail when any threshold, rate, or formula changes unexpectedly.
+  - Completed: added active tax-year config and major calculation output snapshots, including resident tax bands, LITO, Medicare levy, HELP, MLS, and PAYG withholding.
 
 - [ ] Add visible calculation assumptions and disclaimers.
   - Explain that the app estimates individual tax outcomes and is not tax agent advice.

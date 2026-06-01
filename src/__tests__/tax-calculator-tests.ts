@@ -41,6 +41,14 @@ const mockReactNative: MockReactNative = {
   StatusBar: { currentHeight: 0 }
 };
 
+const {
+  ACTIVE_FINANCIAL_YEAR,
+  ACTIVE_TAX_YEAR_CONFIG,
+  TAX_SOURCE_AUDIT_NOTES
+} = require('../constants/taxConstants.ts');
+
+const toSnapshot = (value) => JSON.stringify(value, null, 2);
+
 // Tax calculation functions extracted from App.js for testing
 class TaxCalculator {
   private TAX_BRACKETS_2025_26: TaxBracket[];
@@ -89,7 +97,7 @@ class TaxCalculator {
     } else if (taxableIncome <= 45000) {
       lito = 700 - ((taxableIncome - 37500) * 0.05);
     } else if (taxableIncome <= 66667) {
-      lito = 325 - ((taxableIncome - 45000) * 0.015);
+      lito = Math.max(0, 325 - ((taxableIncome - 45000) * 0.015));
     }
     return lito;
   }
@@ -272,6 +280,335 @@ describe('Australian Tax Calculator - Comprehensive Tests', () => {
       const income = 200000;
       const expectedTax = 51638 + (income - 190000) * 0.45;
       expect(calculator.calculateIncomeTax(income)).toBeCloseTo(expectedTax, 2);
+    });
+  });
+
+  describe('Active Tax Year Snapshot Tests', () => {
+    test('Active 2025-26 config has source notes for each tax constant group', () => {
+      expect(ACTIVE_FINANCIAL_YEAR).toBe('2025-26');
+
+      const sourceNoteIds = ACTIVE_TAX_YEAR_CONFIG.sourceNoteIds;
+      const missingSourceNotes = sourceNoteIds.filter(id => !TAX_SOURCE_AUDIT_NOTES[id]);
+      expect(missingSourceNotes.join(',')).toBe('');
+
+      const affectedConstants = sourceNoteIds
+        .flatMap(id => TAX_SOURCE_AUDIT_NOTES[id].affectedConstants)
+        .join('|');
+      [
+        'FY2025_26_TAX_BRACKETS',
+        'FY2025_26_HECS_THRESHOLDS',
+        'FY2025_26_MEDICARE_LEVY_THRESHOLDS',
+        'FY2025_26_MEDICARE_LEVY_SURCHARGE',
+        'FY2025_26_LOW_INCOME_TAX_OFFSET',
+        'FY2025_26_WORK_FROM_HOME',
+        'FY2025_26_STANDARD_DEDUCTIONS',
+        'PAYG_SCALE_2_WEEKLY_COEFFICIENTS'
+      ].forEach(constantName => {
+        if (!affectedConstants.includes(constantName)) {
+          throw new Error(`Missing source coverage for ${constantName}`);
+        }
+      });
+    });
+
+    test('Active 2025-26 tax-year config constants snapshot', () => {
+      const snapshot = {
+        financialYear: ACTIVE_TAX_YEAR_CONFIG.financialYear,
+        taxFreeThreshold: ACTIVE_TAX_YEAR_CONFIG.taxFreeThreshold,
+        taxBrackets: ACTIVE_TAX_YEAR_CONFIG.taxBrackets,
+        lowIncomeTaxOffset: ACTIVE_TAX_YEAR_CONFIG.lowIncomeTaxOffset,
+        helpRepaymentThresholds: ACTIVE_TAX_YEAR_CONFIG.helpRepaymentThresholds,
+        medicareLevyThresholds: ACTIVE_TAX_YEAR_CONFIG.medicareLevyThresholds,
+        medicareLevySurcharge: ACTIVE_TAX_YEAR_CONFIG.medicareLevySurcharge,
+        workFromHome: ACTIVE_TAX_YEAR_CONFIG.workFromHome,
+        standardDeductions: ACTIVE_TAX_YEAR_CONFIG.standardDeductions
+      };
+
+      expect(toSnapshot(snapshot)).toBe(`{
+  "financialYear": "2025-26",
+  "taxFreeThreshold": 18200,
+  "taxBrackets": [
+    {
+      "min": 0,
+      "max": 18200,
+      "rate": 0,
+      "base": 0
+    },
+    {
+      "min": 18200,
+      "max": 45000,
+      "rate": 0.16,
+      "base": 0
+    },
+    {
+      "min": 45000,
+      "max": 135000,
+      "rate": 0.3,
+      "base": 4288
+    },
+    {
+      "min": 135000,
+      "max": 190000,
+      "rate": 0.37,
+      "base": 31288
+    },
+    {
+      "min": 190000,
+      "max": null,
+      "rate": 0.45,
+      "base": 51638
+    }
+  ],
+  "lowIncomeTaxOffset": {
+    "maxOffset": 700,
+    "fullOffsetLimit": 37500,
+    "firstPhaseOutEnd": 45000,
+    "firstPhaseOutRate": 0.05,
+    "secondPhaseOutEnd": 66667,
+    "secondPhaseOutBase": 325,
+    "secondPhaseOutRate": 0.015
+  },
+  "helpRepaymentThresholds": [
+    {
+      "min": 0,
+      "max": 67000,
+      "rate": 0,
+      "base": 0
+    },
+    {
+      "min": 67000,
+      "max": 125000,
+      "rate": 0.15,
+      "base": 0
+    },
+    {
+      "min": 125000,
+      "max": 179285,
+      "rate": 0.17,
+      "base": 8700
+    },
+    {
+      "min": 179286,
+      "max": null,
+      "rate": 0.1,
+      "base": 0,
+      "rateAppliesToTotalIncome": true
+    }
+  ],
+  "medicareLevyThresholds": {
+    "singleLower": 27222,
+    "singleUpper": 34027,
+    "familyLower": 45907,
+    "familyUpper": 57383,
+    "dependentChildLowerIncrease": 4216,
+    "dependentChildUpperIncrease": 5270,
+    "phaseInRate": 0.1,
+    "rate": 0.02
+  },
+  "medicareLevySurcharge": {
+    "single": {
+      "threshold": 101000,
+      "tiers": [
+        {
+          "min": 101001,
+          "max": 118000,
+          "rate": 0.01
+        },
+        {
+          "min": 118001,
+          "max": 158000,
+          "rate": 0.0125
+        },
+        {
+          "min": 158001,
+          "max": null,
+          "rate": 0.015
+        }
+      ]
+    },
+    "family": {
+      "threshold": 202000,
+      "tiers": [
+        {
+          "min": 202001,
+          "max": 236000,
+          "rate": 0.01
+        },
+        {
+          "min": 236001,
+          "max": 316000,
+          "rate": 0.0125
+        },
+        {
+          "min": 316001,
+          "max": null,
+          "rate": 0.015
+        }
+      ]
+    }
+  },
+  "workFromHome": {
+    "shortcutRate": 0.7,
+    "maxShortcutClaim": null
+  },
+  "standardDeductions": {
+    "workClothes": 150,
+    "workFromHomeBasic": 300,
+    "carExpenseKmRate": 0.88
+  }
+}`);
+    });
+
+    test('Major calculation outputs snapshot', () => {
+      const snapshot = {
+        residentIncomeTax: [
+          { taxableIncome: 18200, tax: calculator.calculateIncomeTax(18200) },
+          { taxableIncome: 45000, tax: calculator.calculateIncomeTax(45000) },
+          { taxableIncome: 80000, tax: calculator.calculateIncomeTax(80000) },
+          { taxableIncome: 135000, tax: calculator.calculateIncomeTax(135000) },
+          { taxableIncome: 190000, tax: calculator.calculateIncomeTax(190000) },
+          { taxableIncome: 220000, tax: calculator.calculateIncomeTax(220000) }
+        ],
+        lowIncomeTaxOffset: [
+          { taxableIncome: 37500, offset: calculator.calculateLITO(37500) },
+          { taxableIncome: 45000, offset: calculator.calculateLITO(45000) },
+          { taxableIncome: 66667, offset: calculator.calculateLITO(66667) }
+        ],
+        medicareLevy: [
+          { taxableIncome: 27222, levy: calculator.calculateMedicareLevy(27222) },
+          { taxableIncome: 30000, levy: calculator.calculateMedicareLevy(30000) },
+          { taxableIncome: 60000, levy: calculator.calculateMedicareLevy(60000) },
+          { taxableIncome: 30000, spouseIncome: 20000, levy: calculator.calculateMedicareLevy(30000, 0, false, true, 20000) }
+        ],
+        helpRepayment: [
+          { repaymentIncome: 67000, repayment: calculator.calculateHECSRepayment(67000, true) },
+          { repaymentIncome: 75000, repayment: calculator.calculateHECSRepayment(75000, true) },
+          { repaymentIncome: 127064, repayment: calculator.calculateHECSRepayment(127064, true) },
+          { repaymentIncome: 190000, repayment: calculator.calculateHECSRepayment(190000, true) }
+        ],
+        medicareLevySurcharge: [
+          { taxableIncome: 100000, familyIncome: 100000, surcharge: calculator.calculateMedicareLevySurcharge(100000, 100000, false, false, 0) },
+          { taxableIncome: 102000, familyIncome: 102000, surcharge: calculator.calculateMedicareLevySurcharge(102000, 102000, false, false, 0) },
+          { taxableIncome: 120000, familyIncome: 220000, surcharge: calculator.calculateMedicareLevySurcharge(120000, 220000, false, true, 0) },
+          { taxableIncome: 120000, familyIncome: 220000, hasCover: true, surcharge: calculator.calculateMedicareLevySurcharge(120000, 220000, true, true, 0) }
+        ],
+        paygWithholding: [
+          { employmentIncome: 75000, withholding: calculator.calculatePaygWithholdingEstimate(75000) },
+          { employmentIncome: 150000, withholding: calculator.calculatePaygWithholdingEstimate(150000) }
+        ]
+      };
+
+      expect(toSnapshot(snapshot)).toBe(`{
+  "residentIncomeTax": [
+    {
+      "taxableIncome": 18200,
+      "tax": 0
+    },
+    {
+      "taxableIncome": 45000,
+      "tax": 4288
+    },
+    {
+      "taxableIncome": 80000,
+      "tax": 14788
+    },
+    {
+      "taxableIncome": 135000,
+      "tax": 31288
+    },
+    {
+      "taxableIncome": 190000,
+      "tax": 51638
+    },
+    {
+      "taxableIncome": 220000,
+      "tax": 65138
+    }
+  ],
+  "lowIncomeTaxOffset": [
+    {
+      "taxableIncome": 37500,
+      "offset": 700
+    },
+    {
+      "taxableIncome": 45000,
+      "offset": 325
+    },
+    {
+      "taxableIncome": 66667,
+      "offset": 0
+    }
+  ],
+  "medicareLevy": [
+    {
+      "taxableIncome": 27222,
+      "levy": 0
+    },
+    {
+      "taxableIncome": 30000,
+      "levy": 277.8
+    },
+    {
+      "taxableIncome": 60000,
+      "levy": 1200
+    },
+    {
+      "taxableIncome": 30000,
+      "spouseIncome": 20000,
+      "levy": 409.3
+    }
+  ],
+  "helpRepayment": [
+    {
+      "repaymentIncome": 67000,
+      "repayment": 0
+    },
+    {
+      "repaymentIncome": 75000,
+      "repayment": 1200
+    },
+    {
+      "repaymentIncome": 127064,
+      "repayment": 9050.88
+    },
+    {
+      "repaymentIncome": 190000,
+      "repayment": 19000
+    }
+  ],
+  "medicareLevySurcharge": [
+    {
+      "taxableIncome": 100000,
+      "familyIncome": 100000,
+      "surcharge": 0
+    },
+    {
+      "taxableIncome": 102000,
+      "familyIncome": 102000,
+      "surcharge": 1020
+    },
+    {
+      "taxableIncome": 120000,
+      "familyIncome": 220000,
+      "surcharge": 1200
+    },
+    {
+      "taxableIncome": 120000,
+      "familyIncome": 220000,
+      "hasCover": true,
+      "surcharge": 0
+    }
+  ],
+  "paygWithholding": [
+    {
+      "employmentIncome": 75000,
+      "withholding": 14820
+    },
+    {
+      "employmentIncome": 150000,
+      "withholding": 39884
+    }
+  ]
+}`);
     });
   });
 
