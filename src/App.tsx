@@ -33,6 +33,7 @@ import { calculateTax } from './services/taxCalculationService';
 import { generateAndSharePDF } from './services/pdfService';
 import { formatCurrency } from './utils/formatters';
 import { HELP_TEXT } from './constants/helpText';
+import { APP_INFO, CALCULATION_ENGINE_VERSION } from './constants/appConstants';
 import { ACTIVE_FINANCIAL_YEAR, ACTIVE_TAX_YEAR_CONFIG, TAX_YEAR_CONFIGS } from './constants/taxConstants';
 import InputField from './components/forms/InputField';
 import HelpModal from './components/ui/HelpModal';
@@ -2406,6 +2407,9 @@ const AppContent: React.FC = () => {
             try {
               const calculationData = {
                 financialYear: selectedFinancialYear,
+                appVersion: APP_INFO.VERSION,
+                taxYearConfigVersion: selectedTaxYearConfig.configVersion,
+                calculationEngineVersion: CALCULATION_ENGINE_VERSION,
                 jobIncomes,
                 taxWithheld,
                 paygUnknown,
@@ -2985,6 +2989,9 @@ const AppContent: React.FC = () => {
 
     setResult({
       financialYear: selectedFinancialYear,
+      appVersion: APP_INFO.VERSION,
+      taxYearConfigVersion: selectedTaxYearConfig.configVersion,
+      calculationEngineVersion: CALCULATION_ENGINE_VERSION,
       totalTFNIncome,
       abnIncomeNum,
       totalIncome, // Add totalIncome for HomeScreen display

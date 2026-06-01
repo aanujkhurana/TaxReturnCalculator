@@ -1,11 +1,17 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { STORAGE_KEYS } from '../constants/appConstants';
+import { APP_INFO, CALCULATION_ENGINE_VERSION, STORAGE_KEYS } from '../constants/appConstants';
 
 // Type definitions for storage service
 export interface SavedCalculation {
   id: string;
   name: string | null;
   savedDate: string;
+  metadata?: {
+    appVersion?: string;
+    financialYear?: string;
+    taxYearConfigVersion?: string;
+    calculationEngineVersion?: string;
+  };
   formData: {
     financialYear?: string;
     jobIncomes?: any[];
@@ -56,6 +62,12 @@ export const saveCalculation = async (calculationData: any, customName: string |
       id: generateId(),
       name: customName,
       savedDate: new Date().toISOString(),
+      metadata: {
+        appVersion: calculationData.appVersion || APP_INFO.VERSION,
+        financialYear: calculationData.financialYear,
+        taxYearConfigVersion: calculationData.taxYearConfigVersion,
+        calculationEngineVersion: calculationData.calculationEngineVersion || CALCULATION_ENGINE_VERSION,
+      },
       formData: {
         financialYear: calculationData.financialYear,
         jobIncomes: calculationData.jobIncomes,

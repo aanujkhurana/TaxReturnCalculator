@@ -56,6 +56,8 @@ export const APP_INFO: AppInfo = {
   FINANCIAL_YEAR: '2025-26'
 } as const;
 
+export const CALCULATION_ENGINE_VERSION = '2025-26.1' as const;
+
 // Step configuration for the tax calculator wizard
 export const CALCULATOR_STEPS: readonly CalculatorStep[] = [
   { id: 1, name: 'Income', label: 'Income' },

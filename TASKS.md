@@ -27,9 +27,10 @@ Make the Australian tax return calculator more valuable, trustworthy, and produc
   - Acceptance: switching years updates labels, thresholds, calculations, exports, and saved calculation metadata.
   - Completed: added a tax-year selector backed by `TAX_YEAR_CONFIGS`, with selected year flowing through result labels, assumptions, CSV/report export, and saved calculation metadata.
 
-- [ ] Add saved-result versioning.
+- [x] Add saved-result versioning.
   - Store the app version, tax year, config version, and calculation engine version with each saved result.
   - Acceptance: older saved results can be identified and recalculated intentionally instead of silently changing.
+  - Completed: saved calculations now include metadata for app version, selected financial year, tax-year config version, and calculation engine version.
 
 ## Priority 1 - Production Readiness
 

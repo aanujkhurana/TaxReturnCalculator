@@ -312,6 +312,7 @@ describe('Australian Tax Calculator - Comprehensive Tests', () => {
 
     test('Active 2025-26 tax-year config constants snapshot', () => {
       const snapshot = {
+        configVersion: ACTIVE_TAX_YEAR_CONFIG.configVersion,
         financialYear: ACTIVE_TAX_YEAR_CONFIG.financialYear,
         taxFreeThreshold: ACTIVE_TAX_YEAR_CONFIG.taxFreeThreshold,
         taxBrackets: ACTIVE_TAX_YEAR_CONFIG.taxBrackets,
@@ -324,6 +325,7 @@ describe('Australian Tax Calculator - Comprehensive Tests', () => {
       };
 
       expect(toSnapshot(snapshot)).toBe(`{
+  "configVersion": "2025-26.1",
   "financialYear": "2025-26",
   "taxFreeThreshold": 18200,
   "taxBrackets": [

@@ -79,6 +79,7 @@ export interface TaxSourceAuditNote {
 }
 
 export interface TaxYearConfig {
+  readonly configVersion: string;
   readonly financialYear: string;
   readonly taxBrackets: readonly TaxBracket[];
   readonly helpRepaymentThresholds: readonly HecsThreshold[];
@@ -377,6 +378,7 @@ export const ACTIVE_FINANCIAL_YEAR = '2025-26' as const;
 
 export const TAX_YEAR_CONFIGS: Record<string, TaxYearConfig> = {
   '2025-26': {
+    configVersion: '2025-26.1',
     financialYear: FY2025_26_FINANCIAL_YEAR,
     taxBrackets: FY2025_26_TAX_BRACKETS,
     helpRepaymentThresholds: FY2025_26_HECS_THRESHOLDS,
