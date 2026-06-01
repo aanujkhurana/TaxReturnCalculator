@@ -44,9 +44,10 @@ Make the Australian tax return calculator more valuable, trustworthy, and produc
   - Acceptance: `npm run lint` and `npm run format:check` are available and documented.
   - Completed: added Expo ESLint and Prettier configs, `lint`, `format:check`, and `format` scripts, and applied the initial Prettier baseline.
 
-- [ ] Resolve Expo dependency version warnings.
+- [x] Resolve Expo dependency version warnings.
   - Align Expo, React Native, AsyncStorage, and Metro runtime versions with the installed Expo SDK requirements.
   - Acceptance: `npx expo-doctor` has no dependency compatibility warnings.
+  - Completed: aligned Expo SDK 53 package versions and verified with `npx expo install --check` using the local Expo dependency map.
 
 - [ ] Add error boundaries and crash reporting.
   - Add a top-level error boundary and production crash reporting provider.

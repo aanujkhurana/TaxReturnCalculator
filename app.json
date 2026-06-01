@@ -11,18 +11,12 @@
     },
     "assetBundlePatterns": ["**/*"],
     "ios": {
-      "supportsTablet": true,
-      "statusBarStyle": "auto"
+      "supportsTablet": true
     },
-    "android": {
-      "statusBar": {
-        "barStyle": "default",
-        "backgroundColor": "transparent",
-        "translucent": true
-      }
-    },
+    "android": {},
     "web": {
       "bundler": "metro"
-    }
+    },
+    "plugins": ["expo-font"]
   }
 }

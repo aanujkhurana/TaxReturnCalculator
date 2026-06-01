@@ -15,17 +15,18 @@
     "build:watch": "npx tsc --watch"
   },
   "dependencies": {
-    "@expo/metro-runtime": "~5.0.4",
+    "@expo/metro-runtime": "~5.0.5",
     "@expo/vector-icons": "^14.0.0",
-    "@react-native-async-storage/async-storage": "^2.2.0",
-    "expo": "^53.0.0",
+    "@react-native-async-storage/async-storage": "^2.1.2",
+    "expo": "~53.0.27",
     "expo-file-system": "~18.1.11",
+    "expo-font": "~13.3.2",
     "expo-linear-gradient": "~14.1.5",
     "expo-sharing": "~13.1.5",
     "expo-status-bar": "~2.2.3",
     "react": "19.0.0",
     "react-dom": "19.0.0",
-    "react-native": "0.79.5",
+    "react-native": "^0.79.6",
     "react-native-web": "^0.20.0"
   },
   "overrides": {
@@ -35,7 +36,7 @@
   "devDependencies": {
     "@types/react": "~19.0.10",
     "eslint": "^9.39.4",
-    "eslint-config-expo": "^56.0.4",
+    "eslint-config-expo": "~9.2.0",
     "prettier": "^3.8.3",
     "typescript": "^5.8.3"
   }

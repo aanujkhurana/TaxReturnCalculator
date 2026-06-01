@@ -2,6 +2,8 @@ node_modules
 
 node_modules/.bin
 
+.expo/
+
 .vscode
 
 .git
@@ -13,4 +15,3 @@ node_modules/.bin
 .env.test
 
 .env.production
-
