@@ -6,9 +6,10 @@ Make the Australian tax return calculator more valuable, trustworthy, and produc
 
 ## Priority 0 - Accuracy, Compliance, and Trust
 
-- [ ] Add source-linked tax-year audit notes.
+- [x] Add source-linked tax-year audit notes.
   - Record the official ATO source, retrieval date, and affected constants for rates, thresholds, offsets, HELP repayment, Medicare levy, Medicare levy surcharge, and PAYG withholding.
   - Acceptance: every tax constant in `src/constants/taxConstants.ts` can be traced to an official source note.
+  - Completed: added structured source audit metadata in `src/constants/taxConstants.ts` and corrected the 2025-26 Medicare levy surcharge thresholds from the official ATO private health insurance threshold page.
 
 - [ ] Add calculation snapshot tests for each major income band.
   - Cover resident tax rates, LITO, Medicare levy phase-in, family Medicare levy reduction, HELP repayment income, Medicare levy surcharge tiers, and PAYG withholding.

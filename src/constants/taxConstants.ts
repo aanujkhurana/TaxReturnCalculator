@@ -67,6 +67,17 @@ export interface TaxYearInfo {
   readonly note: string;
 }
 
+export interface TaxSourceAuditNote {
+  readonly id: string;
+  readonly title: string;
+  readonly source: string;
+  readonly url: string;
+  readonly retrievedAt: string;
+  readonly affectedConstants: readonly string[];
+  readonly verifiedValues: readonly string[];
+  readonly notes?: string;
+}
+
 export interface TaxYearConfig {
   readonly financialYear: string;
   readonly taxBrackets: readonly TaxBracket[];
@@ -78,6 +89,7 @@ export interface TaxYearConfig {
   readonly standardDeductions: StandardDeductions;
   readonly taxFreeThreshold: number;
   readonly taxYearInfo: TaxYearInfo;
+  readonly sourceNoteIds: readonly string[];
 }
 
 export interface WorkFromHome {
@@ -106,6 +118,174 @@ export interface SeniorTaxOffset {
   readonly single: SeniorTaxOffsetCategory;
   readonly couple: SeniorTaxOffsetCategory;
 }
+
+export const TAX_SOURCE_AUDIT_NOTES: Record<string, TaxSourceAuditNote> = {
+  residentTaxRates2024Later: {
+    id: 'residentTaxRates2024Later',
+    title: 'Resident individual income tax rates for 2024-25 and 2025-26',
+    source: 'ATO legal database - Treasury Laws Amendment (Cost of Living Tax Cuts) Act 2024 explanatory material',
+    url: 'https://www.ato.gov.au/law/view/document?DocNum=0000081364&FullDocument=true',
+    retrievedAt: '2026-06-01',
+    affectedConstants: [
+      'FY2025_26_TAX_BRACKETS',
+      'TAX_FREE_THRESHOLD'
+    ],
+    verifiedValues: [
+      '$0-$18,200: 0%',
+      '$18,201-$45,000: 16%',
+      '$45,001-$135,000: 30%',
+      '$135,001-$190,000: 37%',
+      '$190,001 and over: 45%'
+    ]
+  },
+  lowIncomeTaxOffset: {
+    id: 'lowIncomeTaxOffset',
+    title: 'Low income tax offset',
+    source: 'ATO legal database - Income Tax Assessment Act 1997 section 61-115',
+    url: 'https://www.ato.gov.au/law/view/document?docid=PAC%2F19970038%2F61-115',
+    retrievedAt: '2026-06-01',
+    affectedConstants: [
+      'FY2025_26_LOW_INCOME_TAX_OFFSET'
+    ],
+    verifiedValues: [
+      'Maximum offset: $700',
+      'Full offset limit: $37,500',
+      '$37,501-$45,000: $700 less 5% of excess',
+      '$45,001-$66,667: $325 less 1.5% of excess'
+    ]
+  },
+  studyTrainingLoan2025_26: {
+    id: 'studyTrainingLoan2025_26',
+    title: 'Study and training loan repayment thresholds and repayment income',
+    source: 'ATO - Study and training loan repayment thresholds and rates',
+    url: 'https://www.ato.gov.au/tax-rates-and-codes/study-and-training-support-loans-rates-and-repayment-thresholds',
+    retrievedAt: '2026-06-01',
+    affectedConstants: [
+      'FY2025_26_HECS_THRESHOLDS'
+    ],
+    verifiedValues: [
+      '$0-$67,000: nil',
+      '$67,001-$125,000: 15c for each $1 over $67,000',
+      '$125,001-$179,285: $8,700 plus 17c for each $1 over $125,000',
+      '$179,286 and over: 10% of total repayment income',
+      'Repayment income includes taxable income, reportable fringe benefits, total net investment loss, reportable super contributions, and exempt foreign employment income'
+    ]
+  },
+  medicareLevy2024_25Thresholds: {
+    id: 'medicareLevy2024_25Thresholds',
+    title: 'Medicare levy low-income thresholds applying from 2024-25',
+    source: 'ATO legal database - Treasury Laws Amendment (More Cost of Living Relief) Act 2025 explanatory material',
+    url: 'https://www.ato.gov.au/law/view/document?DocNum=0000081420&FullDocument=true',
+    retrievedAt: '2026-06-01',
+    affectedConstants: [
+      'MEDICARE_LEVY_RATE',
+      'FY2025_26_MEDICARE_LEVY_THRESHOLDS'
+    ],
+    verifiedValues: [
+      'Medicare levy rate: 2%',
+      'Individual lower threshold: $27,222',
+      'Individual phase-in limit: $34,027',
+      'Family lower threshold: $45,907',
+      'Family phase-in limit: $57,383',
+      'Dependent child/student lower increase: $4,216',
+      'Dependent child/student upper increase: $5,270',
+      'Phase-in rate: 10c for each $1 above the relevant threshold'
+    ],
+    notes: 'These are 2024-25 threshold amounts configured for the active 2025-26 app until a later official ATO threshold update is added to the tax-year config.'
+  },
+  medicareLevySurcharge2025_26: {
+    id: 'medicareLevySurcharge2025_26',
+    title: 'Medicare levy surcharge and private health insurance income thresholds',
+    source: 'ATO - Income thresholds and rates for the private health insurance rebate',
+    url: 'https://www.ato.gov.au/individuals-and-families/medicare-and-private-health-insurance/private-health-insurance-rebate/income-thresholds-and-rates-for-the-private-health-insurance-rebate',
+    retrievedAt: '2026-06-01',
+    affectedConstants: [
+      'FY2025_26_MEDICARE_LEVY_SURCHARGE'
+    ],
+    verifiedValues: [
+      'Single base tier: $101,000 or less',
+      'Single tier 1: $101,001-$118,000 at 1%',
+      'Single tier 2: $118,001-$158,000 at 1.25%',
+      'Single tier 3: $158,001 or more at 1.5%',
+      'Family base tier: $202,000 or less',
+      'Family tier 1: $202,001-$236,000 at 1%',
+      'Family tier 2: $236,001-$316,000 at 1.25%',
+      'Family tier 3: $316,001 or more at 1.5%',
+      'Family threshold increases by $1,500 for each MLS dependent child after the first'
+    ]
+  },
+  workFromHomeFixedRate: {
+    id: 'workFromHomeFixedRate',
+    title: 'Working from home fixed rate method',
+    source: 'ATO - Fixed rate method',
+    url: 'https://www.ato.gov.au/individuals-and-families/income-deductions-offsets-and-records/deductions-you-can-claim/work-related-deductions/working-from-home-expenses/fixed-rate-method',
+    retrievedAt: '2026-06-01',
+    affectedConstants: [
+      'FY2025_26_WORK_FROM_HOME'
+    ],
+    verifiedValues: [
+      '2024-25 fixed rate: 70 cents per work hour',
+      'Users must keep records of actual hours worked from home'
+    ],
+    notes: 'ATO has published the 70 cents per hour fixed rate for 2024-25. The active 2025-26 config keeps this value until a later official ATO update is added.'
+  },
+  workExpenseRecordExceptions: {
+    id: 'workExpenseRecordExceptions',
+    title: 'Work-related expense record-keeping exceptions',
+    source: 'ATO - Records you need to keep',
+    url: 'https://www.ato.gov.au/individuals-and-families/income-deductions-offsets-and-records/records-you-need-to-keep',
+    retrievedAt: '2026-06-01',
+    affectedConstants: [
+      'FY2025_26_STANDARD_DEDUCTIONS.workClothes',
+      'FY2025_26_STANDARD_DEDUCTIONS.workFromHomeBasic'
+    ],
+    verifiedValues: [
+      'Total work-related expenses of $300 or less may be claimed without full written evidence if the taxpayer can show the expense was incurred and how it was calculated',
+      'Laundry expenses of $150 or less may be claimed without full written evidence if the taxpayer can show how the claim was calculated'
+    ],
+    notes: 'These are substantiation exceptions, not automatic deductions.'
+  },
+  carExpenseCentsPerKm2025_26: {
+    id: 'carExpenseCentsPerKm2025_26',
+    title: 'Cents per kilometre deduction rate for car expenses',
+    source: 'ATO Software Developers - Cents per Kilometre Deduction Rate for Car Expenses 2024 Determination',
+    url: 'https://softwaredevelopers.ato.gov.au/CentsperKilometreDeductionRateforCarExpenses',
+    retrievedAt: '2026-06-01',
+    affectedConstants: [
+      'FY2025_26_STANDARD_DEDUCTIONS.carExpenseKmRate'
+    ],
+    verifiedValues: [
+      '88 cents per kilometre applies from 1 July 2024 and remains effective for the 2025-26 income year'
+    ]
+  },
+  paygWithholdingScale2: {
+    id: 'paygWithholdingScale2',
+    title: 'PAYG withholding coefficients where tax-free threshold is claimed',
+    source: 'ATO legal database - LI 2024/18 Schedule 1 statement of formulas for calculating amounts to be withheld',
+    url: 'https://www.ato.gov.au/law/view/view.htm?PiT=99991231235958&docid=OPS%2FLI202418%2F00001',
+    retrievedAt: '2026-06-01',
+    affectedConstants: [
+      'PAYG_SCALE_2_WEEKLY_COEFFICIENTS in src/App.tsx and test mirror'
+    ],
+    verifiedValues: [
+      'Scale 2 weekly coefficients use y = ax - b',
+      'x is weekly earnings rounded down to whole dollars plus 99 cents',
+      'The active estimate assumes the employee claimed the tax-free threshold'
+    ]
+  }
+} as const;
+
+export const FY2025_26_SOURCE_NOTE_IDS = [
+  'residentTaxRates2024Later',
+  'lowIncomeTaxOffset',
+  'studyTrainingLoan2025_26',
+  'medicareLevy2024_25Thresholds',
+  'medicareLevySurcharge2025_26',
+  'workFromHomeFixedRate',
+  'workExpenseRecordExceptions',
+  'carExpenseCentsPerKm2025_26',
+  'paygWithholdingScale2'
+] as const;
 
 const FY2025_26_TAX_BRACKETS: readonly TaxBracket[] = [
   { min: 0, max: 18200, rate: 0, base: 0 },
@@ -143,19 +323,19 @@ const FY2025_26_MEDICARE_LEVY_THRESHOLDS: MedicareLevyThresholds = {
 // Medicare levy surcharge thresholds and rates
 const FY2025_26_MEDICARE_LEVY_SURCHARGE: MedicareLevySurcharge = {
   single: {
-    threshold: 97000,
+    threshold: 101000,
     tiers: [
-      { min: 97000, max: 113000, rate: 0.01 },
-      { min: 113001, max: 151000, rate: 0.0125 },
-      { min: 151001, max: Infinity, rate: 0.015 }
+      { min: 101001, max: 118000, rate: 0.01 },
+      { min: 118001, max: 158000, rate: 0.0125 },
+      { min: 158001, max: Infinity, rate: 0.015 }
     ]
   },
   family: {
-    threshold: 194000,
+    threshold: 202000,
     tiers: [
-      { min: 194000, max: 226000, rate: 0.01 },
-      { min: 226001, max: 302000, rate: 0.0125 },
-      { min: 302001, max: Infinity, rate: 0.015 }
+      { min: 202001, max: 236000, rate: 0.01 },
+      { min: 236001, max: 316000, rate: 0.0125 },
+      { min: 316001, max: Infinity, rate: 0.015 }
     ]
   }
 } as const;
@@ -206,7 +386,8 @@ export const TAX_YEAR_CONFIGS: Record<string, TaxYearConfig> = {
     workFromHome: FY2025_26_WORK_FROM_HOME,
     standardDeductions: FY2025_26_STANDARD_DEDUCTIONS,
     taxFreeThreshold: 18200,
-    taxYearInfo: FY2025_26_TAX_YEAR_INFO
+    taxYearInfo: FY2025_26_TAX_YEAR_INFO,
+    sourceNoteIds: FY2025_26_SOURCE_NOTE_IDS
   }
 } as const;
 

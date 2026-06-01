@@ -185,14 +185,14 @@ const calculateMedicareLevySurcharge = (
   const surchargeIncome = isFamily ? familyIncome : taxableIncome;
   const baseThresholds = isFamily
     ? [
-        { min: 194000 + familyDependentIncrease, max: 226000 + familyDependentIncrease, rate: 0.01 },
-        { min: 226001 + familyDependentIncrease, max: 302000 + familyDependentIncrease, rate: 0.0125 },
-        { min: 302001 + familyDependentIncrease, max: Infinity, rate: 0.015 }
+        { min: 202001 + familyDependentIncrease, max: 236000 + familyDependentIncrease, rate: 0.01 },
+        { min: 236001 + familyDependentIncrease, max: 316000 + familyDependentIncrease, rate: 0.0125 },
+        { min: 316001 + familyDependentIncrease, max: Infinity, rate: 0.015 }
       ]
     : [
-        { min: 97000, max: 113000, rate: 0.01 },
-        { min: 113001, max: 151000, rate: 0.0125 },
-        { min: 151001, max: Infinity, rate: 0.015 }
+        { min: 101001, max: 118000, rate: 0.01 },
+        { min: 118001, max: 158000, rate: 0.0125 },
+        { min: 158001, max: Infinity, rate: 0.015 }
       ];
   const tier = baseThresholds.find(({ min, max }) => surchargeIncome >= min && surchargeIncome <= max);
 
