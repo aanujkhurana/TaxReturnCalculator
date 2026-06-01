@@ -113,7 +113,7 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish }) => {
         }),
       ])
     );
-    
+
     setTimeout(() => {
       pulseAnimation.start();
     }, 1200);
@@ -150,13 +150,14 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish }) => {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
-      <StatusBar style={isDark ? "light" : "dark"} backgroundColor={theme.background} />
-      
+      <StatusBar style={isDark ? 'light' : 'dark'} backgroundColor={theme.background} />
+
       {/* Background Gradient */}
       <LinearGradient
-        colors={isDark 
-          ? [theme.background, theme.surface, theme.surfaceSecondary]
-          : [theme.primaryLight, theme.surface, theme.background]
+        colors={
+          isDark
+            ? [theme.background, theme.surface, theme.surfaceSecondary]
+            : [theme.primaryLight, theme.surface, theme.background]
         }
         style={styles.gradient}
         start={{ x: 0, y: 0 }}
@@ -178,19 +179,12 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish }) => {
           style={[
             styles.logoContainer,
             {
-              transform: [
-                { rotate: logoRotation },
-                { scale: pulseAnim },
-              ],
+              transform: [{ rotate: logoRotation }, { scale: pulseAnim }],
             },
           ]}
         >
           <View style={styles.logoBackground}>
-            <Ionicons
-              name="calculator"
-              size={64}
-              color={theme.primary}
-            />
+            <Ionicons name="calculator" size={64} color={theme.primary} />
           </View>
         </Animated.View>
 
@@ -252,110 +246,111 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish }) => {
   );
 };
 
-const getStyles = (theme: Theme) => StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: theme.background,
-  },
-  gradient: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    top: 0,
-    bottom: 0,
-  },
-  content: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 40,
-  },
-  logoContainer: {
-    marginBottom: 40,
-  },
-  logoBackground: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: theme.surface,
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: theme.shadow,
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.15,
-    shadowRadius: 20,
-    elevation: 10,
-    borderWidth: 2,
-    borderColor: theme.primaryBorder,
-  },
-  titleContainer: {
-    alignItems: 'center',
-    marginBottom: 30,
-  },
-  appTitle: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: theme.text,
-    textAlign: 'center',
-    marginBottom: 8,
-    letterSpacing: 0.5,
-  },
-  appSubtitle: {
-    fontSize: 16,
-    color: theme.textSecondary,
-    textAlign: 'center',
-    fontWeight: '500',
-  },
-  versionContainer: {
-    alignItems: 'center',
-    marginBottom: 60,
-  },
-  versionText: {
-    fontSize: 14,
-    color: theme.textTertiary,
-    marginBottom: 4,
-  },
-  taglineText: {
-    fontSize: 14,
-    color: theme.primary,
-    fontWeight: '600',
-    letterSpacing: 1,
-  },
-  progressContainer: {
-    alignItems: 'center',
-    width: '100%',
-  },
-  progressTrack: {
-    width: 200,
-    height: 4,
-    backgroundColor: theme.borderLight,
-    borderRadius: 2,
-    overflow: 'hidden',
-    marginBottom: 12,
-  },
-  progressBar: {
-    height: '100%',
-    backgroundColor: theme.primary,
-    borderRadius: 2,
-  },
-  loadingText: {
-    fontSize: 12,
-    color: theme.textSecondary,
-    fontWeight: '500',
-  },
-  creditContainer: {
-    position: 'absolute',
-    bottom: Platform.OS === 'ios' ? 50 : 30,
-    left: 0,
-    right: 0,
-    alignItems: 'center',
-  },
-  creditText: {
-    fontSize: 14,
-    color: theme.textTertiary,
-    fontWeight: '500',
-    letterSpacing: 0.5,
-  },
-});
+const getStyles = (theme: Theme) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: theme.background,
+    },
+    gradient: {
+      position: 'absolute',
+      left: 0,
+      right: 0,
+      top: 0,
+      bottom: 0,
+    },
+    content: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      paddingHorizontal: 40,
+    },
+    logoContainer: {
+      marginBottom: 40,
+    },
+    logoBackground: {
+      width: 120,
+      height: 120,
+      borderRadius: 60,
+      backgroundColor: theme.surface,
+      justifyContent: 'center',
+      alignItems: 'center',
+      shadowColor: theme.shadow,
+      shadowOffset: { width: 0, height: 8 },
+      shadowOpacity: 0.15,
+      shadowRadius: 20,
+      elevation: 10,
+      borderWidth: 2,
+      borderColor: theme.primaryBorder,
+    },
+    titleContainer: {
+      alignItems: 'center',
+      marginBottom: 30,
+    },
+    appTitle: {
+      fontSize: 28,
+      fontWeight: 'bold',
+      color: theme.text,
+      textAlign: 'center',
+      marginBottom: 8,
+      letterSpacing: 0.5,
+    },
+    appSubtitle: {
+      fontSize: 16,
+      color: theme.textSecondary,
+      textAlign: 'center',
+      fontWeight: '500',
+    },
+    versionContainer: {
+      alignItems: 'center',
+      marginBottom: 60,
+    },
+    versionText: {
+      fontSize: 14,
+      color: theme.textTertiary,
+      marginBottom: 4,
+    },
+    taglineText: {
+      fontSize: 14,
+      color: theme.primary,
+      fontWeight: '600',
+      letterSpacing: 1,
+    },
+    progressContainer: {
+      alignItems: 'center',
+      width: '100%',
+    },
+    progressTrack: {
+      width: 200,
+      height: 4,
+      backgroundColor: theme.borderLight,
+      borderRadius: 2,
+      overflow: 'hidden',
+      marginBottom: 12,
+    },
+    progressBar: {
+      height: '100%',
+      backgroundColor: theme.primary,
+      borderRadius: 2,
+    },
+    loadingText: {
+      fontSize: 12,
+      color: theme.textSecondary,
+      fontWeight: '500',
+    },
+    creditContainer: {
+      position: 'absolute',
+      bottom: Platform.OS === 'ios' ? 50 : 30,
+      left: 0,
+      right: 0,
+      alignItems: 'center',
+    },
+    creditText: {
+      fontSize: 14,
+      color: theme.textTertiary,
+      fontWeight: '500',
+      letterSpacing: 0.5,
+    },
+  });
 
 export default SplashScreen;

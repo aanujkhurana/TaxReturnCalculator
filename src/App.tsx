@@ -15,7 +15,7 @@ import {
   Linking,
   Keyboard,
   TouchableWithoutFeedback,
-  SafeAreaView
+  SafeAreaView,
 } from 'react-native';
 import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
@@ -34,7 +34,11 @@ import { generateAndSharePDF } from './services/pdfService';
 import { formatCurrency } from './utils/formatters';
 import { HELP_TEXT } from './constants/helpText';
 import { APP_INFO, CALCULATION_ENGINE_VERSION } from './constants/appConstants';
-import { ACTIVE_FINANCIAL_YEAR, ACTIVE_TAX_YEAR_CONFIG, TAX_YEAR_CONFIGS } from './constants/taxConstants';
+import {
+  ACTIVE_FINANCIAL_YEAR,
+  ACTIVE_TAX_YEAR_CONFIG,
+  TAX_YEAR_CONFIGS,
+} from './constants/taxConstants';
 import InputField from './components/forms/InputField';
 import HelpModal from './components/ui/HelpModal';
 import { Theme } from './constants/themes';
@@ -106,21 +110,21 @@ interface CalculationAssumption {
 }
 
 const DEFAULT_FINANCIAL_YEAR = ACTIVE_FINANCIAL_YEAR;
-const SUPPORTED_TAX_YEAR_OPTIONS = Object.values(TAX_YEAR_CONFIGS).map(config => ({
+const SUPPORTED_TAX_YEAR_OPTIONS = Object.values(TAX_YEAR_CONFIGS).map((config) => ({
   value: config.financialYear,
   label: config.taxYearInfo.display,
-  note: config.taxYearInfo.note
+  note: config.taxYearInfo.note,
 }));
 const PAYG_SCALE_2_WEEKLY_COEFFICIENTS = [
   { lessThan: 361, a: 0, b: 0 },
-  { lessThan: 500, a: 0.1600, b: 57.8462 },
-  { lessThan: 625, a: 0.2600, b: 107.8462 },
-  { lessThan: 721, a: 0.1800, b: 57.8462 },
-  { lessThan: 865, a: 0.1890, b: 64.3365 },
+  { lessThan: 500, a: 0.16, b: 57.8462 },
+  { lessThan: 625, a: 0.26, b: 107.8462 },
+  { lessThan: 721, a: 0.18, b: 57.8462 },
+  { lessThan: 865, a: 0.189, b: 64.3365 },
   { lessThan: 1282, a: 0.3227, b: 180.0385 },
-  { lessThan: 2596, a: 0.3200, b: 176.5769 },
-  { lessThan: 3653, a: 0.3900, b: 358.3077 },
-  { lessThan: Infinity, a: 0.4700, b: 650.6154 }
+  { lessThan: 2596, a: 0.32, b: 176.5769 },
+  { lessThan: 3653, a: 0.39, b: 358.3077 },
+  { lessThan: Infinity, a: 0.47, b: 650.6154 },
 ] as const;
 
 const calculatePaygWithholdingEstimate = (annualIncome: number): number => {
@@ -128,29 +132,36 @@ const calculatePaygWithholdingEstimate = (annualIncome: number): number => {
 
   const weeklyEarnings = annualIncome / 52;
   const x = Math.floor(weeklyEarnings) + 0.99;
-  const coefficient = PAYG_SCALE_2_WEEKLY_COEFFICIENTS.find(({ lessThan }) => x < lessThan) ||
+  const coefficient =
+    PAYG_SCALE_2_WEEKLY_COEFFICIENTS.find(({ lessThan }) => x < lessThan) ||
     PAYG_SCALE_2_WEEKLY_COEFFICIENTS[PAYG_SCALE_2_WEEKLY_COEFFICIENTS.length - 1];
-  const weeklyWithholding = Math.max(0, Math.round((coefficient.a * x) - coefficient.b));
+  const weeklyWithholding = Math.max(0, Math.round(coefficient.a * x - coefficient.b));
 
   return Math.round(weeklyWithholding * 52);
 };
 
-const calculateResidentIncomeTax = (taxableIncome: number, taxYearConfig = ACTIVE_TAX_YEAR_CONFIG): number => {
+const calculateResidentIncomeTax = (
+  taxableIncome: number,
+  taxYearConfig = ACTIVE_TAX_YEAR_CONFIG
+): number => {
   if (taxableIncome <= taxYearConfig.taxFreeThreshold) {
     return 0;
   }
 
   for (const bracket of taxYearConfig.taxBrackets) {
     if (taxableIncome > bracket.min && taxableIncome <= bracket.max) {
-      return bracket.base + ((taxableIncome - bracket.min) * bracket.rate);
+      return bracket.base + (taxableIncome - bracket.min) * bracket.rate;
     }
   }
 
   const highestBracket = taxYearConfig.taxBrackets[taxYearConfig.taxBrackets.length - 1];
-  return highestBracket.base + ((taxableIncome - highestBracket.min) * highestBracket.rate);
+  return highestBracket.base + (taxableIncome - highestBracket.min) * highestBracket.rate;
 };
 
-const calculateLowIncomeTaxOffset = (taxableIncome: number, taxYearConfig = ACTIVE_TAX_YEAR_CONFIG): number => {
+const calculateLowIncomeTaxOffset = (
+  taxableIncome: number,
+  taxYearConfig = ACTIVE_TAX_YEAR_CONFIG
+): number => {
   const {
     maxOffset,
     fullOffsetLimit,
@@ -158,17 +169,20 @@ const calculateLowIncomeTaxOffset = (taxableIncome: number, taxYearConfig = ACTI
     firstPhaseOutRate,
     secondPhaseOutEnd,
     secondPhaseOutBase,
-    secondPhaseOutRate
+    secondPhaseOutRate,
   } = taxYearConfig.lowIncomeTaxOffset;
 
   if (taxableIncome <= fullOffsetLimit) {
     return maxOffset;
   }
   if (taxableIncome <= firstPhaseOutEnd) {
-    return Math.max(0, maxOffset - ((taxableIncome - fullOffsetLimit) * firstPhaseOutRate));
+    return Math.max(0, maxOffset - (taxableIncome - fullOffsetLimit) * firstPhaseOutRate);
   }
   if (taxableIncome <= secondPhaseOutEnd) {
-    return Math.max(0, secondPhaseOutBase - ((taxableIncome - firstPhaseOutEnd) * secondPhaseOutRate));
+    return Math.max(
+      0,
+      secondPhaseOutBase - (taxableIncome - firstPhaseOutEnd) * secondPhaseOutRate
+    );
   }
   return 0;
 };
@@ -186,7 +200,7 @@ const calculateMedicareLevyAmount = (
   const medicareThresholds = taxYearConfig.medicareLevyThresholds;
   const useFamilyThreshold = hasSpouse || dependents > 0;
   const threshold = useFamilyThreshold
-    ? medicareThresholds.familyLower + (dependents * medicareThresholds.dependentChildLowerIncrease)
+    ? medicareThresholds.familyLower + dependents * medicareThresholds.dependentChildLowerIncrease
     : medicareThresholds.singleLower;
   const thresholdIncome = useFamilyThreshold ? taxableIncome + spouseIncome : taxableIncome;
 
@@ -203,12 +217,14 @@ const calculateStudyLoanRepayment = (
 ): number => {
   if (!hasStudyLoanDebt) return 0;
 
-  const threshold = taxYearConfig.helpRepaymentThresholds.find(({ min, max }) => repaymentIncome >= min && repaymentIncome <= max);
+  const threshold = taxYearConfig.helpRepaymentThresholds.find(
+    ({ min, max }) => repaymentIncome >= min && repaymentIncome <= max
+  );
   if (!threshold) return 0;
   if (threshold.rateAppliesToTotalIncome) {
     return repaymentIncome * threshold.rate;
   }
-  return (threshold.base || 0) + ((repaymentIncome - threshold.min) * threshold.rate);
+  return (threshold.base || 0) + (repaymentIncome - threshold.min) * threshold.rate;
 };
 
 const calculateMedicareLevySurcharge = (
@@ -225,1871 +241,1870 @@ const calculateMedicareLevySurcharge = (
   const familyDependentIncrease = isFamily ? Math.max(0, dependents - 1) * 1500 : 0;
   const surchargeIncome = isFamily ? familyIncome : taxableIncome;
   const baseThresholds = isFamily
-    ? taxYearConfig.medicareLevySurcharge.family.tiers.map(tier => ({
+    ? taxYearConfig.medicareLevySurcharge.family.tiers.map((tier) => ({
         ...tier,
         min: tier.min + familyDependentIncrease,
-        max: tier.max === Infinity ? Infinity : tier.max + familyDependentIncrease
+        max: tier.max === Infinity ? Infinity : tier.max + familyDependentIncrease,
       }))
     : taxYearConfig.medicareLevySurcharge.single.tiers;
-  const tier = baseThresholds.find(({ min, max }) => surchargeIncome >= min && surchargeIncome <= max);
+  const tier = baseThresholds.find(
+    ({ min, max }) => surchargeIncome >= min && surchargeIncome <= max
+  );
 
   return tier ? taxableIncome * tier.rate : 0;
 };
 
 // Styles definition - now a function that takes theme
-const getStyles = (theme: Theme) => StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: theme.surfaceSecondary,
-  },
-  safeArea: {
-    flex: 1,
-    backgroundColor: theme.background,
-  },
-
-
-  scrollContainer: {
-    flex: 1,
-    paddingHorizontal: 16,
-    paddingTop: 8,
-  },
-  tabContent: {
-    marginTop: 20,
-    paddingBottom: 20, // Additional bottom padding for safe area
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: theme.text,
-    marginBottom: 16,
-  },
-  inputContainer: {
-    marginBottom: 16,
-  },
-  labelContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 6,
-  },
-  helpIcon: {
-    marginLeft: 'auto',
-    padding: 4,
-  },
-  helpIconWithData: {
-    marginLeft: 'auto',
-    padding: 4,
-    backgroundColor: theme.primaryLight,
-    borderRadius: 12,
-  },
-  inputLabel: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: theme.text,
-    marginLeft: 8,
-    letterSpacing: 0.2,
-  },
-  input: {
-    backgroundColor: theme.surface,
-    borderWidth: 1,
-    borderColor: theme.border,
-    borderRadius: 12,
-    padding: 14,
-    fontSize: 16,
-    color: theme.text,
-    elevation: 1,
-    shadowColor: theme.shadow,
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-  },
-  inputError: {
-    borderColor: theme.error,
-    borderWidth: 2,
-    backgroundColor: theme.errorLight,
-  },
-  inputDisabled: {
-    backgroundColor: theme.borderLight,
-    borderColor: theme.border,
-    color: theme.textSecondary,
-  },
-  multilineInput: {
-    height: 80,
-    textAlignVertical: 'top',
-  },
-  errorText: {
-    color: theme.error,
-    fontSize: 12,
-    marginTop: 4,
-    marginLeft: 8,
-    fontWeight: '500',
-  },
-  jobIncomeRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    marginBottom: 8,
-  },
-  flexInput: {
-    flex: 1,
-  },
-  removeButton: {
-    marginLeft: 12,
-    marginBottom: 16,
-  },
-  addButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: theme.buttonBack,
-    padding: 14,
-    borderRadius: 14,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: theme.buttonBackBorder,
-    shadowColor: theme.shadow,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 3,
-    elevation: 1,
-  },
-  addButtonText: {
-    color: '#ffffff',
-    fontWeight: '600',
-    marginLeft: 10,
-    fontSize: 15,
-    letterSpacing: 0.2,
-  },
-  toggleButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: theme.surface,
-    padding: 18,
-    borderRadius: 16,
-    marginBottom: 14,
-    elevation: 2,
-    shadowColor: theme.shadow,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 3,
-    borderWidth: 1.5,
-    borderColor: theme.border,
-  },
-  toggleButtonActive: {
-    backgroundColor: theme.primaryLight,
-    borderColor: theme.primary,
-    shadowColor: theme.primary,
-    shadowOpacity: 0.12,
-  },
-  toggleText: {
-    fontSize: 16,
-    color: theme.textSecondary,
-    marginLeft: 14,
-    fontWeight: '500',
-    letterSpacing: 0.2,
-  },
-  toggleTextActive: {
-    color: theme.text,
-    fontWeight: '600',
-  },
-  toggleSubtext: {
-    fontSize: 13,
-    color: theme.textTertiary,
-    marginLeft: 38,
-    marginTop: 4,
-    lineHeight: 18,
-  },
-  wfhInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: theme.surfaceSecondary,
-    padding: 10,
-    borderRadius: 8,
-    marginTop: 8,
-  },
-  infoText: {
-    fontSize: 12,
-    color: theme.textLight,
-    marginLeft: 6,
-    flex: 1,
-  },
-  infoBox: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    backgroundColor: theme.primaryLight,
-    padding: 16,
-    borderRadius: 12,
-    marginTop: 16,
-    borderLeftWidth: 4,
-    borderLeftColor: theme.primary,
-  },
-  infoBoxText: {
-    fontSize: 14,
-    color: theme.text,
-    marginLeft: 12,
-    flex: 1,
-    lineHeight: 20,
-  },
-
-  // Warning card styles
-  warningCard: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    backgroundColor: theme.warningLight,
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 20,
-    borderLeftWidth: 4,
-    borderLeftColor: theme.warning,
-    borderWidth: 1,
-    borderColor: theme.warning,
-  },
-
-  warningCardText: {
-    fontSize: 14,
-    color: theme.text,
-    marginLeft: 12,
-    flex: 1,
-    lineHeight: 20,
-  },
-
-  // Professional loading styles
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: 60,
-    paddingHorizontal: 24,
-  },
-  loadingCard: {
-    backgroundColor: theme.surface,
-    borderRadius: 24,
-    padding: 36,
-    alignItems: 'center',
-    elevation: 10,
-    shadowColor: theme.shadow,
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.18,
-    shadowRadius: 16,
-    minWidth: 300,
-    maxWidth: 340,
-    borderWidth: 1,
-    borderColor: theme.border,
-  },
-  loadingIconContainer: {
-    marginBottom: 24,
-    padding: 16,
-    borderRadius: 50,
-    backgroundColor: theme.primaryLight,
-  },
-  loadingTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: theme.text,
-    textAlign: 'center',
-    marginBottom: 8,
-  },
-  loadingSubtitle: {
-    fontSize: 15,
-    color: theme.textSecondary,
-    textAlign: 'center',
-    marginBottom: 24,
-    lineHeight: 22,
-  },
-  loadingProgressContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  loadingSpinner: {
-    marginRight: 12,
-  },
-  loadingProgressText: {
-    fontSize: 14,
-    color: theme.primary,
-    fontWeight: '500',
-  },
-  loadingSteps: {
-    alignSelf: 'stretch',
-    marginTop: 8,
-  },
-  loadingStep: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 6,
-  },
-  loadingStepIcon: {
-    width: 16,
-    height: 16,
-    borderRadius: 8,
-    backgroundColor: theme.primaryLight,
-    marginRight: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  loadingStepIconActive: {
-    backgroundColor: theme.primary,
-  },
-  loadingStepText: {
-    fontSize: 13,
-    color: theme.textSecondary,
-    flex: 1,
-  },
-  loadingStepTextActive: {
-    color: theme.text,
-    fontWeight: '500',
-  },
-  loadingFooter: {
-    marginTop: 20,
-    paddingTop: 16,
-    borderTopWidth: 1,
-    borderTopColor: theme.borderLight,
-    alignSelf: 'stretch',
-  },
-  loadingFooterText: {
-    fontSize: 12,
-    color: theme.textTertiary,
-    textAlign: 'center',
-    lineHeight: 18,
-  },
-
-  // Success banner styles
-  successBanner: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: '#4CAF50',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    zIndex: 1000,
-    elevation: 10,
-  },
-  successBannerText: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: '600',
-    marginLeft: 8,
-  },
-
-  resultContainer: {
-    marginTop: 24,
-    marginBottom: 40,
-    borderRadius: 20,
-    overflow: 'hidden',
-    elevation: 6,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.18,
-    shadowRadius: 8,
-    borderWidth: 1,
-    borderColor: theme.border,
-    backgroundColor: theme.surface,
-  },
-  resultHeader: {
-    paddingVertical: 20,
-    paddingHorizontal: 24,
-    alignItems: 'center',
-  },
-  resultTitle: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: '#fff',
-    textAlign: 'center',
-  },
-  resultSubtitle: {
-    fontSize: 14,
-    color: 'rgba(255,255,255,0.8)',
-    textAlign: 'center',
-    marginTop: 4,
-  },
-  resultContent: {
-    backgroundColor: theme.surface,
-    padding: 20,
-  },
-  summaryCards: {
-    flexDirection: 'row',
-    marginBottom: 24,
-    gap: 12,
-  },
-  summaryCard: {
-    flex: 1,
-    backgroundColor: theme.surface,
-    padding: 16,
-    borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: theme.border,
-    shadowColor: theme.shadow,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-    elevation: 2,
-    minHeight: 100,
-  },
-  summaryLabel: {
-    fontSize: 13,
-    color: theme.textSecondary,
-    textAlign: 'center',
-    marginBottom: 10,
-    fontWeight: '600',
-    letterSpacing: 0.2,
-    textTransform: 'uppercase',
-  },
-  breakdownSection: {
-    marginBottom: 24,
-    backgroundColor: theme.surfaceSecondary,
-    padding: 16,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: theme.border,
-  },
-  breakdownTitle: {
-    fontSize: 17,
-    fontWeight: '700',
-    color: theme.text,
-    marginBottom: 14,
-    paddingBottom: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.border,
-    letterSpacing: 0.3,
-  },
-  breakdownItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.border,
-    marginBottom: 2,
-  },
-  breakdownLabel: {
-    fontSize: 15,
-    color: theme.textSecondary,
-    flex: 1,
-    letterSpacing: 0.2,
-  },
-  breakdownValue: {
-    fontSize: 15,
-    color: theme.text,
-    fontWeight: '600',
-    letterSpacing: 0.2,
-  },
-  boldText: {
-    fontWeight: 'bold',
-    color: theme.text,
-  },
-  totalTaxItem: {
-    borderTopWidth: 1,
-    borderTopColor: theme.borderLight,
-    marginTop: 8,
-    paddingTop: 12,
-  },
-  actionButtons: {
-    flexDirection: 'row',
-    marginTop: 20,
-    gap: 12,
-    flexWrap: 'wrap',
-  },
-  actionButton: {
-    flex: 1,
-    minWidth: 140,
-    backgroundColor: '#4A90E2',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 14,
-    paddingHorizontal: 20,
-    borderRadius: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-    height: 48,
-  },
-  pdfButton: {
-    backgroundColor: '#dc3545',
-  },
-  saveButton: {
-    backgroundColor: '#10B981',
-  },
-  actionButtonText: {
-    color: '#fff',
-    fontSize: 15,
-    fontWeight: '600',
-    marginLeft: 10,
-    letterSpacing: 0.2,
-  },
-  // Step indicator styles - Compact and contemporary design
-  stepIndicatorContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 8,
-  },
-  stepBackButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: theme.surfaceSecondary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
-    borderWidth: 1,
-    borderColor: theme.border,
-  },
-  stepIndicator: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: theme.surface,
-    borderRadius: 12,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.08,
-    shadowRadius: 3,
-    borderWidth: 1,
-    borderColor: theme.borderLight,
-  },
-  stepIndicatorRow: {
-    flex: 1,
-    alignItems: 'center',
-    position: 'relative',
-  },
-  stepCircle: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: theme.surfaceSecondary,
-    borderWidth: 1.5,
-    borderColor: theme.border,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 6,
-  },
-  stepCircleActive: {
-    backgroundColor: theme.primary,
-    borderColor: theme.primary,
-  },
-  stepCircleCurrent: {
-    backgroundColor: theme.primary,
-    borderColor: theme.primary,
-    transform: [{ scale: 1.1 }],
-  },
-  stepCircleDisabled: {
-    backgroundColor: theme.surfaceSecondary,
-    borderColor: theme.borderLight,
-    opacity: 0.6,
-  },
-  stepNumber: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: theme.textSecondary,
-  },
-  stepNumberActive: {
-    color: '#FFFFFF',
-    fontWeight: '700',
-  },
-  stepNumberDisabled: {
-    color: theme.textTertiary,
-  },
-  stepLabel: {
-    fontSize: 11,
-    color: theme.textSecondary,
-    fontWeight: '500',
-    textAlign: 'center',
-    letterSpacing: 0.1,
-  },
-  stepLabelActive: {
-    color: theme.text,
-    fontWeight: '600',
-  },
-  stepLabelDisabled: {
-    color: theme.textTertiary,
-    opacity: 0.7,
-  },
-  stepLine: {
-    position: 'absolute',
-    top: 14,
-    left: '60%',
-    right: '-40%',
-    height: 1.5,
-    backgroundColor: theme.borderLight,
-    zIndex: -1,
-  },
-  stepLineActive: {
-    backgroundColor: theme.primary,
-  },
-
-
-  navButtonSpacer: {
-    flex: 1,
-  },
-  // Step button styles
-  stepButtonContainer: {
-    marginTop: 32,
-    marginBottom: 20,
-    paddingHorizontal: 16,
-  },
-  stepButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 16,
-    paddingHorizontal: 32,
-    borderRadius: 12,
-    borderWidth: 1.5,
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.2,
-    shadowRadius: 5,
-    elevation: 3,
-    minHeight: 56,
-  },
-  stepButtonNext: {
-    borderRadius: 20,
-    overflow: 'hidden',
-    elevation: 10,
-    shadowColor: theme.primary,
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.25,
-    shadowRadius: 12,
-    borderWidth: 1,
-    borderColor: theme.primaryBorder,
-  },
-  stepButtonNextGradient: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 16,
-    paddingHorizontal: 32,
-    minHeight: 56,
-  },
-  stepButtonNextIconContainer: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.3)',
-    marginRight: 12,
-  },
-  stepButtonCalculate: {
-    borderRadius: 20,
-    overflow: 'hidden',
-    elevation: 10,
-    shadowColor: theme.accent,
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.25,
-    shadowRadius: 12,
-    borderWidth: 1,
-    borderColor: theme.accentBorder,
-  },
-  stepButtonCalculateGradient: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 16,
-    paddingHorizontal: 32,
-    minHeight: 56,
-  },
-  stepButtonCalculateIconContainer: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.3)',
-    marginRight: 12,
-  },
-  stepButtonText: {
-    fontSize: 16,
-    color: '#fff',
-    fontWeight: '600',
-    marginRight: 8,
-  },
-  stepButtonNextText: {
-    fontSize: 16,
-    color: '#fff',
-    fontWeight: '600',
-    marginLeft: 8,
-  },
-  readyToCalculateLabel: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 12,
-    paddingHorizontal: 16,
-  },
-  readyToCalculateLabelText: {
-    fontSize: 14,
-    color: theme.textSecondary,
-    fontWeight: '500',
-    marginLeft: 8,
-    letterSpacing: 0.2,
-  },
-  startOverButton: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 14,
-    paddingHorizontal: 24,
-    borderRadius: 12,
-    backgroundColor: theme.surfaceSecondary,
-    borderWidth: 1.5,
-    borderColor: theme.primary,
-    shadowColor: theme.shadow,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-    elevation: 2,
-    height: 48,
-  },
-  startOverButtonText: {
-    fontSize: 16,
-    color: theme.primary,
-    fontWeight: '600',
-    marginLeft: 10,
-    letterSpacing: 0.2,
-  },
-  navigationButtonsContainer: {
-    flexDirection: 'row',
-    gap: 12,
-    marginTop: 20,
-  },
-  homeButton: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 14,
-    paddingHorizontal: 20,
-    backgroundColor: theme.surface,
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: theme.primary,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-    elevation: 2,
-    height: 48,
-  },
-  homeButtonText: {
-    fontSize: 16,
-    color: theme.primary,
-    fontWeight: '600',
-    marginLeft: 10,
-    letterSpacing: 0.2,
-  },
-  fullRowButtonsContainer: {
-    marginTop: 20,
-    gap: 12,
-  },
-  fullRowHomeButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 16,
-    paddingHorizontal: 20,
-    backgroundColor: theme.surface,
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: theme.primary,
-    shadowColor: theme.shadow,
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-    elevation: 2,
-    width: '100%',
-    height: 56,
-  },
-  fullRowEditButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 16,
-    paddingHorizontal: 20,
-    backgroundColor: theme.surface,
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: theme.primary,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-    elevation: 2,
-    width: '100%',
-    height: 56,
-  },
-  fullRowButtonText: {
-    fontSize: 16,
-    color: theme.primary,
-    fontWeight: '600',
-    marginLeft: 10,
-    letterSpacing: 0.2,
-  },
-  // Help Modal Styles
-  helpModalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  helpModalContent: {
-    backgroundColor: theme.surface,
-    borderRadius: 16,
-    padding: 24,
-    maxWidth: '100%',
-    width: '100%',
-    maxHeight: '80%',
-    elevation: 10,
-    shadowColor: theme.shadow,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
-  },
-  helpModalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16,
-    paddingBottom: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.border,
-  },
-  helpModalTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: theme.text,
-    flex: 1,
-  },
-  helpModalCloseButton: {
-    padding: 4,
-  },
-  helpModalScrollView: {
-    maxHeight: 400,
-  },
-  helpSection: {
-    marginBottom: 16,
-  },
-  helpSectionTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: theme.text,
-    marginBottom: 6,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  helpSectionText: {
-    fontSize: 15,
-    color: theme.textSecondary,
-    lineHeight: 22,
-    marginBottom: 8,
-  },
-  helpExamplesList: {
-    marginLeft: 12,
-  },
-  helpExampleItem: {
-    fontSize: 14,
-    color: theme.textSecondary,
-    marginBottom: 4,
-    lineHeight: 20,
-  },
-  helpTipsList: {
-    marginLeft: 12,
-  },
-  helpTipItem: {
-    fontSize: 14,
-    color: theme.textSecondary,
-    marginBottom: 6,
-    lineHeight: 20,
-  },
-  helpWhereToFind: {
-    backgroundColor: theme.primaryLight,
-    padding: 12,
-    borderRadius: 8,
-    borderLeftWidth: 3,
-    borderLeftColor: theme.primary,
-  },
-  helpWhereToFindText: {
-    fontSize: 14,
-    color: theme.text,
-    fontStyle: 'italic',
-    lineHeight: 20,
-  },
-
-  // Deduction category styles
-  deductionCategory: {
-    backgroundColor: theme.surface,
-    borderRadius: 12,
-    padding: 0,
-    marginBottom: 20,
-    borderWidth: 1,
-    borderColor: theme.border,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 3,
+const getStyles = (theme: Theme) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: theme.surfaceSecondary,
     },
-    shadowOpacity: 0.12,
-    shadowRadius: 6,
-    elevation: 3,
-    overflow: 'hidden',
-  },
-
-  categoryTitle: {
-    fontSize: 19,
-    fontWeight: '700',
-    color: theme.text,
-    marginBottom: 6,
-    letterSpacing: 0.2,
-    lineHeight: 24,
-  },
-
-  categoryDescription: {
-    fontSize: 14,
-    color: theme.textSecondary,
-    marginBottom: 0,
-    lineHeight: 20,
-    letterSpacing: 0.1,
-  },
-
-  // Enhanced collapsible category styles with better visual hierarchy
-  deductionCategoryHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 20,
-    backgroundColor: theme.surfaceSecondary,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.border,
-    borderTopLeftRadius: 12,
-    borderTopRightRadius: 12,
-    shadowColor: theme.shadow,
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
-  },
-
-  deductionCategoryHeaderCollapsed: {
-    borderBottomWidth: 0,
-    borderRadius: 12,
-    marginBottom: 8,
-  },
-
-  categoryHeaderLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-  },
-
-  categoryIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: theme.primaryLight,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 16,
-    shadowColor: theme.primary,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 2,
-  },
-
-  categoryIconActive: {
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-
-  categoryTitleContainer: {
-    flex: 1,
-  },
-
-  categoryToggle: {
-    padding: 10,
-    borderRadius: 22,
-    backgroundColor: theme.surface,
-    borderWidth: 1,
-    borderColor: theme.border,
-    shadowColor: theme.shadow,
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
-  },
-
-  categoryContent: {
-    padding: 24,
-    paddingTop: 20,
-    backgroundColor: theme.surface,
-    borderBottomLeftRadius: 12,
-    borderBottomRightRadius: 12,
-    borderWidth: 1,
-    borderTopWidth: 0,
-    borderColor: theme.border,
-  },
-
-  categoryTotal: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: theme.text,
-    marginTop: 6,
-    letterSpacing: 0.3,
-  },
-
-  // Enhanced deduction summary styles
-  deductionSummary: {
-    backgroundColor: theme.surface,
-    borderRadius: 12,
-    padding: 20,
-    marginBottom: 20,
-    borderWidth: 1,
-    borderColor: theme.border,
-    shadowColor: theme.shadow,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-
-  summaryHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-
-  summaryTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: theme.primary,
-    marginLeft: 8,
-    flex: 1,
-  },
-
-  summaryBadge: {
-    backgroundColor: theme.primary,
-    borderRadius: 12,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-  },
-
-  summaryBadgeText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#ffffff',
-  },
-
-  summaryAmount: {
-    fontSize: 28,
-    fontWeight: '800',
-    color: theme.text,
-    textAlign: 'center',
-    marginBottom: 16,
-  },
-
-  summaryBreakdown: {
-    marginBottom: 16,
-  },
-
-  summaryBreakdownItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-
-  summaryBreakdownDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    marginRight: 8,
-  },
-
-  summaryBreakdownLabel: {
-    fontSize: 14,
-    color: theme.textSecondary,
-    flex: 1,
-  },
-
-  summaryBreakdownValue: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: theme.text,
-  },
-
-  taxSavingsEstimate: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: theme.successLight,
-    borderRadius: 8,
-    padding: 12,
-    borderWidth: 1,
-    borderColor: theme.success,
-  },
-
-  taxSavingsText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: theme.success,
-    marginLeft: 6,
-  },
-
-  // Quick summary bar styles
-  quickSummaryBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: theme.primaryLight,
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: theme.primaryBorder,
-  },
-
-  quickSummaryLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-
-  quickSummaryLabel: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: theme.textSecondary,
-    marginRight: 8,
-  },
-
-  quickSummaryAmount: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: theme.text,
-  },
-
-  quickSummaryRight: {
-    alignItems: 'flex-end',
-  },
-
-  quickSummaryTax: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: theme.success,
-  },
-
-  // Progress indicator styles
-  progressContainer: {
-    marginBottom: 16,
-  },
-
-  progressHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-
-  progressLabel: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: theme.textSecondary,
-  },
-
-  progressText: {
-    fontSize: 12,
-    color: theme.textSecondary,
-  },
-
-  progressBar: {
-    height: 6,
-    backgroundColor: theme.borderLight,
-    borderRadius: 3,
-    overflow: 'hidden',
-  },
-
-  progressFill: {
-    height: '100%',
-    backgroundColor: theme.primary,
-    borderRadius: 3,
-  },
-
-  // Smart input feature styles
-  inputFocused: {
-    borderColor: theme.primary,
-    borderWidth: 2,
-    shadowColor: theme.primary,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-
-  inputWithValue: {
-    backgroundColor: theme.surfaceSecondary,
-    borderColor: theme.primaryBorder,
-  },
-
-  suggestionsContainer: {
-    marginTop: 8,
-    padding: 12,
-    backgroundColor: theme.background,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: theme.border,
-  },
-
-  suggestionsLabel: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: theme.textSecondary,
-    marginBottom: 8,
-  },
-
-  suggestionsRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-
-  suggestionChip: {
-    backgroundColor: theme.primary,
-    borderRadius: 16,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    marginRight: 8,
-    marginBottom: 4,
-  },
-
-  suggestionText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#ffffff',
-  },
-
-  errorContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 6,
-  },
-
-  validationContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 6,
-  },
-
-  validationText: {
-    fontSize: 12,
-    color: theme.success,
-    marginLeft: 4,
-    fontWeight: '500',
-  },
-
-  // Quick Add Progressive Disclosure styles
-  quickAddContainer: {
-    backgroundColor: theme.surfaceSecondary,
-    borderRadius: 12,
-    padding: 20,
-    marginBottom: 20,
-    borderWidth: 1,
-    borderColor: theme.border,
-  },
-
-  quickAddTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: theme.text,
-    marginBottom: 4,
-  },
-
-  quickAddSubtitle: {
-    fontSize: 14,
-    color: theme.textSecondary,
-    marginBottom: 16,
-  },
-
-  quickAddGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    gap: 12,
-  },
-
-  quickAddButton: {
-    backgroundColor: theme.surface,
-    borderRadius: 12,
-    padding: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: '48%',
-    minHeight: 100,
-    borderWidth: 1,
-    borderColor: theme.border,
-    shadowColor: theme.shadow,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-    elevation: 2,
-  },
-
-  quickAddButtonText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: theme.text,
-    marginTop: 8,
-    textAlign: 'center',
-  },
-
-  quickAddButtonAmount: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: theme.text,
-    marginTop: 4,
-  },
-
-  // Show All Categories styles
-  showAllContainer: {
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-
-  showAllButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: theme.surfaceSecondary,
-    borderRadius: 20,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderWidth: 1,
-    borderColor: theme.border,
-  },
-
-  showAllButtonText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: theme.text,
-    marginLeft: 6,
-  },
-
-  // Completion indicators styles
-  completionStatus: {
-    marginTop: 16,
-    padding: 12,
-    backgroundColor: theme.successLight,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: theme.success,
-  },
-
-  completionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 6,
-  },
-
-  completionTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#059669',
-    marginLeft: 6,
-  },
-
-  completionText: {
-    fontSize: 13,
-    color: '#047857',
-    lineHeight: 18,
-  },
-
-  // Tips guidance styles
-  nextStepsContainer: {
-    backgroundColor: theme.primaryLight,
-    borderRadius: 12,
-    padding: 20,
-    marginBottom: 20,
-    borderWidth: 1,
-    borderColor: theme.primaryBorder,
-  },
-
-  nextStepsHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-
-  nextStepsTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: theme.text,
-    marginLeft: 8,
-  },
-
-  nextStepsList: {
-    gap: 12,
-  },
-
-  nextStepItem: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-  },
-
-  nextStepNumber: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: '#4A90E2',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
-    marginTop: 2,
-  },
-
-  nextStepNumberText: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#ffffff',
-  },
-
-  nextStepText: {
-    fontSize: 14,
-    color: theme.text,
-    lineHeight: 20,
-    flex: 1,
-  },
-
-  assumptionsCard: {
-    backgroundColor: theme.surface,
-    borderRadius: 12,
-    padding: 18,
-    marginBottom: 20,
-    borderWidth: 1,
-    borderColor: theme.border,
-  },
-
-  assumptionsHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-
-  assumptionsTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: theme.text,
-    marginLeft: 8,
-  },
-
-  assumptionsIntro: {
-    fontSize: 13,
-    color: theme.textSecondary,
-    lineHeight: 18,
-    marginBottom: 12,
-  },
-
-  assumptionsList: {
-    gap: 10,
-  },
-
-  assumptionItem: {
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-    backgroundColor: theme.background,
-    borderWidth: 1,
-    borderColor: theme.border,
-  },
-
-  assumptionLabel: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: theme.text,
-    marginBottom: 4,
-  },
-
-  assumptionDetail: {
-    fontSize: 13,
-    color: theme.textSecondary,
-    lineHeight: 18,
-  },
-
-  taxYearOptionGrid: {
-    gap: 10,
-  },
-
-  taxYearOption: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 12,
-    paddingHorizontal: 14,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: theme.border,
-    backgroundColor: theme.surface,
-  },
-
-  taxYearOptionActive: {
-    borderColor: theme.primary,
-    backgroundColor: theme.primaryLight,
-  },
-
-  taxYearOptionText: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: theme.text,
-  },
-
-  taxYearOptionSubtext: {
-    fontSize: 12,
-    color: theme.textSecondary,
-    lineHeight: 16,
-    marginTop: 3,
-  },
-
-  // Enhanced Results Screen styles
-  resultMainCard: {
-    backgroundColor: theme.surface,
-    borderRadius: 16,
-    padding: 24,
-    marginTop: 16,
-    shadowColor: theme.shadow,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-
-  resultMainHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-
-  resultMainLabel: {
-    fontSize: 18,
-    fontWeight: '700',
-    marginLeft: 12,
-  },
-
-  resultMainAmount: {
-    fontSize: 36,
-    fontWeight: '800',
-    textAlign: 'center',
-    marginVertical: 8,
-  },
-
-  resultMainSubtext: {
-    fontSize: 14,
-    color: theme.textSecondary,
-    textAlign: 'center',
-    fontWeight: '500',
-  },
-
-  resultMainFinancialYear: {
-    fontSize: 12,
-    color: theme.textTertiary,
-    textAlign: 'center',
-    fontWeight: '400',
-    marginTop: 2,
-  },
-
-  // Results header styles
-  resultsHeaderContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 8,
-  },
-
-  tableViewButton: {
-    backgroundColor: theme.surface,
-    borderRadius: 8,
-    padding: 8,
-    borderWidth: 1,
-    borderColor: theme.border,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
-  },
-
-
-
-  // Full width home button styles
-  fullWidthHomeButton: {
-    backgroundColor: theme.surface,
-    borderRadius: 12,
-    padding: 16,
-    marginTop: 20,
-    marginBottom: Platform.OS === 'ios' ? 50 : 40, // Platform-specific bottom margin for nav bar
-    borderWidth: 2,
-    borderColor: theme.primary,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-
-  fullWidthHomeButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: theme.primary,
-    marginLeft: 8,
-  },
-
-  // ATO Integration Button Styles
-  atoFileReturnButton: {
-    backgroundColor: '#1E40AF', // ATO blue color
-    borderRadius: 12,
-    padding: 20,
-    marginTop: 16,
-    marginBottom: 8,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 6,
-    borderWidth: 2,
-    borderColor: '#1D4ED8',
-  },
-
-  atoFileReturnButtonText: {
-    fontSize: 17,
-    fontWeight: '700',
-    color: '#ffffff',
-    marginLeft: 10,
-    marginRight: 4,
-  },
-
-  atoFileReturnDescription: {
-    fontSize: 14,
-    color: theme.text, // Use theme text color (white/black based on theme)
-    textAlign: 'center',
-    marginTop: 24,
-    marginBottom: 6,
-    marginHorizontal: 16,
-    fontWeight: '500',
-    letterSpacing: 0.1,
-    lineHeight: 20,
-  },
-
-  externalLinkIcon: {
-    marginLeft: 6,
-  },
-
-  // Table view styles
-  tableContainer: {
-    backgroundColor: theme.surface,
-    borderRadius: 12,
-    marginTop: 16,
-    borderWidth: 1,
-    borderColor: theme.border,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-
-  tableHeader: {
-    backgroundColor: theme.surfaceSecondary,
-    borderTopLeftRadius: 12,
-    borderTopRightRadius: 12,
-    paddingVertical: 16,
-    paddingHorizontal: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.border,
-  },
-
-  tableHeaderText: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: theme.text,
-    textAlign: 'center',
-  },
-
-  tableRow: {
-    flexDirection: 'row',
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.borderLight,
-    alignItems: 'center',
-    minHeight: 50,
-  },
-
-  tableRowLast: {
-    borderBottomWidth: 0,
-  },
-
-  tableRowHeader: {
-    backgroundColor: theme.surfaceSecondary,
-    borderBottomWidth: 2,
-    borderBottomColor: theme.border,
-  },
-
-  tableCell: {
-    flex: 1,
-    paddingRight: 12,
-  },
-
-  tableCellType: {
-    flex: 2,
-    minWidth: 120,
-  },
-
-  tableCellValue: {
-    flex: 1,
-    alignItems: 'flex-end',
-    minWidth: 80,
-  },
-
-  tableCellDescription: {
-    flex: 2,
-    minWidth: 150,
-  },
-
-  tableCellText: {
-    fontSize: 14,
-    color: theme.textSecondary,
-    fontWeight: '500',
-  },
-
-  tableCellHeaderText: {
-    fontSize: 14,
-    color: theme.text,
-    fontWeight: '700',
-  },
-
-  tableCellValueText: {
-    fontSize: 14,
-    fontWeight: '600',
-    textAlign: 'right',
-  },
-
-  tableCellDescriptionText: {
-    fontSize: 13,
-    color: '#64748B',
-    lineHeight: 18,
-    flexWrap: 'wrap',
-  },
-
-  tableSection: {
-    marginBottom: 0,
-  },
-
-  tableSectionHeader: {
-    backgroundColor: theme.surfaceSecondary,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.border,
-  },
-
-  tableSectionHeaderText: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: theme.text,
-  },
-
-  // Compact table styles
-  compactTableContainer: {
-    backgroundColor: theme.surface,
-    borderRadius: 12,
-    marginTop: 16,
-    borderWidth: 1,
-    borderColor: theme.border,
-    shadowColor: theme.shadow,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
-    overflow: 'hidden',
-  },
-
-  compactTableContent: {
-    width: '100%', // Fixed width instead of minWidth
-  },
-
-  compactTableRow: {
-    flexDirection: 'row',
-    borderBottomWidth: 1,
-    borderBottomColor: theme.borderLight,
-    minHeight: 48,
-  },
-
-  compactTableHeaderRow: {
-    backgroundColor: theme.surfaceSecondary,
-    borderBottomWidth: 2,
-    borderBottomColor: theme.border,
-  },
-
-  compactTableFinalRow: {
-    backgroundColor: theme.successLight,
-    borderBottomWidth: 0,
-  },
-
-  compactTableCell: {
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-    justifyContent: 'center',
-  },
-
-  compactTableCellLabel: {
-    flex: 2,
-    borderRightWidth: 1,
-    borderRightColor: theme.borderLight,
-  },
-
-  compactTableCellValue: {
-    flex: 1,
-    alignItems: 'flex-end',
-  },
-
-  compactTableCellText: {
-    fontSize: 14,
-    color: theme.textSecondary, // Use theme color instead of hardcoded
-    fontWeight: '500',
-  },
-
-  compactTableHeaderText: {
-    fontWeight: '700',
-    color: theme.text, // Use theme color instead of hardcoded
-  },
-
-  compactTableFinalText: {
-    fontWeight: '700',
-    color: theme.success, // Use theme color instead of hardcoded
-  },
-
-  compactTableValueText: {
-    fontWeight: '600',
-    textAlign: 'right',
-    color: theme.text, // Use theme color for values
-  },
-});
+    safeArea: {
+      flex: 1,
+      backgroundColor: theme.background,
+    },
+
+    scrollContainer: {
+      flex: 1,
+      paddingHorizontal: 16,
+      paddingTop: 8,
+    },
+    tabContent: {
+      marginTop: 20,
+      paddingBottom: 20, // Additional bottom padding for safe area
+    },
+    sectionTitle: {
+      fontSize: 20,
+      fontWeight: 'bold',
+      color: theme.text,
+      marginBottom: 16,
+    },
+    inputContainer: {
+      marginBottom: 16,
+    },
+    labelContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: 6,
+    },
+    helpIcon: {
+      marginLeft: 'auto',
+      padding: 4,
+    },
+    helpIconWithData: {
+      marginLeft: 'auto',
+      padding: 4,
+      backgroundColor: theme.primaryLight,
+      borderRadius: 12,
+    },
+    inputLabel: {
+      fontSize: 15,
+      fontWeight: '600',
+      color: theme.text,
+      marginLeft: 8,
+      letterSpacing: 0.2,
+    },
+    input: {
+      backgroundColor: theme.surface,
+      borderWidth: 1,
+      borderColor: theme.border,
+      borderRadius: 12,
+      padding: 14,
+      fontSize: 16,
+      color: theme.text,
+      elevation: 1,
+      shadowColor: theme.shadow,
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.05,
+      shadowRadius: 2,
+    },
+    inputError: {
+      borderColor: theme.error,
+      borderWidth: 2,
+      backgroundColor: theme.errorLight,
+    },
+    inputDisabled: {
+      backgroundColor: theme.borderLight,
+      borderColor: theme.border,
+      color: theme.textSecondary,
+    },
+    multilineInput: {
+      height: 80,
+      textAlignVertical: 'top',
+    },
+    errorText: {
+      color: theme.error,
+      fontSize: 12,
+      marginTop: 4,
+      marginLeft: 8,
+      fontWeight: '500',
+    },
+    jobIncomeRow: {
+      flexDirection: 'row',
+      alignItems: 'flex-end',
+      marginBottom: 8,
+    },
+    flexInput: {
+      flex: 1,
+    },
+    removeButton: {
+      marginLeft: 12,
+      marginBottom: 16,
+    },
+    addButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: theme.buttonBack,
+      padding: 14,
+      borderRadius: 14,
+      marginBottom: 16,
+      borderWidth: 1,
+      borderColor: theme.buttonBackBorder,
+      shadowColor: theme.shadow,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.08,
+      shadowRadius: 3,
+      elevation: 1,
+    },
+    addButtonText: {
+      color: '#ffffff',
+      fontWeight: '600',
+      marginLeft: 10,
+      fontSize: 15,
+      letterSpacing: 0.2,
+    },
+    toggleButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: theme.surface,
+      padding: 18,
+      borderRadius: 16,
+      marginBottom: 14,
+      elevation: 2,
+      shadowColor: theme.shadow,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.08,
+      shadowRadius: 3,
+      borderWidth: 1.5,
+      borderColor: theme.border,
+    },
+    toggleButtonActive: {
+      backgroundColor: theme.primaryLight,
+      borderColor: theme.primary,
+      shadowColor: theme.primary,
+      shadowOpacity: 0.12,
+    },
+    toggleText: {
+      fontSize: 16,
+      color: theme.textSecondary,
+      marginLeft: 14,
+      fontWeight: '500',
+      letterSpacing: 0.2,
+    },
+    toggleTextActive: {
+      color: theme.text,
+      fontWeight: '600',
+    },
+    toggleSubtext: {
+      fontSize: 13,
+      color: theme.textTertiary,
+      marginLeft: 38,
+      marginTop: 4,
+      lineHeight: 18,
+    },
+    wfhInfo: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: theme.surfaceSecondary,
+      padding: 10,
+      borderRadius: 8,
+      marginTop: 8,
+    },
+    infoText: {
+      fontSize: 12,
+      color: theme.textLight,
+      marginLeft: 6,
+      flex: 1,
+    },
+    infoBox: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      backgroundColor: theme.primaryLight,
+      padding: 16,
+      borderRadius: 12,
+      marginTop: 16,
+      borderLeftWidth: 4,
+      borderLeftColor: theme.primary,
+    },
+    infoBoxText: {
+      fontSize: 14,
+      color: theme.text,
+      marginLeft: 12,
+      flex: 1,
+      lineHeight: 20,
+    },
+
+    // Warning card styles
+    warningCard: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      backgroundColor: theme.warningLight,
+      padding: 16,
+      borderRadius: 12,
+      marginBottom: 20,
+      borderLeftWidth: 4,
+      borderLeftColor: theme.warning,
+      borderWidth: 1,
+      borderColor: theme.warning,
+    },
+
+    warningCardText: {
+      fontSize: 14,
+      color: theme.text,
+      marginLeft: 12,
+      flex: 1,
+      lineHeight: 20,
+    },
+
+    // Professional loading styles
+    loadingContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      paddingVertical: 60,
+      paddingHorizontal: 24,
+    },
+    loadingCard: {
+      backgroundColor: theme.surface,
+      borderRadius: 24,
+      padding: 36,
+      alignItems: 'center',
+      elevation: 10,
+      shadowColor: theme.shadow,
+      shadowOffset: { width: 0, height: 6 },
+      shadowOpacity: 0.18,
+      shadowRadius: 16,
+      minWidth: 300,
+      maxWidth: 340,
+      borderWidth: 1,
+      borderColor: theme.border,
+    },
+    loadingIconContainer: {
+      marginBottom: 24,
+      padding: 16,
+      borderRadius: 50,
+      backgroundColor: theme.primaryLight,
+    },
+    loadingTitle: {
+      fontSize: 20,
+      fontWeight: '600',
+      color: theme.text,
+      textAlign: 'center',
+      marginBottom: 8,
+    },
+    loadingSubtitle: {
+      fontSize: 15,
+      color: theme.textSecondary,
+      textAlign: 'center',
+      marginBottom: 24,
+      lineHeight: 22,
+    },
+    loadingProgressContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: 16,
+    },
+    loadingSpinner: {
+      marginRight: 12,
+    },
+    loadingProgressText: {
+      fontSize: 14,
+      color: theme.primary,
+      fontWeight: '500',
+    },
+    loadingSteps: {
+      alignSelf: 'stretch',
+      marginTop: 8,
+    },
+    loadingStep: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingVertical: 6,
+    },
+    loadingStepIcon: {
+      width: 16,
+      height: 16,
+      borderRadius: 8,
+      backgroundColor: theme.primaryLight,
+      marginRight: 12,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    loadingStepIconActive: {
+      backgroundColor: theme.primary,
+    },
+    loadingStepText: {
+      fontSize: 13,
+      color: theme.textSecondary,
+      flex: 1,
+    },
+    loadingStepTextActive: {
+      color: theme.text,
+      fontWeight: '500',
+    },
+    loadingFooter: {
+      marginTop: 20,
+      paddingTop: 16,
+      borderTopWidth: 1,
+      borderTopColor: theme.borderLight,
+      alignSelf: 'stretch',
+    },
+    loadingFooterText: {
+      fontSize: 12,
+      color: theme.textTertiary,
+      textAlign: 'center',
+      lineHeight: 18,
+    },
+
+    // Success banner styles
+    successBanner: {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      backgroundColor: '#4CAF50',
+      paddingVertical: 12,
+      paddingHorizontal: 16,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      zIndex: 1000,
+      elevation: 10,
+    },
+    successBannerText: {
+      color: '#fff',
+      fontSize: 14,
+      fontWeight: '600',
+      marginLeft: 8,
+    },
+
+    resultContainer: {
+      marginTop: 24,
+      marginBottom: 40,
+      borderRadius: 20,
+      overflow: 'hidden',
+      elevation: 6,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.18,
+      shadowRadius: 8,
+      borderWidth: 1,
+      borderColor: theme.border,
+      backgroundColor: theme.surface,
+    },
+    resultHeader: {
+      paddingVertical: 20,
+      paddingHorizontal: 24,
+      alignItems: 'center',
+    },
+    resultTitle: {
+      fontSize: 22,
+      fontWeight: 'bold',
+      color: '#fff',
+      textAlign: 'center',
+    },
+    resultSubtitle: {
+      fontSize: 14,
+      color: 'rgba(255,255,255,0.8)',
+      textAlign: 'center',
+      marginTop: 4,
+    },
+    resultContent: {
+      backgroundColor: theme.surface,
+      padding: 20,
+    },
+    summaryCards: {
+      flexDirection: 'row',
+      marginBottom: 24,
+      gap: 12,
+    },
+    summaryCard: {
+      flex: 1,
+      backgroundColor: theme.surface,
+      padding: 16,
+      borderRadius: 16,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderWidth: 1,
+      borderColor: theme.border,
+      shadowColor: theme.shadow,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.08,
+      shadowRadius: 4,
+      elevation: 2,
+      minHeight: 100,
+    },
+    summaryLabel: {
+      fontSize: 13,
+      color: theme.textSecondary,
+      textAlign: 'center',
+      marginBottom: 10,
+      fontWeight: '600',
+      letterSpacing: 0.2,
+      textTransform: 'uppercase',
+    },
+    breakdownSection: {
+      marginBottom: 24,
+      backgroundColor: theme.surfaceSecondary,
+      padding: 16,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: theme.border,
+    },
+    breakdownTitle: {
+      fontSize: 17,
+      fontWeight: '700',
+      color: theme.text,
+      marginBottom: 14,
+      paddingBottom: 10,
+      borderBottomWidth: 1,
+      borderBottomColor: theme.border,
+      letterSpacing: 0.3,
+    },
+    breakdownItem: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      paddingVertical: 12,
+      borderBottomWidth: 1,
+      borderBottomColor: theme.border,
+      marginBottom: 2,
+    },
+    breakdownLabel: {
+      fontSize: 15,
+      color: theme.textSecondary,
+      flex: 1,
+      letterSpacing: 0.2,
+    },
+    breakdownValue: {
+      fontSize: 15,
+      color: theme.text,
+      fontWeight: '600',
+      letterSpacing: 0.2,
+    },
+    boldText: {
+      fontWeight: 'bold',
+      color: theme.text,
+    },
+    totalTaxItem: {
+      borderTopWidth: 1,
+      borderTopColor: theme.borderLight,
+      marginTop: 8,
+      paddingTop: 12,
+    },
+    actionButtons: {
+      flexDirection: 'row',
+      marginTop: 20,
+      gap: 12,
+      flexWrap: 'wrap',
+    },
+    actionButton: {
+      flex: 1,
+      minWidth: 140,
+      backgroundColor: '#4A90E2',
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingVertical: 14,
+      paddingHorizontal: 20,
+      borderRadius: 12,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 4,
+      elevation: 3,
+      height: 48,
+    },
+    pdfButton: {
+      backgroundColor: '#dc3545',
+    },
+    saveButton: {
+      backgroundColor: '#10B981',
+    },
+    actionButtonText: {
+      color: '#fff',
+      fontSize: 15,
+      fontWeight: '600',
+      marginLeft: 10,
+      letterSpacing: 0.2,
+    },
+    // Step indicator styles - Compact and contemporary design
+    stepIndicatorContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: 20,
+      paddingTop: 20,
+      paddingBottom: 8,
+    },
+    stepBackButton: {
+      width: 36,
+      height: 36,
+      borderRadius: 18,
+      backgroundColor: theme.surfaceSecondary,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginRight: 12,
+      borderWidth: 1,
+      borderColor: theme.border,
+    },
+    stepIndicator: {
+      flex: 1,
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: theme.surface,
+      borderRadius: 12,
+      paddingVertical: 12,
+      paddingHorizontal: 16,
+      elevation: 2,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.08,
+      shadowRadius: 3,
+      borderWidth: 1,
+      borderColor: theme.borderLight,
+    },
+    stepIndicatorRow: {
+      flex: 1,
+      alignItems: 'center',
+      position: 'relative',
+    },
+    stepCircle: {
+      width: 28,
+      height: 28,
+      borderRadius: 14,
+      backgroundColor: theme.surfaceSecondary,
+      borderWidth: 1.5,
+      borderColor: theme.border,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginBottom: 6,
+    },
+    stepCircleActive: {
+      backgroundColor: theme.primary,
+      borderColor: theme.primary,
+    },
+    stepCircleCurrent: {
+      backgroundColor: theme.primary,
+      borderColor: theme.primary,
+      transform: [{ scale: 1.1 }],
+    },
+    stepCircleDisabled: {
+      backgroundColor: theme.surfaceSecondary,
+      borderColor: theme.borderLight,
+      opacity: 0.6,
+    },
+    stepNumber: {
+      fontSize: 12,
+      fontWeight: '600',
+      color: theme.textSecondary,
+    },
+    stepNumberActive: {
+      color: '#FFFFFF',
+      fontWeight: '700',
+    },
+    stepNumberDisabled: {
+      color: theme.textTertiary,
+    },
+    stepLabel: {
+      fontSize: 11,
+      color: theme.textSecondary,
+      fontWeight: '500',
+      textAlign: 'center',
+      letterSpacing: 0.1,
+    },
+    stepLabelActive: {
+      color: theme.text,
+      fontWeight: '600',
+    },
+    stepLabelDisabled: {
+      color: theme.textTertiary,
+      opacity: 0.7,
+    },
+    stepLine: {
+      position: 'absolute',
+      top: 14,
+      left: '60%',
+      right: '-40%',
+      height: 1.5,
+      backgroundColor: theme.borderLight,
+      zIndex: -1,
+    },
+    stepLineActive: {
+      backgroundColor: theme.primary,
+    },
+
+    navButtonSpacer: {
+      flex: 1,
+    },
+    // Step button styles
+    stepButtonContainer: {
+      marginTop: 32,
+      marginBottom: 20,
+      paddingHorizontal: 16,
+    },
+    stepButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingVertical: 16,
+      paddingHorizontal: 32,
+      borderRadius: 12,
+      borderWidth: 1.5,
+      shadowOffset: { width: 0, height: 3 },
+      shadowOpacity: 0.2,
+      shadowRadius: 5,
+      elevation: 3,
+      minHeight: 56,
+    },
+    stepButtonNext: {
+      borderRadius: 20,
+      overflow: 'hidden',
+      elevation: 10,
+      shadowColor: theme.primary,
+      shadowOffset: { width: 0, height: 6 },
+      shadowOpacity: 0.25,
+      shadowRadius: 12,
+      borderWidth: 1,
+      borderColor: theme.primaryBorder,
+    },
+    stepButtonNextGradient: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingVertical: 16,
+      paddingHorizontal: 32,
+      minHeight: 56,
+    },
+    stepButtonNextIconContainer: {
+      width: 32,
+      height: 32,
+      borderRadius: 16,
+      backgroundColor: 'rgba(255, 255, 255, 0.2)',
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderWidth: 1,
+      borderColor: 'rgba(255, 255, 255, 0.3)',
+      marginRight: 12,
+    },
+    stepButtonCalculate: {
+      borderRadius: 20,
+      overflow: 'hidden',
+      elevation: 10,
+      shadowColor: theme.accent,
+      shadowOffset: { width: 0, height: 6 },
+      shadowOpacity: 0.25,
+      shadowRadius: 12,
+      borderWidth: 1,
+      borderColor: theme.accentBorder,
+    },
+    stepButtonCalculateGradient: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingVertical: 16,
+      paddingHorizontal: 32,
+      minHeight: 56,
+    },
+    stepButtonCalculateIconContainer: {
+      width: 32,
+      height: 32,
+      borderRadius: 16,
+      backgroundColor: 'rgba(255, 255, 255, 0.2)',
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderWidth: 1,
+      borderColor: 'rgba(255, 255, 255, 0.3)',
+      marginRight: 12,
+    },
+    stepButtonText: {
+      fontSize: 16,
+      color: '#fff',
+      fontWeight: '600',
+      marginRight: 8,
+    },
+    stepButtonNextText: {
+      fontSize: 16,
+      color: '#fff',
+      fontWeight: '600',
+      marginLeft: 8,
+    },
+    readyToCalculateLabel: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginBottom: 12,
+      paddingHorizontal: 16,
+    },
+    readyToCalculateLabelText: {
+      fontSize: 14,
+      color: theme.textSecondary,
+      fontWeight: '500',
+      marginLeft: 8,
+      letterSpacing: 0.2,
+    },
+    startOverButton: {
+      flex: 1,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingVertical: 14,
+      paddingHorizontal: 24,
+      borderRadius: 12,
+      backgroundColor: theme.surfaceSecondary,
+      borderWidth: 1.5,
+      borderColor: theme.primary,
+      shadowColor: theme.shadow,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.05,
+      shadowRadius: 3,
+      elevation: 2,
+      height: 48,
+    },
+    startOverButtonText: {
+      fontSize: 16,
+      color: theme.primary,
+      fontWeight: '600',
+      marginLeft: 10,
+      letterSpacing: 0.2,
+    },
+    navigationButtonsContainer: {
+      flexDirection: 'row',
+      gap: 12,
+      marginTop: 20,
+    },
+    homeButton: {
+      flex: 1,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingVertical: 14,
+      paddingHorizontal: 20,
+      backgroundColor: theme.surface,
+      borderRadius: 12,
+      borderWidth: 2,
+      borderColor: theme.primary,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.05,
+      shadowRadius: 3,
+      elevation: 2,
+      height: 48,
+    },
+    homeButtonText: {
+      fontSize: 16,
+      color: theme.primary,
+      fontWeight: '600',
+      marginLeft: 10,
+      letterSpacing: 0.2,
+    },
+    fullRowButtonsContainer: {
+      marginTop: 20,
+      gap: 12,
+    },
+    fullRowHomeButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingVertical: 16,
+      paddingHorizontal: 20,
+      backgroundColor: theme.surface,
+      borderRadius: 12,
+      borderWidth: 2,
+      borderColor: theme.primary,
+      shadowColor: theme.shadow,
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.05,
+      shadowRadius: 3,
+      elevation: 2,
+      width: '100%',
+      height: 56,
+    },
+    fullRowEditButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingVertical: 16,
+      paddingHorizontal: 20,
+      backgroundColor: theme.surface,
+      borderRadius: 12,
+      borderWidth: 2,
+      borderColor: theme.primary,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.05,
+      shadowRadius: 3,
+      elevation: 2,
+      width: '100%',
+      height: 56,
+    },
+    fullRowButtonText: {
+      fontSize: 16,
+      color: theme.primary,
+      fontWeight: '600',
+      marginLeft: 10,
+      letterSpacing: 0.2,
+    },
+    // Help Modal Styles
+    helpModalOverlay: {
+      flex: 1,
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: 20,
+    },
+    helpModalContent: {
+      backgroundColor: theme.surface,
+      borderRadius: 16,
+      padding: 24,
+      maxWidth: '100%',
+      width: '100%',
+      maxHeight: '80%',
+      elevation: 10,
+      shadowColor: theme.shadow,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.25,
+      shadowRadius: 8,
+    },
+    helpModalHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 16,
+      paddingBottom: 12,
+      borderBottomWidth: 1,
+      borderBottomColor: theme.border,
+    },
+    helpModalTitle: {
+      fontSize: 18,
+      fontWeight: '700',
+      color: theme.text,
+      flex: 1,
+    },
+    helpModalCloseButton: {
+      padding: 4,
+    },
+    helpModalScrollView: {
+      maxHeight: 400,
+    },
+    helpSection: {
+      marginBottom: 16,
+    },
+    helpSectionTitle: {
+      fontSize: 14,
+      fontWeight: '600',
+      color: theme.text,
+      marginBottom: 6,
+      textTransform: 'uppercase',
+      letterSpacing: 0.5,
+    },
+    helpSectionText: {
+      fontSize: 15,
+      color: theme.textSecondary,
+      lineHeight: 22,
+      marginBottom: 8,
+    },
+    helpExamplesList: {
+      marginLeft: 12,
+    },
+    helpExampleItem: {
+      fontSize: 14,
+      color: theme.textSecondary,
+      marginBottom: 4,
+      lineHeight: 20,
+    },
+    helpTipsList: {
+      marginLeft: 12,
+    },
+    helpTipItem: {
+      fontSize: 14,
+      color: theme.textSecondary,
+      marginBottom: 6,
+      lineHeight: 20,
+    },
+    helpWhereToFind: {
+      backgroundColor: theme.primaryLight,
+      padding: 12,
+      borderRadius: 8,
+      borderLeftWidth: 3,
+      borderLeftColor: theme.primary,
+    },
+    helpWhereToFindText: {
+      fontSize: 14,
+      color: theme.text,
+      fontStyle: 'italic',
+      lineHeight: 20,
+    },
+
+    // Deduction category styles
+    deductionCategory: {
+      backgroundColor: theme.surface,
+      borderRadius: 12,
+      padding: 0,
+      marginBottom: 20,
+      borderWidth: 1,
+      borderColor: theme.border,
+      shadowColor: '#000',
+      shadowOffset: {
+        width: 0,
+        height: 3,
+      },
+      shadowOpacity: 0.12,
+      shadowRadius: 6,
+      elevation: 3,
+      overflow: 'hidden',
+    },
+
+    categoryTitle: {
+      fontSize: 19,
+      fontWeight: '700',
+      color: theme.text,
+      marginBottom: 6,
+      letterSpacing: 0.2,
+      lineHeight: 24,
+    },
+
+    categoryDescription: {
+      fontSize: 14,
+      color: theme.textSecondary,
+      marginBottom: 0,
+      lineHeight: 20,
+      letterSpacing: 0.1,
+    },
+
+    // Enhanced collapsible category styles with better visual hierarchy
+    deductionCategoryHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      padding: 20,
+      backgroundColor: theme.surfaceSecondary,
+      borderBottomWidth: 1,
+      borderBottomColor: theme.border,
+      borderTopLeftRadius: 12,
+      borderTopRightRadius: 12,
+      shadowColor: theme.shadow,
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.05,
+      shadowRadius: 2,
+      elevation: 1,
+    },
+
+    deductionCategoryHeaderCollapsed: {
+      borderBottomWidth: 0,
+      borderRadius: 12,
+      marginBottom: 8,
+    },
+
+    categoryHeaderLeft: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      flex: 1,
+    },
+
+    categoryIcon: {
+      width: 44,
+      height: 44,
+      borderRadius: 22,
+      backgroundColor: theme.primaryLight,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginRight: 16,
+      shadowColor: theme.primary,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 3,
+      elevation: 2,
+    },
+
+    categoryIconActive: {
+      shadowOpacity: 0.2,
+      shadowRadius: 4,
+      elevation: 3,
+    },
+
+    categoryTitleContainer: {
+      flex: 1,
+    },
+
+    categoryToggle: {
+      padding: 10,
+      borderRadius: 22,
+      backgroundColor: theme.surface,
+      borderWidth: 1,
+      borderColor: theme.border,
+      shadowColor: theme.shadow,
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.05,
+      shadowRadius: 2,
+      elevation: 1,
+    },
+
+    categoryContent: {
+      padding: 24,
+      paddingTop: 20,
+      backgroundColor: theme.surface,
+      borderBottomLeftRadius: 12,
+      borderBottomRightRadius: 12,
+      borderWidth: 1,
+      borderTopWidth: 0,
+      borderColor: theme.border,
+    },
+
+    categoryTotal: {
+      fontSize: 15,
+      fontWeight: '700',
+      color: theme.text,
+      marginTop: 6,
+      letterSpacing: 0.3,
+    },
+
+    // Enhanced deduction summary styles
+    deductionSummary: {
+      backgroundColor: theme.surface,
+      borderRadius: 12,
+      padding: 20,
+      marginBottom: 20,
+      borderWidth: 1,
+      borderColor: theme.border,
+      shadowColor: theme.shadow,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 4,
+      elevation: 2,
+    },
+
+    summaryHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: 12,
+    },
+
+    summaryTitle: {
+      fontSize: 16,
+      fontWeight: '600',
+      color: theme.primary,
+      marginLeft: 8,
+      flex: 1,
+    },
+
+    summaryBadge: {
+      backgroundColor: theme.primary,
+      borderRadius: 12,
+      paddingHorizontal: 8,
+      paddingVertical: 4,
+    },
+
+    summaryBadgeText: {
+      fontSize: 12,
+      fontWeight: '600',
+      color: '#ffffff',
+    },
+
+    summaryAmount: {
+      fontSize: 28,
+      fontWeight: '800',
+      color: theme.text,
+      textAlign: 'center',
+      marginBottom: 16,
+    },
+
+    summaryBreakdown: {
+      marginBottom: 16,
+    },
+
+    summaryBreakdownItem: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: 8,
+    },
+
+    summaryBreakdownDot: {
+      width: 8,
+      height: 8,
+      borderRadius: 4,
+      marginRight: 8,
+    },
+
+    summaryBreakdownLabel: {
+      fontSize: 14,
+      color: theme.textSecondary,
+      flex: 1,
+    },
+
+    summaryBreakdownValue: {
+      fontSize: 14,
+      fontWeight: '600',
+      color: theme.text,
+    },
+
+    taxSavingsEstimate: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: theme.successLight,
+      borderRadius: 8,
+      padding: 12,
+      borderWidth: 1,
+      borderColor: theme.success,
+    },
+
+    taxSavingsText: {
+      fontSize: 14,
+      fontWeight: '600',
+      color: theme.success,
+      marginLeft: 6,
+    },
+
+    // Quick summary bar styles
+    quickSummaryBar: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      backgroundColor: theme.primaryLight,
+      borderRadius: 8,
+      padding: 12,
+      marginBottom: 16,
+      borderWidth: 1,
+      borderColor: theme.primaryBorder,
+    },
+
+    quickSummaryLeft: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+
+    quickSummaryLabel: {
+      fontSize: 14,
+      fontWeight: '500',
+      color: theme.textSecondary,
+      marginRight: 8,
+    },
+
+    quickSummaryAmount: {
+      fontSize: 16,
+      fontWeight: '700',
+      color: theme.text,
+    },
+
+    quickSummaryRight: {
+      alignItems: 'flex-end',
+    },
+
+    quickSummaryTax: {
+      fontSize: 12,
+      fontWeight: '600',
+      color: theme.success,
+    },
+
+    // Progress indicator styles
+    progressContainer: {
+      marginBottom: 16,
+    },
+
+    progressHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 8,
+    },
+
+    progressLabel: {
+      fontSize: 14,
+      fontWeight: '600',
+      color: theme.textSecondary,
+    },
+
+    progressText: {
+      fontSize: 12,
+      color: theme.textSecondary,
+    },
+
+    progressBar: {
+      height: 6,
+      backgroundColor: theme.borderLight,
+      borderRadius: 3,
+      overflow: 'hidden',
+    },
+
+    progressFill: {
+      height: '100%',
+      backgroundColor: theme.primary,
+      borderRadius: 3,
+    },
+
+    // Smart input feature styles
+    inputFocused: {
+      borderColor: theme.primary,
+      borderWidth: 2,
+      shadowColor: theme.primary,
+      shadowOffset: { width: 0, height: 0 },
+      shadowOpacity: 0.2,
+      shadowRadius: 4,
+      elevation: 3,
+    },
+
+    inputWithValue: {
+      backgroundColor: theme.surfaceSecondary,
+      borderColor: theme.primaryBorder,
+    },
+
+    suggestionsContainer: {
+      marginTop: 8,
+      padding: 12,
+      backgroundColor: theme.background,
+      borderRadius: 8,
+      borderWidth: 1,
+      borderColor: theme.border,
+    },
+
+    suggestionsLabel: {
+      fontSize: 12,
+      fontWeight: '600',
+      color: theme.textSecondary,
+      marginBottom: 8,
+    },
+
+    suggestionsRow: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 8,
+    },
+
+    suggestionChip: {
+      backgroundColor: theme.primary,
+      borderRadius: 16,
+      paddingHorizontal: 12,
+      paddingVertical: 6,
+      marginRight: 8,
+      marginBottom: 4,
+    },
+
+    suggestionText: {
+      fontSize: 12,
+      fontWeight: '600',
+      color: '#ffffff',
+    },
+
+    errorContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginTop: 6,
+    },
+
+    validationContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginTop: 6,
+    },
+
+    validationText: {
+      fontSize: 12,
+      color: theme.success,
+      marginLeft: 4,
+      fontWeight: '500',
+    },
+
+    // Quick Add Progressive Disclosure styles
+    quickAddContainer: {
+      backgroundColor: theme.surfaceSecondary,
+      borderRadius: 12,
+      padding: 20,
+      marginBottom: 20,
+      borderWidth: 1,
+      borderColor: theme.border,
+    },
+
+    quickAddTitle: {
+      fontSize: 18,
+      fontWeight: '700',
+      color: theme.text,
+      marginBottom: 4,
+    },
+
+    quickAddSubtitle: {
+      fontSize: 14,
+      color: theme.textSecondary,
+      marginBottom: 16,
+    },
+
+    quickAddGrid: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      justifyContent: 'space-between',
+      gap: 12,
+    },
+
+    quickAddButton: {
+      backgroundColor: theme.surface,
+      borderRadius: 12,
+      padding: 16,
+      alignItems: 'center',
+      justifyContent: 'center',
+      width: '48%',
+      minHeight: 100,
+      borderWidth: 1,
+      borderColor: theme.border,
+      shadowColor: theme.shadow,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.05,
+      shadowRadius: 3,
+      elevation: 2,
+    },
+
+    quickAddButtonText: {
+      fontSize: 14,
+      fontWeight: '600',
+      color: theme.text,
+      marginTop: 8,
+      textAlign: 'center',
+    },
+
+    quickAddButtonAmount: {
+      fontSize: 16,
+      fontWeight: '700',
+      color: theme.text,
+      marginTop: 4,
+    },
+
+    // Show All Categories styles
+    showAllContainer: {
+      alignItems: 'center',
+      marginBottom: 16,
+    },
+
+    showAllButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: theme.surfaceSecondary,
+      borderRadius: 20,
+      paddingHorizontal: 16,
+      paddingVertical: 10,
+      borderWidth: 1,
+      borderColor: theme.border,
+    },
+
+    showAllButtonText: {
+      fontSize: 14,
+      fontWeight: '600',
+      color: theme.text,
+      marginLeft: 6,
+    },
+
+    // Completion indicators styles
+    completionStatus: {
+      marginTop: 16,
+      padding: 12,
+      backgroundColor: theme.successLight,
+      borderRadius: 8,
+      borderWidth: 1,
+      borderColor: theme.success,
+    },
+
+    completionHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: 6,
+    },
+
+    completionTitle: {
+      fontSize: 14,
+      fontWeight: '600',
+      color: '#059669',
+      marginLeft: 6,
+    },
+
+    completionText: {
+      fontSize: 13,
+      color: '#047857',
+      lineHeight: 18,
+    },
+
+    // Tips guidance styles
+    nextStepsContainer: {
+      backgroundColor: theme.primaryLight,
+      borderRadius: 12,
+      padding: 20,
+      marginBottom: 20,
+      borderWidth: 1,
+      borderColor: theme.primaryBorder,
+    },
+
+    nextStepsHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: 16,
+    },
+
+    nextStepsTitle: {
+      fontSize: 18,
+      fontWeight: '700',
+      color: theme.text,
+      marginLeft: 8,
+    },
+
+    nextStepsList: {
+      gap: 12,
+    },
+
+    nextStepItem: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+    },
+
+    nextStepNumber: {
+      width: 24,
+      height: 24,
+      borderRadius: 12,
+      backgroundColor: '#4A90E2',
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginRight: 12,
+      marginTop: 2,
+    },
+
+    nextStepNumberText: {
+      fontSize: 12,
+      fontWeight: '700',
+      color: '#ffffff',
+    },
+
+    nextStepText: {
+      fontSize: 14,
+      color: theme.text,
+      lineHeight: 20,
+      flex: 1,
+    },
+
+    assumptionsCard: {
+      backgroundColor: theme.surface,
+      borderRadius: 12,
+      padding: 18,
+      marginBottom: 20,
+      borderWidth: 1,
+      borderColor: theme.border,
+    },
+
+    assumptionsHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: 8,
+    },
+
+    assumptionsTitle: {
+      fontSize: 18,
+      fontWeight: '700',
+      color: theme.text,
+      marginLeft: 8,
+    },
+
+    assumptionsIntro: {
+      fontSize: 13,
+      color: theme.textSecondary,
+      lineHeight: 18,
+      marginBottom: 12,
+    },
+
+    assumptionsList: {
+      gap: 10,
+    },
+
+    assumptionItem: {
+      paddingVertical: 10,
+      paddingHorizontal: 12,
+      borderRadius: 8,
+      backgroundColor: theme.background,
+      borderWidth: 1,
+      borderColor: theme.border,
+    },
+
+    assumptionLabel: {
+      fontSize: 13,
+      fontWeight: '700',
+      color: theme.text,
+      marginBottom: 4,
+    },
+
+    assumptionDetail: {
+      fontSize: 13,
+      color: theme.textSecondary,
+      lineHeight: 18,
+    },
+
+    taxYearOptionGrid: {
+      gap: 10,
+    },
+
+    taxYearOption: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingVertical: 12,
+      paddingHorizontal: 14,
+      borderRadius: 8,
+      borderWidth: 1,
+      borderColor: theme.border,
+      backgroundColor: theme.surface,
+    },
+
+    taxYearOptionActive: {
+      borderColor: theme.primary,
+      backgroundColor: theme.primaryLight,
+    },
+
+    taxYearOptionText: {
+      fontSize: 15,
+      fontWeight: '700',
+      color: theme.text,
+    },
+
+    taxYearOptionSubtext: {
+      fontSize: 12,
+      color: theme.textSecondary,
+      lineHeight: 16,
+      marginTop: 3,
+    },
+
+    // Enhanced Results Screen styles
+    resultMainCard: {
+      backgroundColor: theme.surface,
+      borderRadius: 16,
+      padding: 24,
+      marginTop: 16,
+      shadowColor: theme.shadow,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.1,
+      shadowRadius: 8,
+      elevation: 4,
+    },
+
+    resultMainHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: 12,
+    },
+
+    resultMainLabel: {
+      fontSize: 18,
+      fontWeight: '700',
+      marginLeft: 12,
+    },
+
+    resultMainAmount: {
+      fontSize: 36,
+      fontWeight: '800',
+      textAlign: 'center',
+      marginVertical: 8,
+    },
+
+    resultMainSubtext: {
+      fontSize: 14,
+      color: theme.textSecondary,
+      textAlign: 'center',
+      fontWeight: '500',
+    },
+
+    resultMainFinancialYear: {
+      fontSize: 12,
+      color: theme.textTertiary,
+      textAlign: 'center',
+      fontWeight: '400',
+      marginTop: 2,
+    },
+
+    // Results header styles
+    resultsHeaderContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginBottom: 8,
+    },
+
+    tableViewButton: {
+      backgroundColor: theme.surface,
+      borderRadius: 8,
+      padding: 8,
+      borderWidth: 1,
+      borderColor: theme.border,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.05,
+      shadowRadius: 2,
+      elevation: 1,
+    },
+
+    // Full width home button styles
+    fullWidthHomeButton: {
+      backgroundColor: theme.surface,
+      borderRadius: 12,
+      padding: 16,
+      marginTop: 20,
+      marginBottom: Platform.OS === 'ios' ? 50 : 40, // Platform-specific bottom margin for nav bar
+      borderWidth: 2,
+      borderColor: theme.primary,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 4,
+      elevation: 3,
+    },
+
+    fullWidthHomeButtonText: {
+      fontSize: 16,
+      fontWeight: '600',
+      color: theme.primary,
+      marginLeft: 8,
+    },
+
+    // ATO Integration Button Styles
+    atoFileReturnButton: {
+      backgroundColor: '#1E40AF', // ATO blue color
+      borderRadius: 12,
+      padding: 20,
+      marginTop: 16,
+      marginBottom: 8,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.2,
+      shadowRadius: 8,
+      elevation: 6,
+      borderWidth: 2,
+      borderColor: '#1D4ED8',
+    },
+
+    atoFileReturnButtonText: {
+      fontSize: 17,
+      fontWeight: '700',
+      color: '#ffffff',
+      marginLeft: 10,
+      marginRight: 4,
+    },
+
+    atoFileReturnDescription: {
+      fontSize: 14,
+      color: theme.text, // Use theme text color (white/black based on theme)
+      textAlign: 'center',
+      marginTop: 24,
+      marginBottom: 6,
+      marginHorizontal: 16,
+      fontWeight: '500',
+      letterSpacing: 0.1,
+      lineHeight: 20,
+    },
+
+    externalLinkIcon: {
+      marginLeft: 6,
+    },
+
+    // Table view styles
+    tableContainer: {
+      backgroundColor: theme.surface,
+      borderRadius: 12,
+      marginTop: 16,
+      borderWidth: 1,
+      borderColor: theme.border,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.05,
+      shadowRadius: 4,
+      elevation: 2,
+    },
+
+    tableHeader: {
+      backgroundColor: theme.surfaceSecondary,
+      borderTopLeftRadius: 12,
+      borderTopRightRadius: 12,
+      paddingVertical: 16,
+      paddingHorizontal: 20,
+      borderBottomWidth: 1,
+      borderBottomColor: theme.border,
+    },
+
+    tableHeaderText: {
+      fontSize: 18,
+      fontWeight: '700',
+      color: theme.text,
+      textAlign: 'center',
+    },
+
+    tableRow: {
+      flexDirection: 'row',
+      paddingVertical: 12,
+      paddingHorizontal: 20,
+      borderBottomWidth: 1,
+      borderBottomColor: theme.borderLight,
+      alignItems: 'center',
+      minHeight: 50,
+    },
+
+    tableRowLast: {
+      borderBottomWidth: 0,
+    },
+
+    tableRowHeader: {
+      backgroundColor: theme.surfaceSecondary,
+      borderBottomWidth: 2,
+      borderBottomColor: theme.border,
+    },
+
+    tableCell: {
+      flex: 1,
+      paddingRight: 12,
+    },
+
+    tableCellType: {
+      flex: 2,
+      minWidth: 120,
+    },
+
+    tableCellValue: {
+      flex: 1,
+      alignItems: 'flex-end',
+      minWidth: 80,
+    },
+
+    tableCellDescription: {
+      flex: 2,
+      minWidth: 150,
+    },
+
+    tableCellText: {
+      fontSize: 14,
+      color: theme.textSecondary,
+      fontWeight: '500',
+    },
+
+    tableCellHeaderText: {
+      fontSize: 14,
+      color: theme.text,
+      fontWeight: '700',
+    },
+
+    tableCellValueText: {
+      fontSize: 14,
+      fontWeight: '600',
+      textAlign: 'right',
+    },
+
+    tableCellDescriptionText: {
+      fontSize: 13,
+      color: '#64748B',
+      lineHeight: 18,
+      flexWrap: 'wrap',
+    },
+
+    tableSection: {
+      marginBottom: 0,
+    },
+
+    tableSectionHeader: {
+      backgroundColor: theme.surfaceSecondary,
+      paddingVertical: 10,
+      paddingHorizontal: 20,
+      borderBottomWidth: 1,
+      borderBottomColor: theme.border,
+    },
+
+    tableSectionHeaderText: {
+      fontSize: 16,
+      fontWeight: '700',
+      color: theme.text,
+    },
+
+    // Compact table styles
+    compactTableContainer: {
+      backgroundColor: theme.surface,
+      borderRadius: 12,
+      marginTop: 16,
+      borderWidth: 1,
+      borderColor: theme.border,
+      shadowColor: theme.shadow,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.05,
+      shadowRadius: 4,
+      elevation: 2,
+      overflow: 'hidden',
+    },
+
+    compactTableContent: {
+      width: '100%', // Fixed width instead of minWidth
+    },
+
+    compactTableRow: {
+      flexDirection: 'row',
+      borderBottomWidth: 1,
+      borderBottomColor: theme.borderLight,
+      minHeight: 48,
+    },
+
+    compactTableHeaderRow: {
+      backgroundColor: theme.surfaceSecondary,
+      borderBottomWidth: 2,
+      borderBottomColor: theme.border,
+    },
+
+    compactTableFinalRow: {
+      backgroundColor: theme.successLight,
+      borderBottomWidth: 0,
+    },
+
+    compactTableCell: {
+      paddingVertical: 14,
+      paddingHorizontal: 16,
+      justifyContent: 'center',
+    },
+
+    compactTableCellLabel: {
+      flex: 2,
+      borderRightWidth: 1,
+      borderRightColor: theme.borderLight,
+    },
+
+    compactTableCellValue: {
+      flex: 1,
+      alignItems: 'flex-end',
+    },
+
+    compactTableCellText: {
+      fontSize: 14,
+      color: theme.textSecondary, // Use theme color instead of hardcoded
+      fontWeight: '500',
+    },
+
+    compactTableHeaderText: {
+      fontWeight: '700',
+      color: theme.text, // Use theme color instead of hardcoded
+    },
+
+    compactTableFinalText: {
+      fontWeight: '700',
+      color: theme.success, // Use theme color instead of hardcoded
+    },
+
+    compactTableValueText: {
+      fontWeight: '600',
+      textAlign: 'right',
+      color: theme.text, // Use theme color for values
+    },
+  });
 
 // HelpModal component will be defined inside AppContent function
 
@@ -2097,15 +2112,7 @@ const getStyles = (theme: Theme) => StyleSheet.create({
 
 // Help text has been moved to constants/helpText.js
 
-
-
-
-
 // InputField component is now imported from components/forms/InputField.js
-
-
-
-
 
 // HelpModal component is now imported from components/ui/HelpModal.js
 
@@ -2136,7 +2143,8 @@ const AppContent: React.FC = () => {
   const totalSteps: number = 4;
 
   // Form data
-  const [selectedFinancialYear, setSelectedFinancialYear] = useState<string>(DEFAULT_FINANCIAL_YEAR);
+  const [selectedFinancialYear, setSelectedFinancialYear] =
+    useState<string>(DEFAULT_FINANCIAL_YEAR);
   const [jobIncomes, setJobIncomes] = useState<string[]>(['']);
   const [taxWithheld, setTaxWithheld] = useState<string>('');
   const [deductions, setDeductions] = useState<DeductionsState>({
@@ -2145,28 +2153,28 @@ const AppContent: React.FC = () => {
       equipment: '',
       uniforms: '',
       memberships: '',
-      other: ''
+      other: '',
     },
     selfEducation: {
       courseFees: '',
       textbooks: '',
       conferences: '',
       certifications: '',
-      other: ''
+      other: '',
     },
     donations: {
       charitable: '',
       disasterRelief: '',
       religious: '',
-      other: ''
+      other: '',
     },
     other: {
       investment: '',
       taxAgent: '',
       incomeProtection: '',
       bankFees: '',
-      other: ''
-    }
+      other: '',
+    },
   });
   const [workFromHomeHours, setWorkFromHomeHours] = useState('');
   const [abnIncome, setAbnIncome] = useState('');
@@ -2203,23 +2211,25 @@ const AppContent: React.FC = () => {
     selfEducation: true,
     donations: true,
     other: true,
-    workFromHome: true
+    workFromHome: true,
   });
 
   // Income category collapse state - all expanded by default
   const [incomeCollapsedCategories, setIncomeCollapsedCategories] = useState<CollapsedCategories>({
     employment: false,
     abn: false,
-    payg: false
+    payg: false,
   });
 
   // Details category collapse state
-  const [detailsCollapsedCategories, setDetailsCollapsedCategories] = useState<CollapsedCategories>({
-    taxYear: false,
-    hecsDebt: false,
-    medicareLevy: false,
-    disclaimer: true
-  });
+  const [detailsCollapsedCategories, setDetailsCollapsedCategories] = useState<CollapsedCategories>(
+    {
+      taxYear: false,
+      hecsDebt: false,
+      medicareLevy: false,
+      disclaimer: true,
+    }
+  );
 
   // Animation values
   const fadeAnim = new Animated.Value(0);
@@ -2283,35 +2293,37 @@ const AppContent: React.FC = () => {
     setSelectedFinancialYear(calculation.formData.financialYear || DEFAULT_FINANCIAL_YEAR);
     setJobIncomes(calculation.formData.jobIncomes || ['']);
     setTaxWithheld(calculation.formData.taxWithheld || '');
-    setDeductions(calculation.formData.deductions || {
-      workRelated: {
-        travel: '',
-        equipment: '',
-        uniforms: '',
-        memberships: '',
-        other: ''
-      },
-      selfEducation: {
-        courseFees: '',
-        textbooks: '',
-        conferences: '',
-        certifications: '',
-        other: ''
-      },
-      donations: {
-        charitable: '',
-        disasterRelief: '',
-        religious: '',
-        other: ''
-      },
-      other: {
-        investment: '',
-        taxAgent: '',
-        incomeProtection: '',
-        bankFees: '',
-        other: ''
+    setDeductions(
+      calculation.formData.deductions || {
+        workRelated: {
+          travel: '',
+          equipment: '',
+          uniforms: '',
+          memberships: '',
+          other: '',
+        },
+        selfEducation: {
+          courseFees: '',
+          textbooks: '',
+          conferences: '',
+          certifications: '',
+          other: '',
+        },
+        donations: {
+          charitable: '',
+          disasterRelief: '',
+          religious: '',
+          other: '',
+        },
+        other: {
+          investment: '',
+          taxAgent: '',
+          incomeProtection: '',
+          bankFees: '',
+          other: '',
+        },
       }
-    });
+    );
     setWorkFromHomeHours(calculation.formData.workFromHomeHours || '');
     setAbnIncome(calculation.formData.abnIncome || '');
     setHecsDebt(calculation.formData.hecsDebt || false);
@@ -2345,28 +2357,28 @@ const AppContent: React.FC = () => {
         equipment: '',
         uniforms: '',
         memberships: '',
-        other: ''
+        other: '',
       },
       selfEducation: {
         courseFees: '',
         textbooks: '',
         conferences: '',
         certifications: '',
-        other: ''
+        other: '',
       },
       donations: {
         charitable: '',
         disasterRelief: '',
         religious: '',
-        other: ''
+        other: '',
       },
       other: {
         investment: '',
         taxAgent: '',
         incomeProtection: '',
         bankFees: '',
-        other: ''
-      }
+        other: '',
+      },
     });
     setWorkFromHomeHours('');
     setAbnIncome('');
@@ -2433,16 +2445,12 @@ const AppContent: React.FC = () => {
               };
 
               await saveCalculation(calculationData, name);
-              Alert.alert(
-                'Success',
-                'Calculation saved successfully!',
-                [
-                  {
-                    text: 'OK',
-                    onPress: () => navigateToHome(),
-                  },
-                ]
-              );
+              Alert.alert('Success', 'Calculation saved successfully!', [
+                {
+                  text: 'OK',
+                  onPress: () => navigateToHome(),
+                },
+              ]);
             } catch (error) {
               console.error('Error saving calculation:', error);
               Alert.alert('Error', 'Failed to save calculation');
@@ -2456,14 +2464,14 @@ const AppContent: React.FC = () => {
 
   // Helper functions for validation errors
   const setFieldError = (fieldName, errorMessage) => {
-    setValidationErrors(prev => ({
+    setValidationErrors((prev) => ({
       ...prev,
-      [fieldName]: errorMessage
+      [fieldName]: errorMessage,
     }));
   };
 
   const clearFieldError = (fieldName) => {
-    setValidationErrors(prev => {
+    setValidationErrors((prev) => {
       const newErrors = { ...prev };
       delete newErrors[fieldName];
       return newErrors;
@@ -2477,7 +2485,10 @@ const AppContent: React.FC = () => {
   // Calculate estimated PAYG withholding based on TFN income only
   const calculateEstimatedPayg = useCallback(() => {
     const parsedJobIncomes = jobIncomes.map((val) => parseFloat(val || '0'));
-    const totalTFNIncome = parsedJobIncomes.reduce((sum, curr) => sum + (isNaN(curr) ? 0 : curr), 0);
+    const totalTFNIncome = parsedJobIncomes.reduce(
+      (sum, curr) => sum + (isNaN(curr) ? 0 : curr),
+      0
+    );
     // Note: ABN income is excluded as PAYG tax is not withheld from ABN/business income
 
     if (totalTFNIncome <= 0) {
@@ -2539,7 +2550,7 @@ const AppContent: React.FC = () => {
         tension: 100,
         friction: 8,
         useNativeDriver: true,
-      })
+      }),
     ]).start();
   }, []);
 
@@ -2557,7 +2568,7 @@ const AppContent: React.FC = () => {
             toValue: 1,
             duration: 1000,
             useNativeDriver: true,
-          })
+          }),
         ])
       );
       pulseAnimation.start();
@@ -2576,33 +2587,39 @@ const AppContent: React.FC = () => {
     return calculatePaygWithholdingEstimate(annualIncome);
   }
 
-  const updateJobIncome = useCallback((index, value) => {
-    setJobIncomes(prevIncomes => {
-      const newIncomes = [...prevIncomes];
-      newIncomes[index] = value;
+  const updateJobIncome = useCallback(
+    (index, value) => {
+      setJobIncomes((prevIncomes) => {
+        const newIncomes = [...prevIncomes];
+        newIncomes[index] = value;
 
-      // Auto-fill tax withheld based on TFN employment income only
-      const totalEmploymentIncome = newIncomes.reduce((sum, income) => sum + parseFloat(income || '0'), 0);
-      // Note: ABN income excluded as PAYG tax is not withheld from ABN/business income
+        // Auto-fill tax withheld based on TFN employment income only
+        const totalEmploymentIncome = newIncomes.reduce(
+          (sum, income) => sum + parseFloat(income || '0'),
+          0
+        );
+        // Note: ABN income excluded as PAYG tax is not withheld from ABN/business income
 
-      // Auto-fill tax withheld if not manually set and not unknown
-      if (!paygUnknown && totalEmploymentIncome > 0) {
-        const estimatedTax = estimateTaxWithheld(totalEmploymentIncome);
-        setTaxWithheld(estimatedTax.toString());
-      }
+        // Auto-fill tax withheld if not manually set and not unknown
+        if (!paygUnknown && totalEmploymentIncome > 0) {
+          const estimatedTax = estimateTaxWithheld(totalEmploymentIncome);
+          setTaxWithheld(estimatedTax.toString());
+        }
 
-      return newIncomes;
-    });
-    // Clear error for this field when user starts typing
-    clearFieldError(`jobIncome_${index}`);
-  }, [paygUnknown, estimateTaxWithheld]);
+        return newIncomes;
+      });
+      // Clear error for this field when user starts typing
+      clearFieldError(`jobIncome_${index}`);
+    },
+    [paygUnknown, estimateTaxWithheld]
+  );
 
   const addJobIncomeField = useCallback(() => {
-    setJobIncomes(prevIncomes => [...prevIncomes, '']);
+    setJobIncomes((prevIncomes) => [...prevIncomes, '']);
   }, []);
 
   const removeJobIncomeField = useCallback((index) => {
-    setJobIncomes(prevIncomes => {
+    setJobIncomes((prevIncomes) => {
       if (prevIncomes.length > 1) {
         return prevIncomes.filter((_, i) => i !== index);
       }
@@ -2612,41 +2629,98 @@ const AppContent: React.FC = () => {
 
   // Memoized deduction update functions for subcategories
   const updateDeductionField = useCallback((category, field, value) => {
-    setDeductions(prev => ({
+    setDeductions((prev) => ({
       ...prev,
       [category]: {
         ...prev[category],
-        [field]: value
-      }
+        [field]: value,
+      },
     }));
   }, []);
 
   // Work-related deduction update functions
-  const updateWorkRelatedTravel = useCallback((value) => updateDeductionField('workRelated', 'travel', value), [updateDeductionField]);
-  const updateWorkRelatedEquipment = useCallback((value) => updateDeductionField('workRelated', 'equipment', value), [updateDeductionField]);
-  const updateWorkRelatedUniforms = useCallback((value) => updateDeductionField('workRelated', 'uniforms', value), [updateDeductionField]);
-  const updateWorkRelatedMemberships = useCallback((value) => updateDeductionField('workRelated', 'memberships', value), [updateDeductionField]);
-  const updateWorkRelatedOther = useCallback((value) => updateDeductionField('workRelated', 'other', value), [updateDeductionField]);
+  const updateWorkRelatedTravel = useCallback(
+    (value) => updateDeductionField('workRelated', 'travel', value),
+    [updateDeductionField]
+  );
+  const updateWorkRelatedEquipment = useCallback(
+    (value) => updateDeductionField('workRelated', 'equipment', value),
+    [updateDeductionField]
+  );
+  const updateWorkRelatedUniforms = useCallback(
+    (value) => updateDeductionField('workRelated', 'uniforms', value),
+    [updateDeductionField]
+  );
+  const updateWorkRelatedMemberships = useCallback(
+    (value) => updateDeductionField('workRelated', 'memberships', value),
+    [updateDeductionField]
+  );
+  const updateWorkRelatedOther = useCallback(
+    (value) => updateDeductionField('workRelated', 'other', value),
+    [updateDeductionField]
+  );
 
   // Self-education deduction update functions
-  const updateSelfEducationCourseFees = useCallback((value) => updateDeductionField('selfEducation', 'courseFees', value), [updateDeductionField]);
-  const updateSelfEducationTextbooks = useCallback((value) => updateDeductionField('selfEducation', 'textbooks', value), [updateDeductionField]);
-  const updateSelfEducationConferences = useCallback((value) => updateDeductionField('selfEducation', 'conferences', value), [updateDeductionField]);
-  const updateSelfEducationCertifications = useCallback((value) => updateDeductionField('selfEducation', 'certifications', value), [updateDeductionField]);
-  const updateSelfEducationOther = useCallback((value) => updateDeductionField('selfEducation', 'other', value), [updateDeductionField]);
+  const updateSelfEducationCourseFees = useCallback(
+    (value) => updateDeductionField('selfEducation', 'courseFees', value),
+    [updateDeductionField]
+  );
+  const updateSelfEducationTextbooks = useCallback(
+    (value) => updateDeductionField('selfEducation', 'textbooks', value),
+    [updateDeductionField]
+  );
+  const updateSelfEducationConferences = useCallback(
+    (value) => updateDeductionField('selfEducation', 'conferences', value),
+    [updateDeductionField]
+  );
+  const updateSelfEducationCertifications = useCallback(
+    (value) => updateDeductionField('selfEducation', 'certifications', value),
+    [updateDeductionField]
+  );
+  const updateSelfEducationOther = useCallback(
+    (value) => updateDeductionField('selfEducation', 'other', value),
+    [updateDeductionField]
+  );
 
   // Donations deduction update functions
-  const updateDonationsCharitable = useCallback((value) => updateDeductionField('donations', 'charitable', value), [updateDeductionField]);
-  const updateDonationsDisasterRelief = useCallback((value) => updateDeductionField('donations', 'disasterRelief', value), [updateDeductionField]);
-  const updateDonationsReligious = useCallback((value) => updateDeductionField('donations', 'religious', value), [updateDeductionField]);
-  const updateDonationsOther = useCallback((value) => updateDeductionField('donations', 'other', value), [updateDeductionField]);
+  const updateDonationsCharitable = useCallback(
+    (value) => updateDeductionField('donations', 'charitable', value),
+    [updateDeductionField]
+  );
+  const updateDonationsDisasterRelief = useCallback(
+    (value) => updateDeductionField('donations', 'disasterRelief', value),
+    [updateDeductionField]
+  );
+  const updateDonationsReligious = useCallback(
+    (value) => updateDeductionField('donations', 'religious', value),
+    [updateDeductionField]
+  );
+  const updateDonationsOther = useCallback(
+    (value) => updateDeductionField('donations', 'other', value),
+    [updateDeductionField]
+  );
 
   // Other deduction update functions
-  const updateOtherInvestment = useCallback((value) => updateDeductionField('other', 'investment', value), [updateDeductionField]);
-  const updateOtherTaxAgent = useCallback((value) => updateDeductionField('other', 'taxAgent', value), [updateDeductionField]);
-  const updateOtherIncomeProtection = useCallback((value) => updateDeductionField('other', 'incomeProtection', value), [updateDeductionField]);
-  const updateOtherBankFees = useCallback((value) => updateDeductionField('other', 'bankFees', value), [updateDeductionField]);
-  const updateOtherOther = useCallback((value) => updateDeductionField('other', 'other', value), [updateDeductionField]);
+  const updateOtherInvestment = useCallback(
+    (value) => updateDeductionField('other', 'investment', value),
+    [updateDeductionField]
+  );
+  const updateOtherTaxAgent = useCallback(
+    (value) => updateDeductionField('other', 'taxAgent', value),
+    [updateDeductionField]
+  );
+  const updateOtherIncomeProtection = useCallback(
+    (value) => updateDeductionField('other', 'incomeProtection', value),
+    [updateDeductionField]
+  );
+  const updateOtherBankFees = useCallback(
+    (value) => updateDeductionField('other', 'bankFees', value),
+    [updateDeductionField]
+  );
+  const updateOtherOther = useCallback(
+    (value) => updateDeductionField('other', 'other', value),
+    [updateDeductionField]
+  );
 
   // Create stable callback references for job income updates
   const jobIncomeCallbacks = useMemo(() => {
@@ -2666,7 +2740,7 @@ const AppContent: React.FC = () => {
   }, []);
 
   const prevStep = useCallback(() => {
-    setCurrentStep(prev => Math.max(prev - 1, 1));
+    setCurrentStep((prev) => Math.max(prev - 1, 1));
     // Scroll to top when moving to previous step
     setTimeout(() => scrollToTop(), 100);
   }, [scrollToTop]);
@@ -2679,7 +2753,7 @@ const AppContent: React.FC = () => {
     } else {
       // From step 2 (page 2) go to step 1 (page 1)
       // From step 3 (page 3) go to step 2 (page 2)
-      setCurrentStep(prev => Math.max(prev - 1, 1));
+      setCurrentStep((prev) => Math.max(prev - 1, 1));
       // Scroll to top when navigating back
       setTimeout(() => scrollToTop(), 100);
     }
@@ -2688,7 +2762,10 @@ const AppContent: React.FC = () => {
   const goToStep = (step) => {
     // Prevent direct access to results step unless calculation is complete
     if (step === 4 && !result) {
-      Alert.alert('Complete Form First', 'Please complete the form and calculate your tax estimate before viewing results.');
+      Alert.alert(
+        'Complete Form First',
+        'Please complete the form and calculate your tax estimate before viewing results.'
+      );
       return;
     }
 
@@ -2699,13 +2776,16 @@ const AppContent: React.FC = () => {
       let hasErrors = false;
 
       // Check if at least one income source has a valid positive value
-      const hasValidJobIncome = jobIncomes.some(income => {
+      const hasValidJobIncome = jobIncomes.some((income) => {
         const trimmed = income?.trim();
         const parsed = parseFloat(trimmed);
         return trimmed && !isNaN(parsed) && parsed > 0;
       });
 
-      const hasValidAbnIncome = abnIncome?.trim() && !isNaN(parseFloat(abnIncome.trim())) && parseFloat(abnIncome.trim()) > 0;
+      const hasValidAbnIncome =
+        abnIncome?.trim() &&
+        !isNaN(parseFloat(abnIncome.trim())) &&
+        parseFloat(abnIncome.trim()) > 0;
 
       // Validate individual job income fields
       jobIncomes.forEach((income, index) => {
@@ -2728,7 +2808,7 @@ const AppContent: React.FC = () => {
 
       // Check if at least one income source is valid
       if (!hasValidJobIncome && !hasValidAbnIncome) {
-        if (!jobIncomes.some(income => income?.trim())) {
+        if (!jobIncomes.some((income) => income?.trim())) {
           setFieldError('jobIncome_0', 'At least one income source is required');
         }
         if (!abnIncome?.trim()) {
@@ -2770,13 +2850,16 @@ const AppContent: React.FC = () => {
         let hasErrors = false;
 
         // Check if at least one income source has a valid positive value
-        const hasValidJobIncome = jobIncomes.some(income => {
+        const hasValidJobIncome = jobIncomes.some((income) => {
           const trimmed = income?.trim();
           const parsed = parseFloat(trimmed);
           return trimmed && !isNaN(parsed) && parsed > 0;
         });
 
-        const hasValidAbnIncome = abnIncome?.trim() && !isNaN(parseFloat(abnIncome.trim())) && parseFloat(abnIncome.trim()) > 0;
+        const hasValidAbnIncome =
+          abnIncome?.trim() &&
+          !isNaN(parseFloat(abnIncome.trim())) &&
+          parseFloat(abnIncome.trim()) > 0;
 
         // Validate individual job income fields
         jobIncomes.forEach((income, index) => {
@@ -2799,7 +2882,7 @@ const AppContent: React.FC = () => {
 
         // Check if at least one income source is valid
         if (!hasValidJobIncome && !hasValidAbnIncome) {
-          if (!jobIncomes.some(income => income?.trim())) {
+          if (!jobIncomes.some((income) => income?.trim())) {
             setFieldError('jobIncome_0', 'At least one income source is required');
           }
           if (!abnIncome?.trim()) {
@@ -2841,13 +2924,22 @@ const AppContent: React.FC = () => {
       default:
         return true;
     }
-  }, [currentStep, jobIncomes, abnIncome, taxWithheld, paygUnknown, calculateEstimatedPayg, setEstimatedPayg, setTaxWithheld]);
+  }, [
+    currentStep,
+    jobIncomes,
+    abnIncome,
+    taxWithheld,
+    paygUnknown,
+    calculateEstimatedPayg,
+    setEstimatedPayg,
+    setTaxWithheld,
+  ]);
 
   // Step navigation functions
   const nextStep = useCallback(() => {
     console.log('Next step clicked. Current values:', { jobIncomes, abnIncome, taxWithheld });
     if (validateCurrentStep()) {
-      setCurrentStep(prev => Math.min(prev + 1, totalSteps));
+      setCurrentStep((prev) => Math.min(prev + 1, totalSteps));
       // Scroll to top when moving to next step
       setTimeout(() => scrollToTop(), 100);
     }
@@ -2868,13 +2960,14 @@ const AppContent: React.FC = () => {
     }
 
     // Check if at least one income source has a valid positive value
-    const hasValidJobIncome = jobIncomes.some(income => {
+    const hasValidJobIncome = jobIncomes.some((income) => {
       const trimmed = income?.trim();
       const parsed = parseFloat(trimmed);
       return trimmed && !isNaN(parsed) && parsed > 0;
     });
 
-    const hasValidAbnIncome = abnIncome?.trim() && !isNaN(parseFloat(abnIncome.trim())) && parseFloat(abnIncome.trim()) > 0;
+    const hasValidAbnIncome =
+      abnIncome?.trim() && !isNaN(parseFloat(abnIncome.trim())) && parseFloat(abnIncome.trim()) > 0;
 
     // Validate individual job income fields
     jobIncomes.forEach((income, index) => {
@@ -2897,7 +2990,7 @@ const AppContent: React.FC = () => {
 
     // Check if at least one income source is valid
     if (!hasValidJobIncome && !hasValidAbnIncome) {
-      if (!jobIncomes.some(income => income?.trim())) {
+      if (!jobIncomes.some((income) => income?.trim())) {
         setFieldError('jobIncome_0', 'At least one income source is required');
       }
       if (!abnIncome?.trim()) {
@@ -2920,7 +3013,7 @@ const AppContent: React.FC = () => {
       { step: 1, delay: 800, message: 'Validating income sources' },
       { step: 2, delay: 1200, message: 'Processing deductions' },
       { step: 3, delay: 1600, message: 'Applying tax brackets & offsets' },
-      { step: 4, delay: 2000, message: 'Generating comprehensive report' }
+      { step: 4, delay: 2000, message: 'Generating comprehensive report' },
     ];
 
     loadingSteps.forEach(({ step, delay }) => {
@@ -2930,12 +3023,15 @@ const AppContent: React.FC = () => {
     });
 
     const parsedJobIncomes = jobIncomes.map((val) => parseFloat(val || '0'));
-    const totalTFNIncome = parsedJobIncomes.reduce((sum, curr) => sum + (isNaN(curr) ? 0 : curr), 0);
+    const totalTFNIncome = parsedJobIncomes.reduce(
+      (sum, curr) => sum + (isNaN(curr) ? 0 : curr),
+      0
+    );
     const abnIncomeNum = parseFloat(abnIncome || '0');
     const taxWithheldNum = parseFloat(taxWithheld || '0');
     const wfhHours = parseFloat(workFromHomeHours || '0');
     const dependentsNum = hasDependents ? parseInt(dependents || '0') : 0;
-    const spouseIncomeNum = hasSpouse ? (parseFloat(spouseIncome || '0') || 0) : 0;
+    const spouseIncomeNum = hasSpouse ? parseFloat(spouseIncome || '0') || 0 : 0;
     const reportableSuperNum = parseFloat(reportableSuper || '0') || 0;
     const reportableFringeBenefitsNum = parseFloat(reportableFringeBenefits || '0') || 0;
     const netInvestmentLossesNum = parseFloat(netInvestmentLosses || '0') || 0;
@@ -2945,17 +3041,23 @@ const AppContent: React.FC = () => {
     const workFromHomeDeduction = wfhHours * selectedWfhFixedRate;
 
     // Calculate total manual deductions from nested structure
-    const totalManualDeductions = Object.values(deductions).reduce((categorySum: number, category) => {
-      if (typeof category === 'object' && category !== null) {
-        // New nested structure
-        return categorySum + Object.values(category as CategoryTotals).reduce((subSum: number, val) => {
-          return subSum + parseFloat(String(val || '0'));
-        }, 0);
-      } else {
-        // Backward compatibility for old flat structure
-        return categorySum + parseFloat(String(category || '0'));
-      }
-    }, 0);
+    const totalManualDeductions = Object.values(deductions).reduce(
+      (categorySum: number, category) => {
+        if (typeof category === 'object' && category !== null) {
+          // New nested structure
+          return (
+            categorySum +
+            Object.values(category as CategoryTotals).reduce((subSum: number, val) => {
+              return subSum + parseFloat(String(val || '0'));
+            }, 0)
+          );
+        } else {
+          // Backward compatibility for old flat structure
+          return categorySum + parseFloat(String(category || '0'));
+        }
+      },
+      0
+    );
 
     const totalDeductions = totalManualDeductions + workFromHomeDeduction;
 
@@ -2967,7 +3069,14 @@ const AppContent: React.FC = () => {
     const lito = calculateLowIncomeTaxOffset(taxableIncome, selectedTaxYearConfig);
 
     const familyIncomeForMedicare = taxableIncome + spouseIncomeNum;
-    const medicare = calculateMedicareLevyAmount(taxableIncome, dependentsNum, medicareExemption, hasSpouse, spouseIncomeNum, selectedTaxYearConfig);
+    const medicare = calculateMedicareLevyAmount(
+      taxableIncome,
+      dependentsNum,
+      medicareExemption,
+      hasSpouse,
+      spouseIncomeNum,
+      selectedTaxYearConfig
+    );
     const medicareLevySurcharge = calculateMedicareLevySurcharge(
       taxableIncome,
       familyIncomeForMedicare,
@@ -2977,12 +3086,17 @@ const AppContent: React.FC = () => {
       selectedTaxYearConfig
     );
 
-    const studyLoanRepaymentIncome = taxableIncome +
+    const studyLoanRepaymentIncome =
+      taxableIncome +
       reportableSuperNum +
       reportableFringeBenefitsNum +
       netInvestmentLossesNum +
       exemptForeignIncomeNum;
-    const hecsRepayment = calculateStudyLoanRepayment(studyLoanRepaymentIncome, hecsDebt, selectedTaxYearConfig);
+    const hecsRepayment = calculateStudyLoanRepayment(
+      studyLoanRepaymentIncome,
+      hecsDebt,
+      selectedTaxYearConfig
+    );
 
     const finalTax = Math.max(0, tax - lito + medicare + medicareLevySurcharge + hecsRepayment);
     const refund = taxWithheldNum - finalTax;
@@ -3015,7 +3129,7 @@ const AppContent: React.FC = () => {
       finalTax,
       totalTax: finalTax, // Add totalTax for HomeScreen display
       refund,
-      effectiveTaxRate: taxableIncome > 0 ? (finalTax / taxableIncome * 100) : 0
+      effectiveTaxRate: taxableIncome > 0 ? (finalTax / taxableIncome) * 100 : 0,
     });
 
     // Complete the calculation after final loading step
@@ -3032,7 +3146,27 @@ const AppContent: React.FC = () => {
         setShowSuccessAnimation(false);
       }, 3000);
     }, 2400); // Complete after all loading steps
-  }, [jobIncomes, abnIncome, taxWithheld, deductions, workFromHomeHours, hecsDebt, reportableSuper, reportableFringeBenefits, netInvestmentLosses, exemptForeignIncome, medicareExemption, hasSpouse, spouseIncome, hasPrivateHospitalCover, dependents, hasDependents, selectedFinancialYear, selectedTaxYearConfig, selectedWfhFixedRate]);
+  }, [
+    jobIncomes,
+    abnIncome,
+    taxWithheld,
+    deductions,
+    workFromHomeHours,
+    hecsDebt,
+    reportableSuper,
+    reportableFringeBenefits,
+    netInvestmentLosses,
+    exemptForeignIncome,
+    medicareExemption,
+    hasSpouse,
+    spouseIncome,
+    hasPrivateHospitalCover,
+    dependents,
+    hasDependents,
+    selectedFinancialYear,
+    selectedTaxYearConfig,
+    selectedWfhFixedRate,
+  ]);
 
   const getCalculationAssumptions = useCallback((): CalculationAssumption[] => {
     const dependentsNum = hasDependents ? parseInt(dependents || '0') || 0 : 0;
@@ -3040,53 +3174,57 @@ const AppContent: React.FC = () => {
       ['reportable super', reportableSuper],
       ['reportable fringe benefits', reportableFringeBenefits],
       ['net investment losses', netInvestmentLosses],
-      ['exempt foreign income', exemptForeignIncome]
+      ['exempt foreign income', exemptForeignIncome],
     ].filter(([, value]) => (parseFloat(value || '0') || 0) > 0);
-    const employmentIncome = result?.totalTFNIncome ?? jobIncomes.reduce((sum, income) => sum + (parseFloat(income || '0') || 0), 0);
+    const employmentIncome =
+      result?.totalTFNIncome ??
+      jobIncomes.reduce((sum, income) => sum + (parseFloat(income || '0') || 0), 0);
 
     return [
       {
         label: 'Estimate only',
-        detail: 'This is an estimate for planning and record keeping. It is not a lodged tax return or tax agent advice.'
+        detail:
+          'This is an estimate for planning and record keeping. It is not a lodged tax return or tax agent advice.',
       },
       {
         label: 'Residency and tax year',
-        detail: `Uses ${selectedTaxYearDisplay} Australian resident individual tax rates and assumes the taxpayer is an Australian resident for the full financial year.`
+        detail: `Uses ${selectedTaxYearDisplay} Australian resident individual tax rates and assumes the taxpayer is an Australian resident for the full financial year.`,
       },
       {
         label: 'Deductions',
-        detail: 'Assumes every deduction entered is allowable, correctly apportioned, and supported by records.'
+        detail:
+          'Assumes every deduction entered is allowable, correctly apportioned, and supported by records.',
       },
       {
         label: 'Medicare levy',
         detail: medicareExemption
           ? 'Applies the Medicare levy exemption based on your selection.'
-          : `Assumes full-year Medicare levy settings. ${hasSpouse || dependentsNum > 0 ? 'Family thresholds use the spouse/dependent details entered.' : 'Single thresholds are used because no spouse/dependents were entered.'}`
+          : `Assumes full-year Medicare levy settings. ${hasSpouse || dependentsNum > 0 ? 'Family thresholds use the spouse/dependent details entered.' : 'Single thresholds are used because no spouse/dependents were entered.'}`,
       },
       {
         label: 'Private hospital cover',
         detail: hasPrivateHospitalCover
           ? 'Treats appropriate private hospital cover as held for the relevant period. Partial-year cover is not prorated yet.'
-          : 'Treats private hospital cover as not held for Medicare levy surcharge purposes.'
+          : 'Treats private hospital cover as not held for Medicare levy surcharge purposes.',
       },
       {
         label: 'Spouse and family income',
         detail: hasSpouse
           ? `Includes spouse income of ${formatCurrency(parseFloat(spouseIncome || '0') || 0)} for family Medicare calculations.`
-          : 'Assumes no spouse income unless entered.'
+          : 'Assumes no spouse income unless entered.',
       },
       {
         label: 'HELP/STSL',
         detail: hecsDebt
           ? `Applies HELP/STSL repayment using taxable income plus ${helpAdjustments.length > 0 ? helpAdjustments.map(([label]) => label).join(', ') : 'no extra repayment-income adjustments entered'}.`
-          : 'Assumes no HELP/STSL debt.'
+          : 'Assumes no HELP/STSL debt.',
       },
       {
         label: 'PAYG withholding',
         detail: paygUnknown
           ? `Uses an ATO weekly scale 2 withholding estimate from ${formatCurrency(employmentIncome)} of TFN employment income. ABN/business income is excluded from PAYG withholding.`
-          : 'Uses the PAYG withholding amount entered by the user; it is not verified against payslips or income statements.'
-      }
+          : 'Uses the PAYG withholding amount entered by the user; it is not verified against payslips or income statements.',
+      },
     ];
   }, [
     dependents,
@@ -3103,7 +3241,7 @@ const AppContent: React.FC = () => {
     reportableSuper,
     result,
     selectedTaxYearDisplay,
-    spouseIncome
+    spouseIncome,
   ]);
 
   // Auto-calculate when reaching step 4 if no result exists
@@ -3112,8 +3250,6 @@ const AppContent: React.FC = () => {
       estimateTax();
     }
   }, [currentStep, result, estimateTax]);
-
-
 
   const exportCSV = async () => {
     if (!result) return;
@@ -3124,10 +3260,23 @@ const AppContent: React.FC = () => {
         : stringValue;
     };
     const assumptions = getCalculationAssumptions();
-    
+
     const headers = [
-      'Date', 'Financial Year', 'TFN Income', 'ABN Income', 'WFH Deduction', 'Manual Deductions', 'Total Deductions',
-      'Taxable Income', 'Gross Tax', 'LITO', 'Medicare', 'Medicare Surcharge', 'HECS', 'Final Tax', 'Refund/Owing'
+      'Date',
+      'Financial Year',
+      'TFN Income',
+      'ABN Income',
+      'WFH Deduction',
+      'Manual Deductions',
+      'Total Deductions',
+      'Taxable Income',
+      'Gross Tax',
+      'LITO',
+      'Medicare',
+      'Medicare Surcharge',
+      'HECS',
+      'Final Tax',
+      'Refund/Owing',
     ];
     const row = [
       new Date().toLocaleDateString('en-AU'),
@@ -3144,21 +3293,21 @@ const AppContent: React.FC = () => {
       (result.medicareLevySurcharge || 0).toFixed(2),
       result.hecsRepayment.toFixed(2),
       result.finalTax.toFixed(2),
-      result.refund.toFixed(2)
+      result.refund.toFixed(2),
     ];
-    
+
     const csvRows = [
       headers,
       row,
       [],
       ['Calculation Assumptions'],
       ['Area', 'Assumption'],
-      ...assumptions.map(({ label, detail }) => [label, detail])
+      ...assumptions.map(({ label, detail }) => [label, detail]),
     ];
-    const csv = csvRows.map(csvRow => csvRow.map(escapeCsvCell).join(',')).join('\n');
+    const csv = csvRows.map((csvRow) => csvRow.map(escapeCsvCell).join(',')).join('\n');
     const filename = `MyTaxReturn_${new Date().toISOString().split('T')[0]}.csv`;
     const path = FileSystem.documentDirectory + filename;
-    
+
     try {
       await FileSystem.writeAsStringAsync(path, csv, { encoding: FileSystem.EncodingType.UTF8 });
       await Sharing.shareAsync(path, { dialogTitle: 'Export Tax Summary' });
@@ -3210,7 +3359,7 @@ const AppContent: React.FC = () => {
               weekday: 'long',
               year: 'numeric',
               month: 'long',
-              day: 'numeric'
+              day: 'numeric',
             })}</div>
           </div>
 
@@ -3308,12 +3457,16 @@ const AppContent: React.FC = () => {
           <div class="section">
             <div class="section-title">Calculation Assumptions</div>
             <div class="assumption-list">
-              ${assumptions.map(({ label, detail }) => `
+              ${assumptions
+                .map(
+                  ({ label, detail }) => `
                 <div class="assumption-item">
                   <div class="assumption-label">${label}</div>
                   <div class="assumption-detail">${detail}</div>
                 </div>
-              `).join('')}
+              `
+                )
+                .join('')}
             </div>
           </div>
 
@@ -3333,7 +3486,7 @@ const AppContent: React.FC = () => {
       if (await Sharing.isAvailableAsync()) {
         await Sharing.shareAsync(fileUri, {
           mimeType: 'text/html',
-          dialogTitle: 'Export Tax Calculation Report'
+          dialogTitle: 'Export Tax Calculation Report',
         });
       } else {
         Alert.alert('Success', `Report saved to ${fileUri}`);
@@ -3348,15 +3501,21 @@ const AppContent: React.FC = () => {
   const StepIndicator = () => {
     // Check if step 1 is complete for navigation purposes
     const isStep1Complete = () => {
-      const hasValidJobIncome = jobIncomes.some(income => {
+      const hasValidJobIncome = jobIncomes.some((income) => {
         const trimmed = income?.trim();
         const parsed = parseFloat(trimmed);
         return trimmed && !isNaN(parsed) && parsed > 0;
       });
 
-      const hasValidAbnIncome = abnIncome?.trim() && !isNaN(parseFloat(abnIncome.trim())) && parseFloat(abnIncome.trim()) > 0;
+      const hasValidAbnIncome =
+        abnIncome?.trim() &&
+        !isNaN(parseFloat(abnIncome.trim())) &&
+        parseFloat(abnIncome.trim()) > 0;
       const taxWithheldTrimmed = taxWithheld?.trim();
-      const isValidTaxWithheld = taxWithheldTrimmed && !isNaN(parseFloat(taxWithheldTrimmed)) && parseFloat(taxWithheldTrimmed) >= 0;
+      const isValidTaxWithheld =
+        taxWithheldTrimmed &&
+        !isNaN(parseFloat(taxWithheldTrimmed)) &&
+        parseFloat(taxWithheldTrimmed) >= 0;
 
       return (hasValidJobIncome || hasValidAbnIncome) && isValidTaxWithheld;
     };
@@ -3366,10 +3525,7 @@ const AppContent: React.FC = () => {
     return (
       <View style={styles.stepIndicatorContainer}>
         {/* Back button */}
-        <TouchableOpacity
-          style={styles.stepBackButton}
-          onPress={handleBackNavigation}
-        >
+        <TouchableOpacity style={styles.stepBackButton} onPress={handleBackNavigation}>
           <Ionicons name="chevron-back" size={20} color={theme.textSecondary} />
         </TouchableOpacity>
 
@@ -3377,7 +3533,8 @@ const AppContent: React.FC = () => {
         <View style={styles.stepIndicator}>
           {[1, 2, 3, 4].map((step) => {
             // Determine if step is accessible
-            const isAccessible = step === 1 || (step <= 3 && step1Complete) || (step === 4 && result);
+            const isAccessible =
+              step === 1 || (step <= 3 && step1Complete) || (step === 4 && result);
 
             return (
               <View key={step} style={styles.stepIndicatorRow}>
@@ -3386,27 +3543,39 @@ const AppContent: React.FC = () => {
                     styles.stepCircle,
                     currentStep >= step && styles.stepCircleActive,
                     currentStep === step && styles.stepCircleCurrent,
-                    !isAccessible && styles.stepCircleDisabled
+                    !isAccessible && styles.stepCircleDisabled,
                   ]}
                   onPress={() => goToStep(step)}
                   disabled={!isAccessible}
                 >
-                  <Text style={[
-                    styles.stepNumber,
-                    currentStep >= step && styles.stepNumberActive,
-                    !isAccessible && styles.stepNumberDisabled
-                  ]}>
+                  <Text
+                    style={[
+                      styles.stepNumber,
+                      currentStep >= step && styles.stepNumberActive,
+                      !isAccessible && styles.stepNumberDisabled,
+                    ]}
+                  >
                     {step}
                   </Text>
                 </TouchableOpacity>
-                <Text style={[
-                  styles.stepLabel,
-                  currentStep >= step && styles.stepLabelActive,
-                  !isAccessible && styles.stepLabelDisabled
-                ]}>
-                  {step === 1 ? 'Income' : step === 2 ? 'Deductions' : step === 3 ? 'Details' : 'Results'}
+                <Text
+                  style={[
+                    styles.stepLabel,
+                    currentStep >= step && styles.stepLabelActive,
+                    !isAccessible && styles.stepLabelDisabled,
+                  ]}
+                >
+                  {step === 1
+                    ? 'Income'
+                    : step === 2
+                      ? 'Deductions'
+                      : step === 3
+                        ? 'Details'
+                        : 'Results'}
                 </Text>
-                {step < 4 && <View style={[styles.stepLine, currentStep > step && styles.stepLineActive]} />}
+                {step < 4 && (
+                  <View style={[styles.stepLine, currentStep > step && styles.stepLineActive]} />
+                )}
               </View>
             );
           })}
@@ -3415,27 +3584,33 @@ const AppContent: React.FC = () => {
     );
   };
 
-
-
-
-
-
-
   // Income category color mapping for consistency
   const getIncomeCategoryColors = (categoryKey) => {
     const colorMap = {
-      employment: { primary: theme.categoryWork, light: theme.categoryWorkLight, accent: theme.categoryWork },
-      abn: { primary: theme.categoryEducation, light: theme.categoryEducationLight, accent: theme.categoryEducation },
-      payg: { primary: theme.categoryDonations, light: theme.categoryDonationsLight, accent: theme.categoryDonations }
+      employment: {
+        primary: theme.categoryWork,
+        light: theme.categoryWorkLight,
+        accent: theme.categoryWork,
+      },
+      abn: {
+        primary: theme.categoryEducation,
+        light: theme.categoryEducationLight,
+        accent: theme.categoryEducation,
+      },
+      payg: {
+        primary: theme.categoryDonations,
+        light: theme.categoryDonationsLight,
+        accent: theme.categoryDonations,
+      },
     };
     return colorMap[categoryKey] || colorMap.employment;
   };
 
   // Toggle income category collapse state
   const toggleIncomeCategory = (categoryKey) => {
-    setIncomeCollapsedCategories(prev => ({
+    setIncomeCollapsedCategories((prev) => ({
       ...prev,
-      [categoryKey]: !prev[categoryKey]
+      [categoryKey]: !prev[categoryKey],
     }));
   };
 
@@ -3450,21 +3625,23 @@ const AppContent: React.FC = () => {
         style={[
           styles.deductionCategoryHeader,
           isCollapsed && styles.deductionCategoryHeaderCollapsed,
-          { backgroundColor: hasValues ? colors.light : theme.surfaceSecondary }
+          { backgroundColor: hasValues ? colors.light : theme.surfaceSecondary },
         ]}
         onPress={() => toggleIncomeCategory(categoryKey)}
         activeOpacity={0.7}
       >
         <View style={styles.categoryHeaderLeft}>
-          <View style={[
-            styles.categoryIcon,
-            { backgroundColor: hasValues ? colors.primary : colors.light },
-            hasValues && styles.categoryIconActive
-          ]}>
+          <View
+            style={[
+              styles.categoryIcon,
+              { backgroundColor: hasValues ? colors.primary : colors.light },
+              hasValues && styles.categoryIconActive,
+            ]}
+          >
             <Ionicons
               name={icon}
               size={22}
-              color={hasValues ? (isDark ? "#000" : "#fff") : colors.primary}
+              color={hasValues ? (isDark ? '#000' : '#fff') : colors.primary}
             />
           </View>
           <View style={styles.categoryTitleContainer}>
@@ -3481,9 +3658,9 @@ const AppContent: React.FC = () => {
         </View>
         <View style={[styles.categoryToggle, hasValues && { borderColor: colors.primary }]}>
           <Ionicons
-            name={isCollapsed ? "chevron-down" : "chevron-up"}
+            name={isCollapsed ? 'chevron-down' : 'chevron-up'}
             size={20}
-            color={hasValues ? colors.primary : "#64748B"}
+            color={hasValues ? colors.primary : '#64748B'}
           />
         </View>
       </TouchableOpacity>
@@ -3511,16 +3688,20 @@ const AppContent: React.FC = () => {
 
     // Get current total income to determine marginal tax rate
     const parsedJobIncomes = jobIncomes.map((val) => parseFloat(val || '0'));
-    const totalTFNIncome = parsedJobIncomes.reduce((sum, curr) => sum + (isNaN(curr) ? 0 : curr), 0);
+    const totalTFNIncome = parsedJobIncomes.reduce(
+      (sum, curr) => sum + (isNaN(curr) ? 0 : curr),
+      0
+    );
     const abnIncomeNum = parseFloat(abnIncome || '0');
     const totalIncome = totalTFNIncome + abnIncomeNum;
 
     const taxBracket = [...selectedTaxYearConfig.taxBrackets]
       .reverse()
-      .find(bracket => totalIncome > bracket.min);
-    const medicareRate = totalIncome > selectedTaxYearConfig.medicareLevyThresholds.singleLower
-      ? selectedTaxYearConfig.medicareLevyThresholds.rate
-      : 0;
+      .find((bracket) => totalIncome > bracket.min);
+    const medicareRate =
+      totalIncome > selectedTaxYearConfig.medicareLevyThresholds.singleLower
+        ? selectedTaxYearConfig.medicareLevyThresholds.rate
+        : 0;
     const marginalRate = (taxBracket?.rate || 0) + medicareRate;
 
     return Math.round(deductions * marginalRate);
@@ -3539,10 +3720,6 @@ const AppContent: React.FC = () => {
       <View style={styles.tabContent}>
         <Text style={styles.sectionTitle}>Income & Tax Withheld</Text>
 
-
-
-
-
         {/* Enhanced Real-time Income Summary */}
         {totalIncome > 0 && (
           <View style={styles.deductionSummary}>
@@ -3551,7 +3728,7 @@ const AppContent: React.FC = () => {
               <Text style={styles.summaryTitle}>Income Summary</Text>
               <View style={styles.summaryBadge}>
                 <Text style={styles.summaryBadgeText}>
-                  {[employmentTotal, abnTotal].filter(t => t > 0).length} sources
+                  {[employmentTotal, abnTotal].filter((t) => t > 0).length} sources
                 </Text>
               </View>
             </View>
@@ -3563,12 +3740,19 @@ const AppContent: React.FC = () => {
                 <View style={styles.summaryBreakdownItem}>
                   <View style={[styles.summaryBreakdownDot, { backgroundColor: theme.primary }]} />
                   <Text style={styles.summaryBreakdownLabel}>Employment</Text>
-                  <Text style={styles.summaryBreakdownValue}>{formatCurrency(employmentTotal)}</Text>
+                  <Text style={styles.summaryBreakdownValue}>
+                    {formatCurrency(employmentTotal)}
+                  </Text>
                 </View>
               )}
               {abnTotal > 0 && (
                 <View style={styles.summaryBreakdownItem}>
-                  <View style={[styles.summaryBreakdownDot, { backgroundColor: theme.categoryEducation }]} />
+                  <View
+                    style={[
+                      styles.summaryBreakdownDot,
+                      { backgroundColor: theme.categoryEducation },
+                    ]}
+                  />
                   <Text style={styles.summaryBreakdownLabel}>ABN/Freelance</Text>
                   <Text style={styles.summaryBreakdownValue}>{formatCurrency(abnTotal)}</Text>
                 </View>
@@ -3576,7 +3760,12 @@ const AppContent: React.FC = () => {
             </View>
 
             {/* Tax Estimate */}
-            <View style={[styles.taxSavingsEstimate, { backgroundColor: theme.warningLight, borderColor: theme.warning }]}>
+            <View
+              style={[
+                styles.taxSavingsEstimate,
+                { backgroundColor: theme.warningLight, borderColor: theme.warning },
+              ]}
+            >
               <Ionicons name="calculator" size={16} color={theme.warning} />
               <Text style={[styles.taxSavingsText, { color: theme.warning }]}>
                 Estimated tax liability: {formatCurrency(estimatedTax)}
@@ -3584,8 +3773,6 @@ const AppContent: React.FC = () => {
             </View>
           </View>
         )}
-
-
 
         {/* Employment Income Section */}
         <View style={styles.deductionCategory}>
@@ -3685,7 +3872,7 @@ const AppContent: React.FC = () => {
                     clearFieldError('taxWithheld');
                   }
                 }}
-                placeholder={paygUnknown ? "Estimated" : "Total tax withheld (e.g., 12500)"}
+                placeholder={paygUnknown ? 'Estimated' : 'Total tax withheld (e.g., 12500)'}
                 icon="card-outline"
                 helpKey="taxWithheld"
                 error={validationErrors.taxWithheld}
@@ -3698,12 +3885,12 @@ const AppContent: React.FC = () => {
                 onPress={handlePaygUnknownToggle}
               >
                 <Ionicons
-                  name={paygUnknown ? "checkbox-outline" : "square-outline"}
+                  name={paygUnknown ? 'checkbox-outline' : 'square-outline'}
                   size={24}
                   color={paygUnknown ? theme.primary : theme.textSecondary}
                 />
                 <Text style={[styles.toggleText, paygUnknown && styles.toggleTextActive]}>
-                  I don't know my PAYG withholding amount
+                  I do not know my PAYG withholding amount
                 </Text>
               </TouchableOpacity>
             </View>
@@ -3712,11 +3899,7 @@ const AppContent: React.FC = () => {
 
         {/* Next Button */}
         <View style={styles.stepButtonContainer}>
-          <TouchableOpacity
-            style={styles.stepButtonNext}
-            onPress={nextStep}
-            activeOpacity={0.8}
-          >
+          <TouchableOpacity style={styles.stepButtonNext} onPress={nextStep} activeOpacity={0.8}>
             <LinearGradient
               colors={['#4A90E2', '#2C5F8C']}
               style={styles.stepButtonNextGradient}
@@ -3730,7 +3913,6 @@ const AppContent: React.FC = () => {
             </LinearGradient>
           </TouchableOpacity>
         </View>
-
       </View>
     );
   };
@@ -3745,25 +3927,45 @@ const AppContent: React.FC = () => {
 
   // Helper function to check if category has any values
   const categoryHasValues = (categoryData: CategoryTotals): boolean => {
-    return Object.values(categoryData).some(value => value && value.trim() !== '');
+    return Object.values(categoryData).some((value) => value && value.trim() !== '');
   };
 
   // Toggle category collapse state
   const toggleCategory = (categoryKey: string) => {
-    setCollapsedCategories(prev => ({
+    setCollapsedCategories((prev) => ({
       ...prev,
-      [categoryKey]: !prev[categoryKey]
+      [categoryKey]: !prev[categoryKey],
     }));
   };
 
   // Category color mapping for better visual hierarchy
   const getCategoryColors = (categoryKey: string) => {
     const colorMap = {
-      workRelated: { primary: theme.categoryWork, light: theme.categoryWorkLight, accent: theme.categoryWork },
-      selfEducation: { primary: theme.categoryEducation, light: theme.categoryEducationLight, accent: theme.categoryEducation },
-      donations: { primary: theme.categoryDonations, light: theme.categoryDonationsLight, accent: theme.categoryDonations },
-      other: { primary: theme.categoryOther, light: theme.categoryOtherLight, accent: theme.categoryOther },
-      workFromHome: { primary: theme.categoryHome, light: theme.categoryHomeLight, accent: theme.categoryHome }
+      workRelated: {
+        primary: theme.categoryWork,
+        light: theme.categoryWorkLight,
+        accent: theme.categoryWork,
+      },
+      selfEducation: {
+        primary: theme.categoryEducation,
+        light: theme.categoryEducationLight,
+        accent: theme.categoryEducation,
+      },
+      donations: {
+        primary: theme.categoryDonations,
+        light: theme.categoryDonationsLight,
+        accent: theme.categoryDonations,
+      },
+      other: {
+        primary: theme.categoryOther,
+        light: theme.categoryOtherLight,
+        accent: theme.categoryOther,
+      },
+      workFromHome: {
+        primary: theme.categoryHome,
+        light: theme.categoryHomeLight,
+        accent: theme.categoryHome,
+      },
     };
     return colorMap[categoryKey] || colorMap.workRelated;
   };
@@ -3778,7 +3980,8 @@ const AppContent: React.FC = () => {
   ) => {
     const isCollapsed = collapsedCategories[categoryKey];
     // For work from home, use the total parameter; for others, check the deductions object
-    const hasValues = categoryKey === 'workFromHome' ? total > 0 : categoryHasValues(deductions[categoryKey] || {});
+    const hasValues =
+      categoryKey === 'workFromHome' ? total > 0 : categoryHasValues(deductions[categoryKey] || {});
     const colors = getCategoryColors(categoryKey);
 
     return (
@@ -3786,21 +3989,23 @@ const AppContent: React.FC = () => {
         style={[
           styles.deductionCategoryHeader,
           isCollapsed && styles.deductionCategoryHeaderCollapsed,
-          { backgroundColor: hasValues ? colors.light : theme.surfaceSecondary }
+          { backgroundColor: hasValues ? colors.light : theme.surfaceSecondary },
         ]}
         onPress={() => toggleCategory(categoryKey)}
         activeOpacity={0.7}
       >
         <View style={styles.categoryHeaderLeft}>
-          <View style={[
-            styles.categoryIcon,
-            { backgroundColor: hasValues ? colors.primary : colors.light },
-            hasValues && styles.categoryIconActive
-          ]}>
+          <View
+            style={[
+              styles.categoryIcon,
+              { backgroundColor: hasValues ? colors.primary : colors.light },
+              hasValues && styles.categoryIconActive,
+            ]}
+          >
             <Ionicons
               name={icon}
               size={22}
-              color={hasValues ? (isDark ? "#000" : "#fff") : colors.primary}
+              color={hasValues ? (isDark ? '#000' : '#fff') : colors.primary}
             />
           </View>
           <View style={styles.categoryTitleContainer}>
@@ -3817,9 +4022,9 @@ const AppContent: React.FC = () => {
         </View>
         <View style={[styles.categoryToggle, hasValues && { borderColor: colors.primary }]}>
           <Ionicons
-            name={isCollapsed ? "chevron-down" : "chevron-up"}
+            name={isCollapsed ? 'chevron-down' : 'chevron-up'}
             size={20}
-            color={hasValues ? colors.primary : "#64748B"}
+            color={hasValues ? colors.primary : '#64748B'}
           />
         </View>
       </TouchableOpacity>
@@ -3832,486 +4037,518 @@ const AppContent: React.FC = () => {
     const donationsTotal = calculateCategoryTotal(deductions.donations);
     const otherTotal = calculateCategoryTotal(deductions.other);
     const wfhTotal = parseFloat(workFromHomeHours || '0') * selectedWfhFixedRate;
-    const grandTotal = workRelatedTotal + selfEducationTotal + donationsTotal + otherTotal + wfhTotal;
+    const grandTotal =
+      workRelatedTotal + selfEducationTotal + donationsTotal + otherTotal + wfhTotal;
 
     return (
-    <View style={styles.tabContent}>
-      <Text style={styles.sectionTitle}>Tax Deductions</Text>
+      <View style={styles.tabContent}>
+        <Text style={styles.sectionTitle}>Tax Deductions</Text>
 
+        {/* Quick Add Common Deductions */}
+        {grandTotal === 0 && (
+          <View style={styles.quickAddContainer}>
+            <Text style={styles.quickAddTitle}>Quick Add Common Deductions</Text>
+            <Text style={styles.quickAddSubtitle}>
+              Tap to add typical amounts, then customize as needed
+            </Text>
+            <View style={styles.quickAddGrid}>
+              <TouchableOpacity
+                style={styles.quickAddButton}
+                onPress={() => {
+                  updateWorkRelatedTravel('450');
+                  updateWorkRelatedEquipment('800');
+                  toggleCategory('workRelated');
+                }}
+              >
+                <Ionicons name="briefcase" size={20} color={theme.primary} />
+                <Text style={styles.quickAddButtonText}>Work Basics</Text>
+                <Text style={styles.quickAddButtonAmount}>$1,250</Text>
+              </TouchableOpacity>
 
+              <TouchableOpacity
+                style={styles.quickAddButton}
+                onPress={() => {
+                  updateSelfEducationCourseFees('1200');
+                  toggleCategory('selfEducation');
+                }}
+              >
+                <Ionicons name="school" size={20} color={theme.success} />
+                <Text style={styles.quickAddButtonText}>Training</Text>
+                <Text style={styles.quickAddButtonAmount}>$1,200</Text>
+              </TouchableOpacity>
 
-      {/* Quick Add Common Deductions */}
-      {grandTotal === 0 && (
-        <View style={styles.quickAddContainer}>
-          <Text style={styles.quickAddTitle}>Quick Add Common Deductions</Text>
-          <Text style={styles.quickAddSubtitle}>Tap to add typical amounts, then customize as needed</Text>
-          <View style={styles.quickAddGrid}>
-            <TouchableOpacity
-              style={styles.quickAddButton}
-              onPress={() => {
-                updateWorkRelatedTravel('450');
-                updateWorkRelatedEquipment('800');
-                toggleCategory('workRelated');
-              }}
-            >
-              <Ionicons name="briefcase" size={20} color={theme.primary} />
-              <Text style={styles.quickAddButtonText}>Work Basics</Text>
-              <Text style={styles.quickAddButtonAmount}>$1,250</Text>
-            </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.quickAddButton}
+                onPress={() => {
+                  updateDonationsCharitable('300');
+                  toggleCategory('donations');
+                }}
+              >
+                <Ionicons name="heart" size={20} color={theme.warning} />
+                <Text style={styles.quickAddButtonText}>Donations</Text>
+                <Text style={styles.quickAddButtonAmount}>$300</Text>
+              </TouchableOpacity>
 
-            <TouchableOpacity
-              style={styles.quickAddButton}
-              onPress={() => {
-                updateSelfEducationCourseFees('1200');
-                toggleCategory('selfEducation');
-              }}
-            >
-              <Ionicons name="school" size={20} color={theme.success} />
-              <Text style={styles.quickAddButtonText}>Training</Text>
-              <Text style={styles.quickAddButtonAmount}>$1,200</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.quickAddButton}
-              onPress={() => {
-                updateDonationsCharitable('300');
-                toggleCategory('donations');
-              }}
-            >
-              <Ionicons name="heart" size={20} color={theme.warning} />
-              <Text style={styles.quickAddButtonText}>Donations</Text>
-              <Text style={styles.quickAddButtonAmount}>$300</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.quickAddButton}
-              onPress={() => {
-                setWorkFromHomeHours('400');
-                toggleCategory('workFromHome');
-              }}
-            >
-              <Ionicons name="home" size={20} color={theme.error} />
-              <Text style={styles.quickAddButtonText}>WFH</Text>
-              <Text style={styles.quickAddButtonAmount}>{formatCurrency(400 * selectedWfhFixedRate)}</Text>
-            </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.quickAddButton}
+                onPress={() => {
+                  setWorkFromHomeHours('400');
+                  toggleCategory('workFromHome');
+                }}
+              >
+                <Ionicons name="home" size={20} color={theme.error} />
+                <Text style={styles.quickAddButtonText}>WFH</Text>
+                <Text style={styles.quickAddButtonAmount}>
+                  {formatCurrency(400 * selectedWfhFixedRate)}
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
-        </View>
-      )}
+        )}
 
+        {/* Enhanced Real-time Deduction Summary */}
+        {grandTotal > 0 && (
+          <View style={styles.deductionSummary}>
+            <View style={styles.summaryHeader}>
+              <Ionicons name="calculator-outline" size={20} color={theme.primary} />
+              <Text style={styles.summaryTitle}>Total Deductions</Text>
+              <View style={styles.summaryBadge}>
+                <Text style={styles.summaryBadgeText}>
+                  {
+                    [
+                      workRelatedTotal,
+                      selfEducationTotal,
+                      donationsTotal,
+                      otherTotal,
+                      wfhTotal,
+                    ].filter((t) => t > 0).length
+                  }{' '}
+                  categories
+                </Text>
+              </View>
+            </View>
+            <Text style={styles.summaryAmount}>{formatCurrency(grandTotal)}</Text>
 
+            {/* Category Breakdown */}
+            <View style={styles.summaryBreakdown}>
+              {workRelatedTotal > 0 && (
+                <View style={styles.summaryBreakdownItem}>
+                  <View style={[styles.summaryBreakdownDot, { backgroundColor: theme.primary }]} />
+                  <Text style={styles.summaryBreakdownLabel}>Work-Related</Text>
+                  <Text style={styles.summaryBreakdownValue}>
+                    {formatCurrency(workRelatedTotal)}
+                  </Text>
+                </View>
+              )}
+              {selfEducationTotal > 0 && (
+                <View style={styles.summaryBreakdownItem}>
+                  <View
+                    style={[
+                      styles.summaryBreakdownDot,
+                      { backgroundColor: theme.categoryEducation },
+                    ]}
+                  />
+                  <Text style={styles.summaryBreakdownLabel}>Self-Education</Text>
+                  <Text style={styles.summaryBreakdownValue}>
+                    {formatCurrency(selfEducationTotal)}
+                  </Text>
+                </View>
+              )}
+              {donationsTotal > 0 && (
+                <View style={styles.summaryBreakdownItem}>
+                  <View
+                    style={[
+                      styles.summaryBreakdownDot,
+                      { backgroundColor: theme.categoryDonations },
+                    ]}
+                  />
+                  <Text style={styles.summaryBreakdownLabel}>Donations</Text>
+                  <Text style={styles.summaryBreakdownValue}>{formatCurrency(donationsTotal)}</Text>
+                </View>
+              )}
+              {otherTotal > 0 && (
+                <View style={styles.summaryBreakdownItem}>
+                  <View
+                    style={[styles.summaryBreakdownDot, { backgroundColor: theme.categoryOther }]}
+                  />
+                  <Text style={styles.summaryBreakdownLabel}>Other</Text>
+                  <Text style={styles.summaryBreakdownValue}>{formatCurrency(otherTotal)}</Text>
+                </View>
+              )}
+              {wfhTotal > 0 && (
+                <View style={styles.summaryBreakdownItem}>
+                  <View
+                    style={[styles.summaryBreakdownDot, { backgroundColor: theme.categoryHome }]}
+                  />
+                  <Text style={styles.summaryBreakdownLabel}>Work From Home</Text>
+                  <Text style={styles.summaryBreakdownValue}>{formatCurrency(wfhTotal)}</Text>
+                </View>
+              )}
+            </View>
 
-      {/* Enhanced Real-time Deduction Summary */}
-      {grandTotal > 0 && (
-        <View style={styles.deductionSummary}>
-          <View style={styles.summaryHeader}>
-            <Ionicons name="calculator-outline" size={20} color={theme.primary} />
-            <Text style={styles.summaryTitle}>Total Deductions</Text>
-            <View style={styles.summaryBadge}>
-              <Text style={styles.summaryBadgeText}>
-                {[workRelatedTotal, selfEducationTotal, donationsTotal, otherTotal, wfhTotal].filter(t => t > 0).length} categories
+            {/* Tax Savings Estimate */}
+            <View style={styles.taxSavingsEstimate}>
+              <Ionicons name="cash-outline" size={16} color={theme.success} />
+              <Text style={styles.taxSavingsText}>
+                Estimated tax savings: {formatCurrency(calculateTaxSavings(grandTotal))} (marginal
+                tax rate)
               </Text>
             </View>
           </View>
-          <Text style={styles.summaryAmount}>{formatCurrency(grandTotal)}</Text>
+        )}
 
-          {/* Category Breakdown */}
-          <View style={styles.summaryBreakdown}>
-            {workRelatedTotal > 0 && (
-              <View style={styles.summaryBreakdownItem}>
-                <View style={[styles.summaryBreakdownDot, { backgroundColor: theme.primary }]} />
-                <Text style={styles.summaryBreakdownLabel}>Work-Related</Text>
-                <Text style={styles.summaryBreakdownValue}>{formatCurrency(workRelatedTotal)}</Text>
-              </View>
-            )}
-            {selfEducationTotal > 0 && (
-              <View style={styles.summaryBreakdownItem}>
-                <View style={[styles.summaryBreakdownDot, { backgroundColor: theme.categoryEducation }]} />
-                <Text style={styles.summaryBreakdownLabel}>Self-Education</Text>
-                <Text style={styles.summaryBreakdownValue}>{formatCurrency(selfEducationTotal)}</Text>
-              </View>
-            )}
-            {donationsTotal > 0 && (
-              <View style={styles.summaryBreakdownItem}>
-                <View style={[styles.summaryBreakdownDot, { backgroundColor: theme.categoryDonations }]} />
-                <Text style={styles.summaryBreakdownLabel}>Donations</Text>
-                <Text style={styles.summaryBreakdownValue}>{formatCurrency(donationsTotal)}</Text>
-              </View>
-            )}
-            {otherTotal > 0 && (
-              <View style={styles.summaryBreakdownItem}>
-                <View style={[styles.summaryBreakdownDot, { backgroundColor: theme.categoryOther }]} />
-                <Text style={styles.summaryBreakdownLabel}>Other</Text>
-                <Text style={styles.summaryBreakdownValue}>{formatCurrency(otherTotal)}</Text>
-              </View>
-            )}
-            {wfhTotal > 0 && (
-              <View style={styles.summaryBreakdownItem}>
-                <View style={[styles.summaryBreakdownDot, { backgroundColor: theme.categoryHome }]} />
-                <Text style={styles.summaryBreakdownLabel}>Work From Home</Text>
-                <Text style={styles.summaryBreakdownValue}>{formatCurrency(wfhTotal)}</Text>
-              </View>
-            )}
+        {/* Show All Categories Button */}
+        {Object.values(collapsedCategories).some((collapsed) => collapsed) && (
+          <View style={styles.showAllContainer}>
+            <TouchableOpacity
+              style={styles.showAllButton}
+              onPress={() => {
+                setCollapsedCategories({
+                  workRelated: false,
+                  selfEducation: false,
+                  donations: false,
+                  other: false,
+                  workFromHome: false,
+                });
+              }}
+            >
+              <Ionicons name="expand-outline" size={20} color={theme.textSecondary} />
+              <Text style={styles.showAllButtonText}>Show All Categories</Text>
+            </TouchableOpacity>
           </View>
+        )}
 
-          {/* Tax Savings Estimate */}
-          <View style={styles.taxSavingsEstimate}>
-            <Ionicons name="cash-outline" size={16} color={theme.success} />
-            <Text style={styles.taxSavingsText}>
-              Estimated tax savings: {formatCurrency(calculateTaxSavings(grandTotal))} (marginal tax rate)
-            </Text>
-          </View>
+        {/* Work-Related Expenses Section */}
+        <View style={styles.deductionCategory}>
+          {renderCategoryHeader(
+            'workRelated',
+            'Work-Related Expenses',
+            'Most common deductions - expenses directly related to earning income',
+            'briefcase-outline',
+            workRelatedTotal
+          )}
 
+          {!collapsedCategories.workRelated && (
+            <View style={styles.categoryContent}>
+              <InputField
+                label="Travel Expenses"
+                value={deductions.workRelated.travel}
+                onChangeText={updateWorkRelatedTravel}
+                placeholder="Work travel, client visits (e.g., 450)"
+                icon="car-outline"
+                helpKey="workRelatedTravel"
+                prefix="$"
+              />
 
+              <InputField
+                label="Equipment & Tools"
+                value={deductions.workRelated.equipment}
+                onChangeText={updateWorkRelatedEquipment}
+                placeholder="Tools, computer equipment (e.g., 800)"
+                icon="construct-outline"
+                helpKey="workRelatedEquipment"
+                prefix="$"
+              />
+
+              <InputField
+                label="Uniforms & Protective Clothing"
+                value={deductions.workRelated.uniforms}
+                onChangeText={updateWorkRelatedUniforms}
+                placeholder="Work uniforms, safety gear (e.g., 300)"
+                icon="shirt-outline"
+                helpKey="workRelatedUniforms"
+                prefix="$"
+              />
+
+              <InputField
+                label="Professional Memberships"
+                value={deductions.workRelated.memberships}
+                onChangeText={updateWorkRelatedMemberships}
+                placeholder="Union fees, professional bodies (e.g., 350)"
+                icon="people-outline"
+                helpKey="workRelatedMemberships"
+                prefix="$"
+              />
+
+              <InputField
+                label="Other Work Expenses"
+                value={deductions.workRelated.other}
+                onChangeText={updateWorkRelatedOther}
+                placeholder="Other work-related costs (e.g., 200)"
+                icon="ellipsis-horizontal-outline"
+                helpKey="workRelated"
+                prefix="$"
+              />
+            </View>
+          )}
         </View>
-      )}
 
+        {/* Self-Education Expenses Section */}
+        <View style={styles.deductionCategory}>
+          {renderCategoryHeader(
+            'selfEducation',
+            'Self-Education Expenses',
+            'Education costs directly related to your current work',
+            'school-outline',
+            selfEducationTotal
+          )}
 
+          {!collapsedCategories.selfEducation && (
+            <View style={styles.categoryContent}>
+              <InputField
+                label="Course Fees & Tuition"
+                value={deductions.selfEducation.courseFees}
+                onChangeText={updateSelfEducationCourseFees}
+                placeholder="Professional courses, training (e.g., 1200)"
+                icon="school-outline"
+                helpKey="selfEducationCourseFees"
+                prefix="$"
+              />
 
-      {/* Show All Categories Button */}
-      {Object.values(collapsedCategories).some(collapsed => collapsed) && (
-        <View style={styles.showAllContainer}>
-          <TouchableOpacity
-            style={styles.showAllButton}
-            onPress={() => {
-              setCollapsedCategories({
-                workRelated: false,
-                selfEducation: false,
-                donations: false,
-                other: false,
-                workFromHome: false
-              });
-            }}
-          >
-            <Ionicons name="expand-outline" size={20} color={theme.textSecondary} />
-            <Text style={styles.showAllButtonText}>Show All Categories</Text>
+              <InputField
+                label="Textbooks & Materials"
+                value={deductions.selfEducation.textbooks}
+                onChangeText={updateSelfEducationTextbooks}
+                placeholder="Study materials, books (e.g., 300)"
+                icon="book-outline"
+                helpKey="selfEducationTextbooks"
+                prefix="$"
+              />
+
+              <InputField
+                label="Conferences & Seminars"
+                value={deductions.selfEducation.conferences}
+                onChangeText={updateSelfEducationConferences}
+                placeholder="Professional events (e.g., 600)"
+                icon="people-circle-outline"
+                helpKey="selfEducationConferences"
+                prefix="$"
+              />
+
+              <InputField
+                label="Professional Certifications"
+                value={deductions.selfEducation.certifications}
+                onChangeText={updateSelfEducationCertifications}
+                placeholder="License renewals, exams (e.g., 400)"
+                icon="ribbon-outline"
+                helpKey="selfEducationCertifications"
+                prefix="$"
+              />
+
+              <InputField
+                label="Other Education Expenses"
+                value={deductions.selfEducation.other}
+                onChangeText={updateSelfEducationOther}
+                placeholder="Other learning costs (e.g., 200)"
+                icon="ellipsis-horizontal-outline"
+                helpKey="selfEducation"
+                prefix="$"
+              />
+            </View>
+          )}
+        </View>
+
+        {/* Charitable Donations Section */}
+        <View style={styles.deductionCategory}>
+          {renderCategoryHeader(
+            'donations',
+            'Charitable Donations',
+            'Tax-deductible donations to registered charities (DGR status required)',
+            'heart-outline',
+            donationsTotal
+          )}
+
+          {!collapsedCategories.donations && (
+            <View style={styles.categoryContent}>
+              <InputField
+                label="Charitable Donations"
+                value={deductions.donations.charitable}
+                onChangeText={updateDonationsCharitable}
+                placeholder="Regular charity donations (e.g., 300)"
+                icon="heart-outline"
+                helpKey="donationsCharitable"
+                prefix="$"
+              />
+
+              <InputField
+                label="Disaster Relief Donations"
+                value={deductions.donations.disasterRelief}
+                onChangeText={updateDonationsDisasterRelief}
+                placeholder="Emergency appeals (e.g., 250)"
+                icon="shield-outline"
+                helpKey="donationsDisasterRelief"
+                prefix="$"
+              />
+
+              <InputField
+                label="Religious Organization Donations"
+                value={deductions.donations.religious}
+                onChangeText={updateDonationsReligious}
+                placeholder="Faith-based charities (e.g., 200)"
+                icon="library-outline"
+                helpKey="donationsReligious"
+                prefix="$"
+              />
+
+              <InputField
+                label="Other Donations"
+                value={deductions.donations.other}
+                onChangeText={updateDonationsOther}
+                placeholder="Other DGR donations (e.g., 150)"
+                icon="ellipsis-horizontal-outline"
+                helpKey="donations"
+                prefix="$"
+              />
+            </View>
+          )}
+        </View>
+
+        {/* Other Deductions Section */}
+        <View style={styles.deductionCategory}>
+          {renderCategoryHeader(
+            'other',
+            'Other Deductions',
+            'Other allowable tax deductions not covered above',
+            'document-text-outline',
+            otherTotal
+          )}
+
+          {!collapsedCategories.other && (
+            <View style={styles.categoryContent}>
+              <InputField
+                label="Investment Expenses"
+                value={deductions.other.investment}
+                onChangeText={updateOtherInvestment}
+                placeholder="Property, share expenses (e.g., 800)"
+                icon="trending-up-outline"
+                helpKey="otherInvestment"
+                prefix="$"
+              />
+
+              <InputField
+                label="Tax Agent & Accounting Fees"
+                value={deductions.other.taxAgent}
+                onChangeText={updateOtherTaxAgent}
+                placeholder="Tax preparation fees (e.g., 350)"
+                icon="calculator-outline"
+                helpKey="otherTaxAgent"
+                prefix="$"
+              />
+
+              <InputField
+                label="Income Protection Insurance"
+                value={deductions.other.incomeProtection}
+                onChangeText={updateOtherIncomeProtection}
+                placeholder="Income protection premiums (e.g., 600)"
+                icon="shield-checkmark-outline"
+                helpKey="otherIncomeProtection"
+                prefix="$"
+              />
+
+              <InputField
+                label="Bank Fees & Investment Charges"
+                value={deductions.other.bankFees}
+                onChangeText={updateOtherBankFees}
+                placeholder="Investment account fees (e.g., 150)"
+                icon="card-outline"
+                helpKey="otherBankFees"
+                prefix="$"
+              />
+
+              <InputField
+                label="Other Allowable Deductions"
+                value={deductions.other.other}
+                onChangeText={updateOtherOther}
+                placeholder="Other deductible expenses (e.g., 200)"
+                icon="ellipsis-horizontal-outline"
+                helpKey="otherDeductions"
+                prefix="$"
+              />
+            </View>
+          )}
+        </View>
+
+        {/* Work From Home Section */}
+        <View style={styles.deductionCategory}>
+          {renderCategoryHeader(
+            'workFromHome',
+            'Work From Home',
+            `Fixed rate method: ${formatCurrency(selectedWfhFixedRate)} per hour worked from home`,
+            'home-outline',
+            wfhTotal
+          )}
+
+          {!collapsedCategories.workFromHome && (
+            <View style={styles.categoryContent}>
+              <InputField
+                label="Work From Home Hours"
+                value={workFromHomeHours}
+                onChangeText={setWorkFromHomeHours}
+                placeholder="Total WFH hours (e.g., 400 = $280 deduction)"
+                icon="home-outline"
+                helpKey="workFromHome"
+                suffix=" hrs"
+              />
+
+              <View style={styles.wfhInfo}>
+                <Ionicons name="information-circle-outline" size={16} color="#666" />
+                <Text style={styles.infoText}>
+                  Work from home calculated at {formatCurrency(selectedWfhFixedRate)}/hour (ATO
+                  fixed rate method)
+                </Text>
+              </View>
+            </View>
+          )}
+        </View>
+
+        {/* Next Button */}
+        <View style={styles.stepButtonContainer}>
+          <TouchableOpacity style={styles.stepButtonNext} onPress={nextStep} activeOpacity={0.8}>
+            <LinearGradient
+              colors={['#4A90E2', '#2C5F8C']}
+              style={styles.stepButtonNextGradient}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+            >
+              <View style={styles.stepButtonNextIconContainer}>
+                <Ionicons name="chevron-forward" size={20} color="#fff" />
+              </View>
+              <Text style={styles.stepButtonNextText}>Next</Text>
+            </LinearGradient>
           </TouchableOpacity>
         </View>
-      )}
-
-      {/* Work-Related Expenses Section */}
-      <View style={styles.deductionCategory}>
-        {renderCategoryHeader(
-          'workRelated',
-          'Work-Related Expenses',
-          'Most common deductions - expenses directly related to earning income',
-          'briefcase-outline',
-          workRelatedTotal
-        )}
-
-        {!collapsedCategories.workRelated && (
-          <View style={styles.categoryContent}>
-            <InputField
-              label="Travel Expenses"
-              value={deductions.workRelated.travel}
-              onChangeText={updateWorkRelatedTravel}
-              placeholder="Work travel, client visits (e.g., 450)"
-              icon="car-outline"
-              helpKey="workRelatedTravel"
-              prefix="$"
-            />
-
-            <InputField
-              label="Equipment & Tools"
-              value={deductions.workRelated.equipment}
-              onChangeText={updateWorkRelatedEquipment}
-              placeholder="Tools, computer equipment (e.g., 800)"
-              icon="construct-outline"
-              helpKey="workRelatedEquipment"
-              prefix="$"
-            />
-
-            <InputField
-              label="Uniforms & Protective Clothing"
-              value={deductions.workRelated.uniforms}
-              onChangeText={updateWorkRelatedUniforms}
-              placeholder="Work uniforms, safety gear (e.g., 300)"
-              icon="shirt-outline"
-              helpKey="workRelatedUniforms"
-              prefix="$"
-            />
-
-            <InputField
-              label="Professional Memberships"
-              value={deductions.workRelated.memberships}
-              onChangeText={updateWorkRelatedMemberships}
-              placeholder="Union fees, professional bodies (e.g., 350)"
-              icon="people-outline"
-              helpKey="workRelatedMemberships"
-              prefix="$"
-            />
-
-            <InputField
-              label="Other Work Expenses"
-              value={deductions.workRelated.other}
-              onChangeText={updateWorkRelatedOther}
-              placeholder="Other work-related costs (e.g., 200)"
-              icon="ellipsis-horizontal-outline"
-              helpKey="workRelated"
-              prefix="$"
-            />
-          </View>
-        )}
       </View>
-
-      {/* Self-Education Expenses Section */}
-      <View style={styles.deductionCategory}>
-        {renderCategoryHeader(
-          'selfEducation',
-          'Self-Education Expenses',
-          'Education costs directly related to your current work',
-          'school-outline',
-          selfEducationTotal
-        )}
-
-        {!collapsedCategories.selfEducation && (
-          <View style={styles.categoryContent}>
-            <InputField
-              label="Course Fees & Tuition"
-              value={deductions.selfEducation.courseFees}
-              onChangeText={updateSelfEducationCourseFees}
-              placeholder="Professional courses, training (e.g., 1200)"
-              icon="school-outline"
-              helpKey="selfEducationCourseFees"
-              prefix="$"
-            />
-
-            <InputField
-              label="Textbooks & Materials"
-              value={deductions.selfEducation.textbooks}
-              onChangeText={updateSelfEducationTextbooks}
-              placeholder="Study materials, books (e.g., 300)"
-              icon="book-outline"
-              helpKey="selfEducationTextbooks"
-              prefix="$"
-            />
-
-            <InputField
-              label="Conferences & Seminars"
-              value={deductions.selfEducation.conferences}
-              onChangeText={updateSelfEducationConferences}
-              placeholder="Professional events (e.g., 600)"
-              icon="people-circle-outline"
-              helpKey="selfEducationConferences"
-              prefix="$"
-            />
-
-            <InputField
-              label="Professional Certifications"
-              value={deductions.selfEducation.certifications}
-              onChangeText={updateSelfEducationCertifications}
-              placeholder="License renewals, exams (e.g., 400)"
-              icon="ribbon-outline"
-              helpKey="selfEducationCertifications"
-              prefix="$"
-            />
-
-            <InputField
-              label="Other Education Expenses"
-              value={deductions.selfEducation.other}
-              onChangeText={updateSelfEducationOther}
-              placeholder="Other learning costs (e.g., 200)"
-              icon="ellipsis-horizontal-outline"
-              helpKey="selfEducation"
-              prefix="$"
-            />
-          </View>
-        )}
-      </View>
-
-      {/* Charitable Donations Section */}
-      <View style={styles.deductionCategory}>
-        {renderCategoryHeader(
-          'donations',
-          'Charitable Donations',
-          'Tax-deductible donations to registered charities (DGR status required)',
-          'heart-outline',
-          donationsTotal
-        )}
-
-        {!collapsedCategories.donations && (
-          <View style={styles.categoryContent}>
-            <InputField
-              label="Charitable Donations"
-              value={deductions.donations.charitable}
-              onChangeText={updateDonationsCharitable}
-              placeholder="Regular charity donations (e.g., 300)"
-              icon="heart-outline"
-              helpKey="donationsCharitable"
-              prefix="$"
-            />
-
-            <InputField
-              label="Disaster Relief Donations"
-              value={deductions.donations.disasterRelief}
-              onChangeText={updateDonationsDisasterRelief}
-              placeholder="Emergency appeals (e.g., 250)"
-              icon="shield-outline"
-              helpKey="donationsDisasterRelief"
-              prefix="$"
-            />
-
-            <InputField
-              label="Religious Organization Donations"
-              value={deductions.donations.religious}
-              onChangeText={updateDonationsReligious}
-              placeholder="Faith-based charities (e.g., 200)"
-              icon="library-outline"
-              helpKey="donationsReligious"
-              prefix="$"
-            />
-
-            <InputField
-              label="Other Donations"
-              value={deductions.donations.other}
-              onChangeText={updateDonationsOther}
-              placeholder="Other DGR donations (e.g., 150)"
-              icon="ellipsis-horizontal-outline"
-              helpKey="donations"
-              prefix="$"
-            />
-          </View>
-        )}
-      </View>
-
-      {/* Other Deductions Section */}
-      <View style={styles.deductionCategory}>
-        {renderCategoryHeader(
-          'other',
-          'Other Deductions',
-          'Other allowable tax deductions not covered above',
-          'document-text-outline',
-          otherTotal
-        )}
-
-        {!collapsedCategories.other && (
-          <View style={styles.categoryContent}>
-            <InputField
-              label="Investment Expenses"
-              value={deductions.other.investment}
-              onChangeText={updateOtherInvestment}
-              placeholder="Property, share expenses (e.g., 800)"
-              icon="trending-up-outline"
-              helpKey="otherInvestment"
-              prefix="$"
-            />
-
-            <InputField
-              label="Tax Agent & Accounting Fees"
-              value={deductions.other.taxAgent}
-              onChangeText={updateOtherTaxAgent}
-              placeholder="Tax preparation fees (e.g., 350)"
-              icon="calculator-outline"
-              helpKey="otherTaxAgent"
-              prefix="$"
-            />
-
-            <InputField
-              label="Income Protection Insurance"
-              value={deductions.other.incomeProtection}
-              onChangeText={updateOtherIncomeProtection}
-              placeholder="Income protection premiums (e.g., 600)"
-              icon="shield-checkmark-outline"
-              helpKey="otherIncomeProtection"
-              prefix="$"
-            />
-
-            <InputField
-              label="Bank Fees & Investment Charges"
-              value={deductions.other.bankFees}
-              onChangeText={updateOtherBankFees}
-              placeholder="Investment account fees (e.g., 150)"
-              icon="card-outline"
-              helpKey="otherBankFees"
-              prefix="$"
-            />
-
-            <InputField
-              label="Other Allowable Deductions"
-              value={deductions.other.other}
-              onChangeText={updateOtherOther}
-              placeholder="Other deductible expenses (e.g., 200)"
-              icon="ellipsis-horizontal-outline"
-              helpKey="otherDeductions"
-              prefix="$"
-            />
-          </View>
-        )}
-      </View>
-
-      {/* Work From Home Section */}
-      <View style={styles.deductionCategory}>
-        {renderCategoryHeader(
-          'workFromHome',
-          'Work From Home',
-          `Fixed rate method: ${formatCurrency(selectedWfhFixedRate)} per hour worked from home`,
-          'home-outline',
-          wfhTotal
-        )}
-
-        {!collapsedCategories.workFromHome && (
-          <View style={styles.categoryContent}>
-            <InputField
-              label="Work From Home Hours"
-              value={workFromHomeHours}
-              onChangeText={setWorkFromHomeHours}
-              placeholder="Total WFH hours (e.g., 400 = $280 deduction)"
-              icon="home-outline"
-              helpKey="workFromHome"
-              suffix=" hrs"
-            />
-
-            <View style={styles.wfhInfo}>
-              <Ionicons name="information-circle-outline" size={16} color="#666" />
-              <Text style={styles.infoText}>
-                Work from home calculated at {formatCurrency(selectedWfhFixedRate)}/hour (ATO fixed rate method)
-              </Text>
-            </View>
-          </View>
-        )}
-
-      </View>
-
-      {/* Next Button */}
-      <View style={styles.stepButtonContainer}>
-        <TouchableOpacity
-          style={styles.stepButtonNext}
-          onPress={nextStep}
-          activeOpacity={0.8}
-        >
-          <LinearGradient
-            colors={['#4A90E2', '#2C5F8C']}
-            style={styles.stepButtonNextGradient}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-          >
-            <View style={styles.stepButtonNextIconContainer}>
-              <Ionicons name="chevron-forward" size={20} color="#fff" />
-            </View>
-            <Text style={styles.stepButtonNextText}>Next</Text>
-          </LinearGradient>
-        </TouchableOpacity>
-      </View>
-
-    </View>
-  );
+    );
   };
 
   // Additional details category color mapping
   const getDetailsCategoryColors = (categoryKey) => {
     const colorMap = {
       taxYear: { primary: theme.primary, light: theme.primaryLight, accent: theme.primary },
-      hecsDebt: { primary: theme.categoryWork, light: theme.categoryWorkLight, accent: theme.categoryWork },
-      medicareLevy: { primary: theme.categoryPink, light: theme.categoryPinkLight, accent: theme.categoryPink },
-      disclaimer: { primary: theme.categoryDonations, light: theme.categoryDonationsLight, accent: theme.categoryDonations }
+      hecsDebt: {
+        primary: theme.categoryWork,
+        light: theme.categoryWorkLight,
+        accent: theme.categoryWork,
+      },
+      medicareLevy: {
+        primary: theme.categoryPink,
+        light: theme.categoryPinkLight,
+        accent: theme.categoryPink,
+      },
+      disclaimer: {
+        primary: theme.categoryDonations,
+        light: theme.categoryDonationsLight,
+        accent: theme.categoryDonations,
+      },
     };
     return colorMap[categoryKey] || colorMap.hecsDebt;
   };
 
   // Toggle details category collapse state
   const toggleDetailsCategory = (categoryKey) => {
-    setDetailsCollapsedCategories(prev => ({
+    setDetailsCollapsedCategories((prev) => ({
       ...prev,
-      [categoryKey]: !prev[categoryKey]
+      [categoryKey]: !prev[categoryKey],
     }));
   };
 
@@ -4325,21 +4562,23 @@ const AppContent: React.FC = () => {
         style={[
           styles.deductionCategoryHeader,
           isCollapsed && styles.deductionCategoryHeaderCollapsed,
-          { backgroundColor: hasValues ? colors.light : theme.surfaceSecondary }
+          { backgroundColor: hasValues ? colors.light : theme.surfaceSecondary },
         ]}
         onPress={() => toggleDetailsCategory(categoryKey)}
         activeOpacity={0.7}
       >
         <View style={styles.categoryHeaderLeft}>
-          <View style={[
-            styles.categoryIcon,
-            { backgroundColor: hasValues ? colors.primary : colors.light },
-            hasValues && styles.categoryIconActive
-          ]}>
+          <View
+            style={[
+              styles.categoryIcon,
+              { backgroundColor: hasValues ? colors.primary : colors.light },
+              hasValues && styles.categoryIconActive,
+            ]}
+          >
             <Ionicons
               name={icon}
               size={22}
-              color={hasValues ? (isDark ? "#000" : "#fff") : colors.primary}
+              color={hasValues ? (isDark ? '#000' : '#fff') : colors.primary}
             />
           </View>
           <View style={styles.categoryTitleContainer}>
@@ -4351,9 +4590,9 @@ const AppContent: React.FC = () => {
         </View>
         <View style={[styles.categoryToggle, hasValues && { borderColor: colors.primary }]}>
           <Ionicons
-            name={isCollapsed ? "chevron-down" : "chevron-up"}
+            name={isCollapsed ? 'chevron-down' : 'chevron-up'}
             size={20}
-            color={hasValues ? colors.primary : "#64748B"}
+            color={hasValues ? colors.primary : '#64748B'}
           />
         </View>
       </TouchableOpacity>
@@ -4379,7 +4618,7 @@ const AppContent: React.FC = () => {
       {!detailsCollapsedCategories.taxYear && (
         <View style={styles.categoryContent}>
           <View style={styles.taxYearOptionGrid}>
-            {SUPPORTED_TAX_YEAR_OPTIONS.map(option => {
+            {SUPPORTED_TAX_YEAR_OPTIONS.map((option) => {
               const isSelected = option.value === selectedFinancialYear;
               return (
                 <TouchableOpacity
@@ -4436,16 +4675,17 @@ const AppContent: React.FC = () => {
                 <View style={{ flex: 1 }}>
                   <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                     <Ionicons
-                      name={hecsDebt ? "checkbox-outline" : "square-outline"}
+                      name={hecsDebt ? 'checkbox-outline' : 'square-outline'}
                       size={24}
-                      color={hecsDebt ? "#4A90E2" : "#666"}
+                      color={hecsDebt ? '#4A90E2' : '#666'}
                     />
                     <Text style={[styles.toggleText, hecsDebt && styles.toggleTextActive]}>
                       I have HECS-HELP debt
                     </Text>
                   </View>
                   <Text style={styles.toggleSubtext}>
-                    HECS-HELP repayments use the 2025-26 marginal method and include repayment-income adjustments below.
+                    HECS-HELP repayments use the 2025-26 marginal method and include
+                    repayment-income adjustments below.
                   </Text>
                 </View>
               </TouchableOpacity>
@@ -4508,16 +4748,18 @@ const AppContent: React.FC = () => {
                 <View style={{ flex: 1 }}>
                   <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                     <Ionicons
-                      name={medicareExemption ? "checkbox-outline" : "square-outline"}
+                      name={medicareExemption ? 'checkbox-outline' : 'square-outline'}
                       size={24}
-                      color={medicareExemption ? "#4A90E2" : "#666"}
+                      color={medicareExemption ? '#4A90E2' : '#666'}
                     />
                     <Text style={[styles.toggleText, medicareExemption && styles.toggleTextActive]}>
                       I am exempt from Medicare Levy
                     </Text>
                   </View>
                   <Text style={styles.toggleSubtext}>
-                    Tick this if you're a temporary visa holder, foreign resident, or Norfolk Island resident. Leave unticked if you're an Australian resident for tax purposes.
+                    Tick this if you are a temporary visa holder, foreign resident, or Norfolk
+                    Island resident. Leave unticked if you are an Australian resident for tax
+                    purposes.
                   </Text>
                 </View>
               </TouchableOpacity>
@@ -4532,9 +4774,9 @@ const AppContent: React.FC = () => {
                 }}
               >
                 <Ionicons
-                  name={hasSpouse ? "checkbox-outline" : "square-outline"}
+                  name={hasSpouse ? 'checkbox-outline' : 'square-outline'}
                   size={24}
-                  color={hasSpouse ? "#4A90E2" : "#666"}
+                  color={hasSpouse ? '#4A90E2' : '#666'}
                 />
                 <Text style={[styles.toggleText, hasSpouse && styles.toggleTextActive]}>
                   I had a spouse for Medicare levy purposes
@@ -4558,11 +4800,13 @@ const AppContent: React.FC = () => {
                 onPress={() => setHasPrivateHospitalCover(!hasPrivateHospitalCover)}
               >
                 <Ionicons
-                  name={hasPrivateHospitalCover ? "checkbox-outline" : "square-outline"}
+                  name={hasPrivateHospitalCover ? 'checkbox-outline' : 'square-outline'}
                   size={24}
-                  color={hasPrivateHospitalCover ? "#4A90E2" : "#666"}
+                  color={hasPrivateHospitalCover ? '#4A90E2' : '#666'}
                 />
-                <Text style={[styles.toggleText, hasPrivateHospitalCover && styles.toggleTextActive]}>
+                <Text
+                  style={[styles.toggleText, hasPrivateHospitalCover && styles.toggleTextActive]}
+                >
                   I had appropriate private hospital cover
                 </Text>
               </TouchableOpacity>
@@ -4577,9 +4821,9 @@ const AppContent: React.FC = () => {
                 }}
               >
                 <Ionicons
-                  name={hasDependents ? "checkbox-outline" : "square-outline"}
+                  name={hasDependents ? 'checkbox-outline' : 'square-outline'}
                   size={24}
-                  color={hasDependents ? "#4A90E2" : "#666"}
+                  color={hasDependents ? '#4A90E2' : '#666'}
                 />
                 <Text style={[styles.toggleText, hasDependents && styles.toggleTextActive]}>
                   I have dependents
@@ -4605,7 +4849,8 @@ const AppContent: React.FC = () => {
         <View style={styles.warningCard}>
           <Ionicons name="warning" size={20} color={theme.warning} />
           <Text style={styles.warningCardText}>
-            This calculator uses {selectedTaxYearDisplay} tax rates and thresholds. Results are estimates only and should not replace professional tax advice.
+            This calculator uses {selectedTaxYearDisplay} tax rates and thresholds. Results are
+            estimates only and should not replace professional tax advice.
           </Text>
         </View>
 
@@ -4630,18 +4875,21 @@ const AppContent: React.FC = () => {
               end={{ x: 1, y: 0 }}
             >
               <View style={styles.stepButtonCalculateIconContainer}>
-                <Ionicons name={isCalculating ? "hourglass-outline" : "calculator-outline"} size={20} color="#fff" />
+                <Ionicons
+                  name={isCalculating ? 'hourglass-outline' : 'calculator-outline'}
+                  size={20}
+                  color="#fff"
+                />
               </View>
-              <Text style={styles.stepButtonText}>{isCalculating ? 'Calculating...' : 'Calculate Tax Return'}</Text>
+              <Text style={styles.stepButtonText}>
+                {isCalculating ? 'Calculating...' : 'Calculate Tax Return'}
+              </Text>
             </LinearGradient>
           </TouchableOpacity>
         </View>
-
       </View>
     );
   };
-
-
 
   // Render compact table view component
   const renderCompactTableView = () => {
@@ -4680,22 +4928,30 @@ const AppContent: React.FC = () => {
       <View style={styles.compactTableContainer}>
         <View style={styles.compactTableContent}>
           {tableData.map((row, rowIndex) => (
-            <View key={rowIndex} style={[
-              styles.compactTableRow,
-              rowIndex === 0 && styles.compactTableHeaderRow,
-              rowIndex === tableData.length - 1 && styles.compactTableFinalRow
-            ]}>
+            <View
+              key={rowIndex}
+              style={[
+                styles.compactTableRow,
+                rowIndex === 0 && styles.compactTableHeaderRow,
+                rowIndex === tableData.length - 1 && styles.compactTableFinalRow,
+              ]}
+            >
               {row.map((cell, cellIndex) => (
-                <View key={cellIndex} style={[
-                  styles.compactTableCell,
-                  cellIndex === 0 ? styles.compactTableCellLabel : styles.compactTableCellValue
-                ]}>
-                  <Text style={[
-                    styles.compactTableCellText,
-                    rowIndex === 0 && styles.compactTableHeaderText,
-                    rowIndex === tableData.length - 1 && styles.compactTableFinalText,
-                    cellIndex === 1 && rowIndex > 0 && styles.compactTableValueText
-                  ]}>
+                <View
+                  key={cellIndex}
+                  style={[
+                    styles.compactTableCell,
+                    cellIndex === 0 ? styles.compactTableCellLabel : styles.compactTableCellValue,
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.compactTableCellText,
+                      rowIndex === 0 && styles.compactTableHeaderText,
+                      rowIndex === tableData.length - 1 && styles.compactTableFinalText,
+                      cellIndex === 1 && rowIndex > 0 && styles.compactTableValueText,
+                    ]}
+                  >
                     {cell}
                   </Text>
                 </View>
@@ -4745,7 +5001,8 @@ const AppContent: React.FC = () => {
 
               <Text style={styles.loadingTitle}>Processing Your Tax Return</Text>
               <Text style={styles.loadingSubtitle}>
-                Our advanced algorithms are analyzing your financial data to provide accurate tax calculations
+                Our advanced algorithms are analyzing your financial data to provide accurate tax
+                calculations
               </Text>
 
               <View style={styles.loadingProgressContainer}>
@@ -4762,7 +5019,7 @@ const AppContent: React.FC = () => {
                   'Validating income sources',
                   'Processing deductions',
                   'Applying tax brackets & offsets',
-                  'Generating comprehensive report'
+                  'Generating comprehensive report',
                 ].map((stepText, index) => {
                   const stepNumber = index + 1;
                   const isCompleted = loadingStep > stepNumber;
@@ -4770,20 +5027,24 @@ const AppContent: React.FC = () => {
 
                   return (
                     <View key={stepNumber} style={styles.loadingStep}>
-                      <View style={[
-                        styles.loadingStepIcon,
-                        isCompleted && styles.loadingStepIconActive
-                      ]}>
+                      <View
+                        style={[
+                          styles.loadingStepIcon,
+                          isCompleted && styles.loadingStepIconActive,
+                        ]}
+                      >
                         {isCompleted ? (
                           <Ionicons name="checkmark" size={10} color="#fff" />
                         ) : isActive ? (
                           <ActivityIndicator size={8} color={theme.primary} />
                         ) : null}
                       </View>
-                      <Text style={[
-                        styles.loadingStepText,
-                        (isCompleted || isActive) && styles.loadingStepTextActive
-                      ]}>
+                      <Text
+                        style={[
+                          styles.loadingStepText,
+                          (isCompleted || isActive) && styles.loadingStepTextActive,
+                        ]}
+                      >
                         {stepText}
                       </Text>
                     </View>
@@ -4823,7 +5084,7 @@ const AppContent: React.FC = () => {
             onPress={() => setResultsViewMode(resultsViewMode === 'table' ? 'card' : 'table')}
           >
             <Ionicons
-              name={resultsViewMode === 'table' ? "grid-outline" : "list-outline"}
+              name={resultsViewMode === 'table' ? 'grid-outline' : 'list-outline'}
               size={20}
               color={theme.primary}
             />
@@ -4835,229 +5096,373 @@ const AppContent: React.FC = () => {
           <>
             {/* Enhanced Results Summary */}
             <View style={styles.deductionSummary}>
-          <View style={styles.summaryHeader}>
-            <Ionicons name="checkmark-circle" size={20} color={theme.success} />
-            <Text style={styles.summaryTitle}>Tax Estimation Complete</Text>
-            <View style={styles.summaryBadge}>
-              <Text style={styles.summaryBadgeText}>{selectedTaxYearDisplay}</Text>
-            </View>
-          </View>
-
-          {/* Main Result Card */}
-          <View style={[styles.resultMainCard, { backgroundColor: result.refund >= 0 ? theme.successLight : theme.errorLight }]}>
-            <View style={styles.resultMainHeader}>
-              <Ionicons
-                name={result.refund >= 0 ? "trending-up" : "trending-down"}
-                size={24}
-                color={result.refund >= 0 ? theme.success : theme.error}
-              />
-              <Text style={[styles.resultMainLabel, { color: result.refund >= 0 ? theme.success : theme.error }]}>
-                {result.refund >= 0 ? 'Estimated Refund' : 'Amount Owing'}
-              </Text>
-            </View>
-            <Text style={[styles.resultMainAmount, { color: result.refund >= 0 ? theme.success : theme.error }]}>
-              {formatCurrency(Math.abs(result.refund))}
-            </Text>
-            <Text style={styles.resultMainSubtext}>
-              Effective Tax Rate: {result.effectiveTaxRate.toFixed(1)}%
-            </Text>
-            <Text style={styles.resultMainFinancialYear}>
-              Financial Year {selectedTaxYearDisplay}
-            </Text>
-          </View>
-        </View>
-
-        {/* Income Breakdown Section */}
-        <View style={styles.deductionCategory}>
-          <View style={[styles.deductionCategoryHeader, { backgroundColor: theme.primaryLight }]}>
-            <View style={styles.categoryHeaderLeft}>
-              <View style={[styles.categoryIcon, { backgroundColor: theme.primary }]}>
-                <Ionicons name="wallet-outline" size={22} color={isDark ? "#000" : "#fff"} />
+              <View style={styles.summaryHeader}>
+                <Ionicons name="checkmark-circle" size={20} color={theme.success} />
+                <Text style={styles.summaryTitle}>Tax Estimation Complete</Text>
+                <View style={styles.summaryBadge}>
+                  <Text style={styles.summaryBadgeText}>{selectedTaxYearDisplay}</Text>
+                </View>
               </View>
-              <View style={styles.categoryTitleContainer}>
-                <Text style={[styles.categoryTitle, { color: theme.text }]}>Income Breakdown</Text>
-                <Text style={styles.categoryDescription}>Total gross income from all sources</Text>
-                <Text style={[styles.categoryTotal, { color: theme.text }]}>
-                  Total: {formatCurrency(result.totalTFNIncome + result.abnIncomeNum)}
+
+              {/* Main Result Card */}
+              <View
+                style={[
+                  styles.resultMainCard,
+                  { backgroundColor: result.refund >= 0 ? theme.successLight : theme.errorLight },
+                ]}
+              >
+                <View style={styles.resultMainHeader}>
+                  <Ionicons
+                    name={result.refund >= 0 ? 'trending-up' : 'trending-down'}
+                    size={24}
+                    color={result.refund >= 0 ? theme.success : theme.error}
+                  />
+                  <Text
+                    style={[
+                      styles.resultMainLabel,
+                      { color: result.refund >= 0 ? theme.success : theme.error },
+                    ]}
+                  >
+                    {result.refund >= 0 ? 'Estimated Refund' : 'Amount Owing'}
+                  </Text>
+                </View>
+                <Text
+                  style={[
+                    styles.resultMainAmount,
+                    { color: result.refund >= 0 ? theme.success : theme.error },
+                  ]}
+                >
+                  {formatCurrency(Math.abs(result.refund))}
+                </Text>
+                <Text style={styles.resultMainSubtext}>
+                  Effective Tax Rate: {result.effectiveTaxRate.toFixed(1)}%
+                </Text>
+                <Text style={styles.resultMainFinancialYear}>
+                  Financial Year {selectedTaxYearDisplay}
                 </Text>
               </View>
             </View>
-          </View>
 
-          <View style={styles.categoryContent}>
-            <View style={styles.summaryBreakdown}>
-              <View style={styles.summaryBreakdownItem}>
-                <View style={[styles.summaryBreakdownDot, { backgroundColor: theme.primary }]} />
-                <Text style={styles.summaryBreakdownLabel}>TFN Employment Income</Text>
-                <Text style={styles.summaryBreakdownValue}>{formatCurrency(result.totalTFNIncome)}</Text>
-              </View>
-              <View style={styles.summaryBreakdownItem}>
-                <View style={[styles.summaryBreakdownDot, { backgroundColor: theme.categoryEducation }]} />
-                <Text style={styles.summaryBreakdownLabel}>ABN/Business Income</Text>
-                <Text style={styles.summaryBreakdownValue}>{formatCurrency(result.abnIncomeNum)}</Text>
-              </View>
-            </View>
-          </View>
-        </View>
-
-        {/* Deductions Breakdown Section */}
-        <View style={styles.deductionCategory}>
-          <View style={[styles.deductionCategoryHeader, { backgroundColor: theme.successLight }]}>
-            <View style={styles.categoryHeaderLeft}>
-              <View style={[styles.categoryIcon, { backgroundColor: theme.success }]}>
-                <Ionicons name="receipt-outline" size={22} color={isDark ? "#000" : "#fff"} />
-              </View>
-              <View style={styles.categoryTitleContainer}>
-                <Text style={[styles.categoryTitle, { color: theme.success }]}>Deductions Breakdown</Text>
-                <Text style={styles.categoryDescription}>Total allowable tax deductions claimed</Text>
-                <Text style={[styles.categoryTotal, { color: theme.success }]}>
-                  Total: -{formatCurrency(result.totalDeductions)}
-                </Text>
-              </View>
-            </View>
-          </View>
-
-          <View style={styles.categoryContent}>
-            <View style={styles.summaryBreakdown}>
-              <View style={styles.summaryBreakdownItem}>
-                <View style={[styles.summaryBreakdownDot, { backgroundColor: theme.categoryDonations }]} />
-                <Text style={styles.summaryBreakdownLabel}>Manual Deductions</Text>
-                <Text style={styles.summaryBreakdownValue}>-{formatCurrency(result.totalManualDeductions)}</Text>
-              </View>
-              <View style={styles.summaryBreakdownItem}>
-                <View style={[styles.summaryBreakdownDot, { backgroundColor: theme.categoryHome }]} />
-                <Text style={styles.summaryBreakdownLabel}>Work From Home</Text>
-                <Text style={styles.summaryBreakdownValue}>-{formatCurrency(result.workFromHomeDeduction)}</Text>
-              </View>
-            </View>
-          </View>
-        </View>
-
-        {/* Tax Calculation Section */}
-        <View style={styles.deductionCategory}>
-          <View style={[styles.deductionCategoryHeader, { backgroundColor: theme.warningLight }]}>
-            <View style={styles.categoryHeaderLeft}>
-              <View style={[styles.categoryIcon, { backgroundColor: theme.warning }]}>
-                <Ionicons name="calculator-outline" size={22} color={isDark ? "#000" : "#fff"} />
-              </View>
-              <View style={styles.categoryTitleContainer}>
-                <Text style={[styles.categoryTitle, { color: theme.warning }]}>Tax Calculation</Text>
-                <Text style={styles.categoryDescription}>Detailed breakdown of tax liability calculation</Text>
-                <Text style={[styles.categoryTotal, { color: theme.warning }]}>
-                  Final Tax: {formatCurrency(result.finalTax)}
-                </Text>
-              </View>
-            </View>
-          </View>
-
-          <View style={styles.categoryContent}>
-            <View style={styles.summaryBreakdown}>
-              <View style={styles.summaryBreakdownItem}>
-                <View style={[styles.summaryBreakdownDot, { backgroundColor: theme.categoryOther }]} />
-                <Text style={[styles.summaryBreakdownLabel, { fontWeight: '600' }]}>Taxable Income</Text>
-                <Text style={[styles.summaryBreakdownValue, { fontWeight: '600' }]}>{formatCurrency(result.taxableIncome)}</Text>
-              </View>
-              <View style={styles.summaryBreakdownItem}>
-                <View style={[styles.summaryBreakdownDot, { backgroundColor: theme.categoryDonations }]} />
-                <Text style={styles.summaryBreakdownLabel}>Gross Tax</Text>
-                <Text style={styles.summaryBreakdownValue}>{formatCurrency(result.tax)}</Text>
-              </View>
-              <View style={styles.summaryBreakdownItem}>
-                <View style={[styles.summaryBreakdownDot, { backgroundColor: theme.success }]} />
-                <Text style={styles.summaryBreakdownLabel}>LITO Offset</Text>
-                <Text style={styles.summaryBreakdownValue}>-{formatCurrency(result.lito)}</Text>
-              </View>
-              <View style={styles.summaryBreakdownItem}>
-                <View style={[styles.summaryBreakdownDot, { backgroundColor: theme.categoryHome }]} />
-                <Text style={styles.summaryBreakdownLabel}>Medicare Levy</Text>
-                <Text style={styles.summaryBreakdownValue}>+{formatCurrency(result.medicare)}</Text>
-              </View>
-              {result.medicareLevySurcharge > 0 && (
-                <View style={styles.summaryBreakdownItem}>
-                  <View style={[styles.summaryBreakdownDot, { backgroundColor: theme.error }]} />
-                  <Text style={styles.summaryBreakdownLabel}>Medicare Levy Surcharge</Text>
-                  <Text style={styles.summaryBreakdownValue}>+{formatCurrency(result.medicareLevySurcharge)}</Text>
+            {/* Income Breakdown Section */}
+            <View style={styles.deductionCategory}>
+              <View
+                style={[styles.deductionCategoryHeader, { backgroundColor: theme.primaryLight }]}
+              >
+                <View style={styles.categoryHeaderLeft}>
+                  <View style={[styles.categoryIcon, { backgroundColor: theme.primary }]}>
+                    <Ionicons name="wallet-outline" size={22} color={isDark ? '#000' : '#fff'} />
+                  </View>
+                  <View style={styles.categoryTitleContainer}>
+                    <Text style={[styles.categoryTitle, { color: theme.text }]}>
+                      Income Breakdown
+                    </Text>
+                    <Text style={styles.categoryDescription}>
+                      Total gross income from all sources
+                    </Text>
+                    <Text style={[styles.categoryTotal, { color: theme.text }]}>
+                      Total: {formatCurrency(result.totalTFNIncome + result.abnIncomeNum)}
+                    </Text>
+                  </View>
                 </View>
-              )}
-              {result.familyIncomeForMedicare > result.taxableIncome && (
-                <View style={styles.summaryBreakdownItem}>
-                  <View style={[styles.summaryBreakdownDot, { backgroundColor: theme.categoryHome }]} />
-                  <Text style={styles.summaryBreakdownLabel}>Family Income for Medicare</Text>
-                  <Text style={styles.summaryBreakdownValue}>{formatCurrency(result.familyIncomeForMedicare)}</Text>
+              </View>
+
+              <View style={styles.categoryContent}>
+                <View style={styles.summaryBreakdown}>
+                  <View style={styles.summaryBreakdownItem}>
+                    <View
+                      style={[styles.summaryBreakdownDot, { backgroundColor: theme.primary }]}
+                    />
+                    <Text style={styles.summaryBreakdownLabel}>TFN Employment Income</Text>
+                    <Text style={styles.summaryBreakdownValue}>
+                      {formatCurrency(result.totalTFNIncome)}
+                    </Text>
+                  </View>
+                  <View style={styles.summaryBreakdownItem}>
+                    <View
+                      style={[
+                        styles.summaryBreakdownDot,
+                        { backgroundColor: theme.categoryEducation },
+                      ]}
+                    />
+                    <Text style={styles.summaryBreakdownLabel}>ABN/Business Income</Text>
+                    <Text style={styles.summaryBreakdownValue}>
+                      {formatCurrency(result.abnIncomeNum)}
+                    </Text>
+                  </View>
                 </View>
-              )}
-              {result.hecsRepayment > 0 && (
-                <View style={styles.summaryBreakdownItem}>
-                  <View style={[styles.summaryBreakdownDot, { backgroundColor: theme.categoryOther }]} />
-                  <Text style={styles.summaryBreakdownLabel}>HECS-HELP Repayment</Text>
-                  <Text style={styles.summaryBreakdownValue}>+{formatCurrency(result.hecsRepayment)}</Text>
-                </View>
-              )}
-              {result.studyLoanRepaymentIncome > result.taxableIncome && (
-                <View style={styles.summaryBreakdownItem}>
-                  <View style={[styles.summaryBreakdownDot, { backgroundColor: theme.categoryEducation }]} />
-                  <Text style={styles.summaryBreakdownLabel}>HELP Repayment Income</Text>
-                  <Text style={styles.summaryBreakdownValue}>{formatCurrency(result.studyLoanRepaymentIncome)}</Text>
-                </View>
-              )}
+              </View>
             </View>
 
-            {/* Tax Estimate */}
-            <View style={[styles.taxSavingsEstimate, { backgroundColor: theme.warningLight, borderColor: theme.warning }]}>
-              <Ionicons name="information-circle" size={16} color={theme.warning} />
-              <Text style={[styles.taxSavingsText, { color: theme.warning }]}>
-                Tax withheld: {formatCurrency(parseFloat(taxWithheld || '0'))} • Calculated using {selectedTaxYearDisplay} ATO rates
-              </Text>
+            {/* Deductions Breakdown Section */}
+            <View style={styles.deductionCategory}>
+              <View
+                style={[styles.deductionCategoryHeader, { backgroundColor: theme.successLight }]}
+              >
+                <View style={styles.categoryHeaderLeft}>
+                  <View style={[styles.categoryIcon, { backgroundColor: theme.success }]}>
+                    <Ionicons name="receipt-outline" size={22} color={isDark ? '#000' : '#fff'} />
+                  </View>
+                  <View style={styles.categoryTitleContainer}>
+                    <Text style={[styles.categoryTitle, { color: theme.success }]}>
+                      Deductions Breakdown
+                    </Text>
+                    <Text style={styles.categoryDescription}>
+                      Total allowable tax deductions claimed
+                    </Text>
+                    <Text style={[styles.categoryTotal, { color: theme.success }]}>
+                      Total: -{formatCurrency(result.totalDeductions)}
+                    </Text>
+                  </View>
+                </View>
+              </View>
+
+              <View style={styles.categoryContent}>
+                <View style={styles.summaryBreakdown}>
+                  <View style={styles.summaryBreakdownItem}>
+                    <View
+                      style={[
+                        styles.summaryBreakdownDot,
+                        { backgroundColor: theme.categoryDonations },
+                      ]}
+                    />
+                    <Text style={styles.summaryBreakdownLabel}>Manual Deductions</Text>
+                    <Text style={styles.summaryBreakdownValue}>
+                      -{formatCurrency(result.totalManualDeductions)}
+                    </Text>
+                  </View>
+                  <View style={styles.summaryBreakdownItem}>
+                    <View
+                      style={[styles.summaryBreakdownDot, { backgroundColor: theme.categoryHome }]}
+                    />
+                    <Text style={styles.summaryBreakdownLabel}>Work From Home</Text>
+                    <Text style={styles.summaryBreakdownValue}>
+                      -{formatCurrency(result.workFromHomeDeduction)}
+                    </Text>
+                  </View>
+                </View>
+              </View>
             </View>
-          </View>
-        </View>
 
+            {/* Tax Calculation Section */}
+            <View style={styles.deductionCategory}>
+              <View
+                style={[styles.deductionCategoryHeader, { backgroundColor: theme.warningLight }]}
+              >
+                <View style={styles.categoryHeaderLeft}>
+                  <View style={[styles.categoryIcon, { backgroundColor: theme.warning }]}>
+                    <Ionicons
+                      name="calculator-outline"
+                      size={22}
+                      color={isDark ? '#000' : '#fff'}
+                    />
+                  </View>
+                  <View style={styles.categoryTitleContainer}>
+                    <Text style={[styles.categoryTitle, { color: theme.warning }]}>
+                      Tax Calculation
+                    </Text>
+                    <Text style={styles.categoryDescription}>
+                      Detailed breakdown of tax liability calculation
+                    </Text>
+                    <Text style={[styles.categoryTotal, { color: theme.warning }]}>
+                      Final Tax: {formatCurrency(result.finalTax)}
+                    </Text>
+                  </View>
+                </View>
+              </View>
 
+              <View style={styles.categoryContent}>
+                <View style={styles.summaryBreakdown}>
+                  <View style={styles.summaryBreakdownItem}>
+                    <View
+                      style={[styles.summaryBreakdownDot, { backgroundColor: theme.categoryOther }]}
+                    />
+                    <Text style={[styles.summaryBreakdownLabel, { fontWeight: '600' }]}>
+                      Taxable Income
+                    </Text>
+                    <Text style={[styles.summaryBreakdownValue, { fontWeight: '600' }]}>
+                      {formatCurrency(result.taxableIncome)}
+                    </Text>
+                  </View>
+                  <View style={styles.summaryBreakdownItem}>
+                    <View
+                      style={[
+                        styles.summaryBreakdownDot,
+                        { backgroundColor: theme.categoryDonations },
+                      ]}
+                    />
+                    <Text style={styles.summaryBreakdownLabel}>Gross Tax</Text>
+                    <Text style={styles.summaryBreakdownValue}>{formatCurrency(result.tax)}</Text>
+                  </View>
+                  <View style={styles.summaryBreakdownItem}>
+                    <View
+                      style={[styles.summaryBreakdownDot, { backgroundColor: theme.success }]}
+                    />
+                    <Text style={styles.summaryBreakdownLabel}>LITO Offset</Text>
+                    <Text style={styles.summaryBreakdownValue}>-{formatCurrency(result.lito)}</Text>
+                  </View>
+                  <View style={styles.summaryBreakdownItem}>
+                    <View
+                      style={[styles.summaryBreakdownDot, { backgroundColor: theme.categoryHome }]}
+                    />
+                    <Text style={styles.summaryBreakdownLabel}>Medicare Levy</Text>
+                    <Text style={styles.summaryBreakdownValue}>
+                      +{formatCurrency(result.medicare)}
+                    </Text>
+                  </View>
+                  {result.medicareLevySurcharge > 0 && (
+                    <View style={styles.summaryBreakdownItem}>
+                      <View
+                        style={[styles.summaryBreakdownDot, { backgroundColor: theme.error }]}
+                      />
+                      <Text style={styles.summaryBreakdownLabel}>Medicare Levy Surcharge</Text>
+                      <Text style={styles.summaryBreakdownValue}>
+                        +{formatCurrency(result.medicareLevySurcharge)}
+                      </Text>
+                    </View>
+                  )}
+                  {result.familyIncomeForMedicare > result.taxableIncome && (
+                    <View style={styles.summaryBreakdownItem}>
+                      <View
+                        style={[
+                          styles.summaryBreakdownDot,
+                          { backgroundColor: theme.categoryHome },
+                        ]}
+                      />
+                      <Text style={styles.summaryBreakdownLabel}>Family Income for Medicare</Text>
+                      <Text style={styles.summaryBreakdownValue}>
+                        {formatCurrency(result.familyIncomeForMedicare)}
+                      </Text>
+                    </View>
+                  )}
+                  {result.hecsRepayment > 0 && (
+                    <View style={styles.summaryBreakdownItem}>
+                      <View
+                        style={[
+                          styles.summaryBreakdownDot,
+                          { backgroundColor: theme.categoryOther },
+                        ]}
+                      />
+                      <Text style={styles.summaryBreakdownLabel}>HECS-HELP Repayment</Text>
+                      <Text style={styles.summaryBreakdownValue}>
+                        +{formatCurrency(result.hecsRepayment)}
+                      </Text>
+                    </View>
+                  )}
+                  {result.studyLoanRepaymentIncome > result.taxableIncome && (
+                    <View style={styles.summaryBreakdownItem}>
+                      <View
+                        style={[
+                          styles.summaryBreakdownDot,
+                          { backgroundColor: theme.categoryEducation },
+                        ]}
+                      />
+                      <Text style={styles.summaryBreakdownLabel}>HELP Repayment Income</Text>
+                      <Text style={styles.summaryBreakdownValue}>
+                        {formatCurrency(result.studyLoanRepaymentIncome)}
+                      </Text>
+                    </View>
+                  )}
+                </View>
 
-        {/* Tips Section */}
-        <View style={styles.nextStepsContainer}>
-          <View style={styles.nextStepsHeader}>
-            <Ionicons name="information-circle-outline" size={20} color={theme.primary} />
-            <Text style={styles.nextStepsTitle}>Important Reminder</Text>
-          </View>
-          <View style={styles.nextStepsList}>
-            <View style={styles.nextStepItem}>
-              <Text style={styles.nextStepText}>Keep receipts and documentation for all claimed deductions</Text>
+                {/* Tax Estimate */}
+                <View
+                  style={[
+                    styles.taxSavingsEstimate,
+                    { backgroundColor: theme.warningLight, borderColor: theme.warning },
+                  ]}
+                >
+                  <Ionicons name="information-circle" size={16} color={theme.warning} />
+                  <Text style={[styles.taxSavingsText, { color: theme.warning }]}>
+                    Tax withheld: {formatCurrency(parseFloat(taxWithheld || '0'))} • Calculated
+                    using {selectedTaxYearDisplay} ATO rates
+                  </Text>
+                </View>
+              </View>
             </View>
-          </View>
-        </View>
 
-        {renderAssumptionsCard()}
+            {/* Tips Section */}
+            <View style={styles.nextStepsContainer}>
+              <View style={styles.nextStepsHeader}>
+                <Ionicons name="information-circle-outline" size={20} color={theme.primary} />
+                <Text style={styles.nextStepsTitle}>Important Reminder</Text>
+              </View>
+              <View style={styles.nextStepsList}>
+                <View style={styles.nextStepItem}>
+                  <Text style={styles.nextStepText}>
+                    Keep receipts and documentation for all claimed deductions
+                  </Text>
+                </View>
+              </View>
+            </View>
+
+            {renderAssumptionsCard()}
 
             {/* Action Buttons Section - Only visible in card view */}
             <View style={styles.quickAddGrid}>
-                <TouchableOpacity style={[styles.quickAddButton, { backgroundColor: theme.error }]} onPress={exportPDF}>
-                  <Ionicons name="document-outline" size={20} color={isDark ? "#000" : "#fff"} />
-                  <Text style={[styles.quickAddButtonText, { color: isDark ? "#000" : '#fff', marginTop: 8 }]}>Export PDF</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity style={[styles.quickAddButton, { backgroundColor: theme.success }]} onPress={exportCSV}>
-                  <Ionicons name="download-outline" size={20} color={isDark ? "#000" : "#fff"} />
-                  <Text style={[styles.quickAddButtonText, { color: isDark ? "#000" : '#fff', marginTop: 8 }]}>Export CSV</Text>
-                </TouchableOpacity>
-
-                {!viewingCalculation && (
-                  <TouchableOpacity style={[styles.quickAddButton, { backgroundColor: theme.warning }]} onPress={handleSaveCalculation}>
-                    <Ionicons name="bookmark-outline" size={20} color={isDark ? "#000" : "#fff"} />
-                    <Text style={[styles.quickAddButtonText, { color: isDark ? "#000" : '#fff', marginTop: 8 }]}>Save Calculation</Text>
-                  </TouchableOpacity>
-                )}
-
-                <TouchableOpacity
-                  style={[styles.quickAddButton, { backgroundColor: theme.categoryOther }]}
-                  onPress={() => {
-                    setCurrentStep(1);
-                  }}
+              <TouchableOpacity
+                style={[styles.quickAddButton, { backgroundColor: theme.error }]}
+                onPress={exportPDF}
+              >
+                <Ionicons name="document-outline" size={20} color={isDark ? '#000' : '#fff'} />
+                <Text
+                  style={[
+                    styles.quickAddButtonText,
+                    { color: isDark ? '#000' : '#fff', marginTop: 8 },
+                  ]}
                 >
-                  <Ionicons name="create-outline" size={20} color={isDark ? "#000" : "#fff"} />
-                  <Text style={[styles.quickAddButtonText, { color: isDark ? "#000" : '#fff', marginTop: 8 }]}>Edit Calculation</Text>
+                  Export PDF
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.quickAddButton, { backgroundColor: theme.success }]}
+                onPress={exportCSV}
+              >
+                <Ionicons name="download-outline" size={20} color={isDark ? '#000' : '#fff'} />
+                <Text
+                  style={[
+                    styles.quickAddButtonText,
+                    { color: isDark ? '#000' : '#fff', marginTop: 8 },
+                  ]}
+                >
+                  Export CSV
+                </Text>
+              </TouchableOpacity>
+
+              {!viewingCalculation && (
+                <TouchableOpacity
+                  style={[styles.quickAddButton, { backgroundColor: theme.warning }]}
+                  onPress={handleSaveCalculation}
+                >
+                  <Ionicons name="bookmark-outline" size={20} color={isDark ? '#000' : '#fff'} />
+                  <Text
+                    style={[
+                      styles.quickAddButtonText,
+                      { color: isDark ? '#000' : '#fff', marginTop: 8 },
+                    ]}
+                  >
+                    Save Calculation
+                  </Text>
                 </TouchableOpacity>
-              </View>
+              )}
+
+              <TouchableOpacity
+                style={[styles.quickAddButton, { backgroundColor: theme.categoryOther }]}
+                onPress={() => {
+                  setCurrentStep(1);
+                }}
+              >
+                <Ionicons name="create-outline" size={20} color={isDark ? '#000' : '#fff'} />
+                <Text
+                  style={[
+                    styles.quickAddButtonText,
+                    { color: isDark ? '#000' : '#fff', marginTop: 8 },
+                  ]}
+                >
+                  Edit Calculation
+                </Text>
+              </TouchableOpacity>
+            </View>
 
             {/* ATO File Tax Return Button - Only in card view */}
             <Text style={styles.atoFileReturnDescription}>
@@ -5069,7 +5474,12 @@ const AppContent: React.FC = () => {
             >
               <Ionicons name="globe-outline" size={22} color="#ffffff" />
               <Text style={styles.atoFileReturnButtonText}>Visit ATO myTax Portal</Text>
-              <Ionicons name="open-outline" size={16} color="#ffffff" style={styles.externalLinkIcon} />
+              <Ionicons
+                name="open-outline"
+                size={16}
+                color="#ffffff"
+                style={styles.externalLinkIcon}
+              />
             </TouchableOpacity>
           </>
         ) : (
@@ -5078,10 +5488,7 @@ const AppContent: React.FC = () => {
         )}
 
         {/* Full Width Back to Home Button */}
-        <TouchableOpacity
-          style={styles.fullWidthHomeButton}
-          onPress={navigateToHome}
-        >
+        <TouchableOpacity style={styles.fullWidthHomeButton} onPress={navigateToHome}>
           <Ionicons name="home-outline" size={20} color={theme.primary} />
           <Text style={styles.fullWidthHomeButtonText}>Back to Home</Text>
         </TouchableOpacity>
@@ -5113,7 +5520,7 @@ const AppContent: React.FC = () => {
   if (currentScreen === 'home') {
     return (
       <SafeAreaView style={styles.safeArea}>
-        <StatusBar style={isDark ? "light" : "dark"} backgroundColor={theme.background} />
+        <StatusBar style={isDark ? 'light' : 'dark'} backgroundColor={theme.background} />
         <View style={styles.container}>
           <HomeScreen
             onCreateNew={navigateToCalculator}
@@ -5128,7 +5535,7 @@ const AppContent: React.FC = () => {
   if (currentScreen === 'about') {
     return (
       <SafeAreaView style={styles.safeArea}>
-        <StatusBar style={isDark ? "light" : "dark"} backgroundColor={theme.background} />
+        <StatusBar style={isDark ? 'light' : 'dark'} backgroundColor={theme.background} />
         <View style={styles.container}>
           <AboutScreen onBack={navigateToHome} />
         </View>
@@ -5139,47 +5546,43 @@ const AppContent: React.FC = () => {
   // Calculator screen
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.surfaceSecondary }]}>
-      <StatusBar style={isDark ? "light" : "dark"} backgroundColor={theme.surfaceSecondary} />
+      <StatusBar style={isDark ? 'light' : 'dark'} backgroundColor={theme.surfaceSecondary} />
       <KeyboardAvoidingView
         style={styles.container}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
       >
+        {showSuccessAnimation && (
+          <Animated.View
+            style={[
+              styles.successBanner,
+              {
+                opacity: fadeAnim,
+                transform: [{ translateY: slideAnim }],
+              },
+            ]}
+          >
+            <Ionicons name="checkmark-circle" size={20} color="#fff" />
+            <Text style={styles.successBannerText}>Tax calculation completed successfully!</Text>
+          </Animated.View>
+        )}
 
-      {showSuccessAnimation && (
-        <Animated.View style={[
-          styles.successBanner,
-          {
-            opacity: fadeAnim,
-            transform: [{ translateY: slideAnim }]
-          }
-        ]}>
-          <Ionicons name="checkmark-circle" size={20} color="#fff" />
-          <Text style={styles.successBannerText}>
-            Tax calculation completed successfully!
-          </Text>
-        </Animated.View>
-      )}
+        <StepIndicator />
 
-      <StepIndicator />
-
-      <ScrollView
-        ref={scrollViewRef}
-        style={styles.scrollContainer}
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
-      >
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-          <View>
-            {renderCurrentStep()}
-          </View>
-        </TouchableWithoutFeedback>
-      </ScrollView>
-
+        <ScrollView
+          ref={scrollViewRef}
+          style={styles.scrollContainer}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
+          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <View>{renderCurrentStep()}</View>
+          </TouchableWithoutFeedback>
+        </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
-}
+};
 
 // Main App component with theme provider
 const App: React.FC = () => {

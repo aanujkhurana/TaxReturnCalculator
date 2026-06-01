@@ -38,13 +38,13 @@ const mockReactNative: MockReactNative = {
   Alert: { alert: jest.fn(), prompt: jest.fn() },
   Dimensions: { get: () => ({ width: 375, height: 812 }) },
   Platform: { OS: 'ios' },
-  StatusBar: { currentHeight: 0 }
+  StatusBar: { currentHeight: 0 },
 };
 
 const {
   ACTIVE_FINANCIAL_YEAR,
   ACTIVE_TAX_YEAR_CONFIG,
-  TAX_SOURCE_AUDIT_NOTES
+  TAX_SOURCE_AUDIT_NOTES,
 } = require('../constants/taxConstants.ts');
 
 const toSnapshot = (value) => JSON.stringify(value, null, 2);
@@ -58,21 +58,21 @@ class TaxCalculator {
     this.TAX_BRACKETS_2025_26 = [
       { min: 0, max: 18200, rate: 0, base: 0 },
       { min: 18200, max: 45000, rate: 0.16, base: 0 },
-      { min: 45000, max: 135000, rate: 0.30, base: 4288 },
+      { min: 45000, max: 135000, rate: 0.3, base: 4288 },
       { min: 135000, max: 190000, rate: 0.37, base: 31288 },
-      { min: 190000, max: Infinity, rate: 0.45, base: 51638 }
+      { min: 190000, max: Infinity, rate: 0.45, base: 51638 },
     ];
 
     this.PAYG_SCALE_2_WEEKLY_COEFFICIENTS = [
       { lessThan: 361, a: 0, b: 0 },
-      { lessThan: 500, a: 0.1600, b: 57.8462 },
-      { lessThan: 625, a: 0.2600, b: 107.8462 },
-      { lessThan: 721, a: 0.1800, b: 57.8462 },
-      { lessThan: 865, a: 0.1890, b: 64.3365 },
+      { lessThan: 500, a: 0.16, b: 57.8462 },
+      { lessThan: 625, a: 0.26, b: 107.8462 },
+      { lessThan: 721, a: 0.18, b: 57.8462 },
+      { lessThan: 865, a: 0.189, b: 64.3365 },
       { lessThan: 1282, a: 0.3227, b: 180.0385 },
-      { lessThan: 2596, a: 0.3200, b: 176.5769 },
-      { lessThan: 3653, a: 0.3900, b: 358.3077 },
-      { lessThan: Infinity, a: 0.4700, b: 650.6154 }
+      { lessThan: 2596, a: 0.32, b: 176.5769 },
+      { lessThan: 3653, a: 0.39, b: 358.3077 },
+      { lessThan: Infinity, a: 0.47, b: 650.6154 },
     ];
   }
 
@@ -83,7 +83,7 @@ class TaxCalculator {
     } else if (taxableIncome > 135000) {
       tax = 31288 + (taxableIncome - 135000) * 0.37;
     } else if (taxableIncome > 45000) {
-      tax = 4288 + (taxableIncome - 45000) * 0.30;
+      tax = 4288 + (taxableIncome - 45000) * 0.3;
     } else if (taxableIncome > 18200) {
       tax = (taxableIncome - 18200) * 0.16;
     }
@@ -95,18 +95,24 @@ class TaxCalculator {
     if (taxableIncome <= 37500) {
       lito = 700;
     } else if (taxableIncome <= 45000) {
-      lito = 700 - ((taxableIncome - 37500) * 0.05);
+      lito = 700 - (taxableIncome - 37500) * 0.05;
     } else if (taxableIncome <= 66667) {
-      lito = Math.max(0, 325 - ((taxableIncome - 45000) * 0.015));
+      lito = Math.max(0, 325 - (taxableIncome - 45000) * 0.015);
     }
     return lito;
   }
 
-  calculateMedicareLevy(taxableIncome, dependents = 0, medicareExemption = false, hasSpouse = false, spouseIncome = 0) {
+  calculateMedicareLevy(
+    taxableIncome,
+    dependents = 0,
+    medicareExemption = false,
+    hasSpouse = false,
+    spouseIncome = 0
+  ) {
     if (medicareExemption) return 0;
-    
+
     const useFamilyThreshold = hasSpouse || dependents > 0;
-    const medicareThreshold = useFamilyThreshold ? 45907 + (dependents * 4216) : 27222;
+    const medicareThreshold = useFamilyThreshold ? 45907 + dependents * 4216 : 27222;
     const thresholdIncome = useFamilyThreshold ? taxableIncome + spouseIncome : taxableIncome;
     if (thresholdIncome <= medicareThreshold) return 0;
 
@@ -115,14 +121,20 @@ class TaxCalculator {
 
   calculateHECSRepayment(taxableIncome, hasHECSDebt = false) {
     if (!hasHECSDebt) return 0;
-    
+
     if (taxableIncome <= 67000) return 0;
     if (taxableIncome <= 125000) return (taxableIncome - 67000) * 0.15;
-    if (taxableIncome <= 179285) return 8700 + ((taxableIncome - 125000) * 0.17);
-    return taxableIncome * 0.10;
+    if (taxableIncome <= 179285) return 8700 + (taxableIncome - 125000) * 0.17;
+    return taxableIncome * 0.1;
   }
 
-  calculateMedicareLevySurcharge(taxableIncome, familyIncome, hasPrivateHospitalCover = false, hasSpouse = false, dependents = 0) {
+  calculateMedicareLevySurcharge(
+    taxableIncome,
+    familyIncome,
+    hasPrivateHospitalCover = false,
+    hasSpouse = false,
+    dependents = 0
+  ) {
     if (hasPrivateHospitalCover || taxableIncome <= 0) return 0;
 
     const isFamily = hasSpouse || dependents > 0;
@@ -130,21 +142,29 @@ class TaxCalculator {
     const surchargeIncome = isFamily ? familyIncome : taxableIncome;
     const tiers = isFamily
       ? [
-          { min: 202001 + familyDependentIncrease, max: 236000 + familyDependentIncrease, rate: 0.01 },
-          { min: 236001 + familyDependentIncrease, max: 316000 + familyDependentIncrease, rate: 0.0125 },
-          { min: 316001 + familyDependentIncrease, max: Infinity, rate: 0.015 }
+          {
+            min: 202001 + familyDependentIncrease,
+            max: 236000 + familyDependentIncrease,
+            rate: 0.01,
+          },
+          {
+            min: 236001 + familyDependentIncrease,
+            max: 316000 + familyDependentIncrease,
+            rate: 0.0125,
+          },
+          { min: 316001 + familyDependentIncrease, max: Infinity, rate: 0.015 },
         ]
       : [
           { min: 101001, max: 118000, rate: 0.01 },
           { min: 118001, max: 158000, rate: 0.0125 },
-          { min: 158001, max: Infinity, rate: 0.015 }
+          { min: 158001, max: Infinity, rate: 0.015 },
         ];
-    const tier = tiers.find(t => surchargeIncome >= t.min && surchargeIncome <= t.max);
+    const tier = tiers.find((t) => surchargeIncome >= t.min && surchargeIncome <= t.max);
     return tier ? taxableIncome * tier.rate : 0;
   }
 
   calculateWorkFromHomeDeduction(hours) {
-    return parseFloat(hours || '0') * 0.70;
+    return parseFloat(hours || '0') * 0.7;
   }
 
   calculatePaygWithholdingEstimate(annualIncome) {
@@ -152,17 +172,20 @@ class TaxCalculator {
 
     const x = Math.floor(annualIncome / 52) + 0.99;
     const coefficient = this.PAYG_SCALE_2_WEEKLY_COEFFICIENTS.find(({ lessThan }) => x < lessThan);
-    return Math.round(Math.max(0, Math.round((coefficient.a * x) - coefficient.b)) * 52);
+    return Math.round(Math.max(0, Math.round(coefficient.a * x - coefficient.b)) * 52);
   }
 
   calculateTotalDeductions(deductions, workFromHomeHours) {
     const manualDeductions = Object.values(deductions).reduce((categorySum, category) => {
       if (typeof category === 'object' && category !== null) {
-        return categorySum + Object.values(category).reduce((subSum, val) => {
-          return subSum + (parseFloat(val || '0'));
-        }, 0);
+        return (
+          categorySum +
+          Object.values(category).reduce((subSum, val) => {
+            return subSum + parseFloat(val || '0');
+          }, 0)
+        );
       }
-      return categorySum + (parseFloat(category || '0'));
+      return categorySum + parseFloat(category || '0');
     }, 0);
 
     const workFromHomeDeduction = this.calculateWorkFromHomeDeduction(workFromHomeHours);
@@ -186,7 +209,7 @@ class TaxCalculator {
       spouseIncome = '',
       hasPrivateHospitalCover = false,
       dependents = '0',
-      hasDependents = false
+      hasDependents = false,
     } = formData;
 
     // Calculate total incomes
@@ -206,11 +229,24 @@ class TaxCalculator {
     const tax = this.calculateIncomeTax(taxableIncome);
     const lito = this.calculateLITO(taxableIncome);
     const dependentsNum = hasDependents ? parseInt(dependents || '0') : 0;
-    const spouseIncomeNum = hasSpouse ? (parseFloat(spouseIncome || '0') || 0) : 0;
-    const medicare = this.calculateMedicareLevy(taxableIncome, dependentsNum, medicareExemption, hasSpouse, spouseIncomeNum);
+    const spouseIncomeNum = hasSpouse ? parseFloat(spouseIncome || '0') || 0 : 0;
+    const medicare = this.calculateMedicareLevy(
+      taxableIncome,
+      dependentsNum,
+      medicareExemption,
+      hasSpouse,
+      spouseIncomeNum
+    );
     const familyIncomeForMedicare = taxableIncome + spouseIncomeNum;
-    const medicareLevySurcharge = this.calculateMedicareLevySurcharge(taxableIncome, familyIncomeForMedicare, hasPrivateHospitalCover, hasSpouse, dependentsNum);
-    const studyLoanRepaymentIncome = taxableIncome +
+    const medicareLevySurcharge = this.calculateMedicareLevySurcharge(
+      taxableIncome,
+      familyIncomeForMedicare,
+      hasPrivateHospitalCover,
+      hasSpouse,
+      dependentsNum
+    );
+    const studyLoanRepaymentIncome =
+      taxableIncome +
       (parseFloat(reportableSuper || '0') || 0) +
       (parseFloat(reportableFringeBenefits || '0') || 0) +
       (parseFloat(netInvestmentLosses || '0') || 0) +
@@ -240,7 +276,7 @@ class TaxCalculator {
       hecsRepayment,
       finalTax,
       taxWithheldNum,
-      refund
+      refund,
     };
   }
 }
@@ -266,7 +302,7 @@ describe('Australian Tax Calculator - Comprehensive Tests', () => {
 
     test('30% tax bracket ($45,001 - $135,000)', () => {
       const income = 80000;
-      const expectedTax = 4288 + (income - 45000) * 0.30;
+      const expectedTax = 4288 + (income - 45000) * 0.3;
       expect(calculator.calculateIncomeTax(income)).toBeCloseTo(expectedTax, 2);
     });
 
@@ -288,11 +324,11 @@ describe('Australian Tax Calculator - Comprehensive Tests', () => {
       expect(ACTIVE_FINANCIAL_YEAR).toBe('2025-26');
 
       const sourceNoteIds = ACTIVE_TAX_YEAR_CONFIG.sourceNoteIds;
-      const missingSourceNotes = sourceNoteIds.filter(id => !TAX_SOURCE_AUDIT_NOTES[id]);
+      const missingSourceNotes = sourceNoteIds.filter((id) => !TAX_SOURCE_AUDIT_NOTES[id]);
       expect(missingSourceNotes.join(',')).toBe('');
 
       const affectedConstants = sourceNoteIds
-        .flatMap(id => TAX_SOURCE_AUDIT_NOTES[id].affectedConstants)
+        .flatMap((id) => TAX_SOURCE_AUDIT_NOTES[id].affectedConstants)
         .join('|');
       [
         'FY2025_26_TAX_BRACKETS',
@@ -302,8 +338,8 @@ describe('Australian Tax Calculator - Comprehensive Tests', () => {
         'FY2025_26_LOW_INCOME_TAX_OFFSET',
         'FY2025_26_WORK_FROM_HOME',
         'FY2025_26_STANDARD_DEDUCTIONS',
-        'PAYG_SCALE_2_WEEKLY_COEFFICIENTS'
-      ].forEach(constantName => {
+        'PAYG_SCALE_2_WEEKLY_COEFFICIENTS',
+      ].forEach((constantName) => {
         if (!affectedConstants.includes(constantName)) {
           throw new Error(`Missing source coverage for ${constantName}`);
         }
@@ -321,7 +357,7 @@ describe('Australian Tax Calculator - Comprehensive Tests', () => {
         medicareLevyThresholds: ACTIVE_TAX_YEAR_CONFIG.medicareLevyThresholds,
         medicareLevySurcharge: ACTIVE_TAX_YEAR_CONFIG.medicareLevySurcharge,
         workFromHome: ACTIVE_TAX_YEAR_CONFIG.workFromHome,
-        standardDeductions: ACTIVE_TAX_YEAR_CONFIG.standardDeductions
+        standardDeductions: ACTIVE_TAX_YEAR_CONFIG.standardDeductions,
       };
 
       expect(toSnapshot(snapshot)).toBe(`{
@@ -468,35 +504,62 @@ describe('Australian Tax Calculator - Comprehensive Tests', () => {
           { taxableIncome: 80000, tax: calculator.calculateIncomeTax(80000) },
           { taxableIncome: 135000, tax: calculator.calculateIncomeTax(135000) },
           { taxableIncome: 190000, tax: calculator.calculateIncomeTax(190000) },
-          { taxableIncome: 220000, tax: calculator.calculateIncomeTax(220000) }
+          { taxableIncome: 220000, tax: calculator.calculateIncomeTax(220000) },
         ],
         lowIncomeTaxOffset: [
           { taxableIncome: 37500, offset: calculator.calculateLITO(37500) },
           { taxableIncome: 45000, offset: calculator.calculateLITO(45000) },
-          { taxableIncome: 66667, offset: calculator.calculateLITO(66667) }
+          { taxableIncome: 66667, offset: calculator.calculateLITO(66667) },
         ],
         medicareLevy: [
           { taxableIncome: 27222, levy: calculator.calculateMedicareLevy(27222) },
           { taxableIncome: 30000, levy: calculator.calculateMedicareLevy(30000) },
           { taxableIncome: 60000, levy: calculator.calculateMedicareLevy(60000) },
-          { taxableIncome: 30000, spouseIncome: 20000, levy: calculator.calculateMedicareLevy(30000, 0, false, true, 20000) }
+          {
+            taxableIncome: 30000,
+            spouseIncome: 20000,
+            levy: calculator.calculateMedicareLevy(30000, 0, false, true, 20000),
+          },
         ],
         helpRepayment: [
           { repaymentIncome: 67000, repayment: calculator.calculateHECSRepayment(67000, true) },
           { repaymentIncome: 75000, repayment: calculator.calculateHECSRepayment(75000, true) },
           { repaymentIncome: 127064, repayment: calculator.calculateHECSRepayment(127064, true) },
-          { repaymentIncome: 190000, repayment: calculator.calculateHECSRepayment(190000, true) }
+          { repaymentIncome: 190000, repayment: calculator.calculateHECSRepayment(190000, true) },
         ],
         medicareLevySurcharge: [
-          { taxableIncome: 100000, familyIncome: 100000, surcharge: calculator.calculateMedicareLevySurcharge(100000, 100000, false, false, 0) },
-          { taxableIncome: 102000, familyIncome: 102000, surcharge: calculator.calculateMedicareLevySurcharge(102000, 102000, false, false, 0) },
-          { taxableIncome: 120000, familyIncome: 220000, surcharge: calculator.calculateMedicareLevySurcharge(120000, 220000, false, true, 0) },
-          { taxableIncome: 120000, familyIncome: 220000, hasCover: true, surcharge: calculator.calculateMedicareLevySurcharge(120000, 220000, true, true, 0) }
+          {
+            taxableIncome: 100000,
+            familyIncome: 100000,
+            surcharge: calculator.calculateMedicareLevySurcharge(100000, 100000, false, false, 0),
+          },
+          {
+            taxableIncome: 102000,
+            familyIncome: 102000,
+            surcharge: calculator.calculateMedicareLevySurcharge(102000, 102000, false, false, 0),
+          },
+          {
+            taxableIncome: 120000,
+            familyIncome: 220000,
+            surcharge: calculator.calculateMedicareLevySurcharge(120000, 220000, false, true, 0),
+          },
+          {
+            taxableIncome: 120000,
+            familyIncome: 220000,
+            hasCover: true,
+            surcharge: calculator.calculateMedicareLevySurcharge(120000, 220000, true, true, 0),
+          },
         ],
         paygWithholding: [
-          { employmentIncome: 75000, withholding: calculator.calculatePaygWithholdingEstimate(75000) },
-          { employmentIncome: 150000, withholding: calculator.calculatePaygWithholdingEstimate(150000) }
-        ]
+          {
+            employmentIncome: 75000,
+            withholding: calculator.calculatePaygWithholdingEstimate(75000),
+          },
+          {
+            employmentIncome: 150000,
+            withholding: calculator.calculatePaygWithholdingEstimate(150000),
+          },
+        ],
       };
 
       expect(toSnapshot(snapshot)).toBe(`{
@@ -622,13 +685,13 @@ describe('Australian Tax Calculator - Comprehensive Tests', () => {
 
     test('Reduced LITO for income $37,501 - $45,000', () => {
       const income = 40000;
-      const expectedLITO = 700 - ((income - 37500) * 0.05);
+      const expectedLITO = 700 - (income - 37500) * 0.05;
       expect(calculator.calculateLITO(income)).toBeCloseTo(expectedLITO, 2);
     });
 
     test('Further reduced LITO for income $45,001 - $66,667', () => {
       const income = 50000;
-      const expectedLITO = 325 - ((income - 45000) * 0.015);
+      const expectedLITO = 325 - (income - 45000) * 0.015;
       expect(calculator.calculateLITO(income)).toBeCloseTo(expectedLITO, 2);
     });
 
@@ -662,19 +725,30 @@ describe('Australian Tax Calculator - Comprehensive Tests', () => {
     test('Family threshold with dependents', () => {
       const income = 60000; // Higher income to ensure above family threshold
       const dependents = 2;
-      const familyThreshold = 45907 + (dependents * 4216); // = 54339
-      expect(calculator.calculateMedicareLevy(income, dependents)).toBeCloseTo((income - familyThreshold) * 0.1, 2);
+      const familyThreshold = 45907 + dependents * 4216; // = 54339
+      expect(calculator.calculateMedicareLevy(income, dependents)).toBeCloseTo(
+        (income - familyThreshold) * 0.1,
+        2
+      );
     });
 
     test('Family threshold includes spouse taxable income', () => {
       expect(calculator.calculateMedicareLevy(30000, 0, false, true, 12000)).toBe(0);
-      expect(calculator.calculateMedicareLevy(30000, 0, false, true, 20000)).toBeCloseTo((50000 - 45907) * 0.1, 2);
+      expect(calculator.calculateMedicareLevy(30000, 0, false, true, 20000)).toBeCloseTo(
+        (50000 - 45907) * 0.1,
+        2
+      );
     });
 
     test('Medicare levy surcharge applies without private hospital cover', () => {
       expect(calculator.calculateMedicareLevySurcharge(100000, 100000, false, false, 0)).toBe(0);
-      expect(calculator.calculateMedicareLevySurcharge(102000, 102000, false, false, 0)).toBeCloseTo(1020, 2);
-      expect(calculator.calculateMedicareLevySurcharge(120000, 220000, false, true, 0)).toBeCloseTo(1200, 2);
+      expect(
+        calculator.calculateMedicareLevySurcharge(102000, 102000, false, false, 0)
+      ).toBeCloseTo(1020, 2);
+      expect(calculator.calculateMedicareLevySurcharge(120000, 220000, false, true, 0)).toBeCloseTo(
+        1200,
+        2
+      );
       expect(calculator.calculateMedicareLevySurcharge(120000, 220000, true, true, 0)).toBe(0);
     });
   });
@@ -687,8 +761,11 @@ describe('Australian Tax Calculator - Comprehensive Tests', () => {
     test('HECS repayment at various thresholds', () => {
       expect(calculator.calculateHECSRepayment(65000, true)).toBe(0);
       expect(calculator.calculateHECSRepayment(75000, true)).toBeCloseTo((75000 - 67000) * 0.15, 2);
-      expect(calculator.calculateHECSRepayment(127064, true)).toBeCloseTo(8700 + ((127064 - 125000) * 0.17), 2);
-      expect(calculator.calculateHECSRepayment(180000, true)).toBeCloseTo(180000 * 0.10, 2);
+      expect(calculator.calculateHECSRepayment(127064, true)).toBeCloseTo(
+        8700 + (127064 - 125000) * 0.17,
+        2
+      );
+      expect(calculator.calculateHECSRepayment(180000, true)).toBeCloseTo(180000 * 0.1, 2);
     });
 
     test('No HECS repayment when no debt', () => {
@@ -709,7 +786,7 @@ describe('Australian Tax Calculator - Comprehensive Tests', () => {
         exemptForeignIncome: '1000',
         medicareExemption: false,
         dependents: '0',
-        hasDependents: false
+        hasDependents: false,
       });
 
       expect(result.taxableIncome).toBe(60000);
@@ -743,28 +820,28 @@ describe('Australian Tax Calculator - Comprehensive Tests', () => {
           equipment: '300',
           uniforms: '200',
           memberships: '100',
-          other: '150'
+          other: '150',
         },
         selfEducation: {
           courseFees: '2000',
           textbooks: '300',
           conferences: '500',
           certifications: '400',
-          other: '100'
+          other: '100',
         },
         donations: {
           charitable: '500',
           disasterRelief: '200',
           religious: '300',
-          other: '100'
+          other: '100',
         },
         other: {
           investment: '800',
           taxAgent: '350',
           incomeProtection: '600',
           bankFees: '50',
-          other: '200'
-        }
+          other: '200',
+        },
       };
 
       const expectedTotal = 1250 + 3300 + 1100 + 2000 + 70; // Including WFH
@@ -780,15 +857,21 @@ describe('Australian Tax Calculator - Comprehensive Tests', () => {
         taxWithheld: '3500',
         deductions: {
           workRelated: { travel: '500', equipment: '', uniforms: '', memberships: '', other: '' },
-          selfEducation: { courseFees: '', textbooks: '', conferences: '', certifications: '', other: '' },
+          selfEducation: {
+            courseFees: '',
+            textbooks: '',
+            conferences: '',
+            certifications: '',
+            other: '',
+          },
           donations: { charitable: '200', disasterRelief: '', religious: '', other: '' },
-          other: { investment: '', taxAgent: '300', incomeProtection: '', bankFees: '', other: '' }
+          other: { investment: '', taxAgent: '300', incomeProtection: '', bankFees: '', other: '' },
         },
         workFromHomeHours: '50',
         hecsDebt: false,
         medicareExemption: false,
         dependents: '0',
-        hasDependents: false
+        hasDependents: false,
       };
 
       const result = calculator.calculateCompleteTax(formData);
@@ -801,11 +884,11 @@ describe('Australian Tax Calculator - Comprehensive Tests', () => {
       expect(result.totalDeductions).toBe(1035);
       expect(result.taxableIncome).toBe(33965);
       expect(result.lito).toBe(700);
-      expect(result.medicare).toBeCloseTo(674.30, 2); // Medicare levy reduction phase-in
+      expect(result.medicare).toBeCloseTo(674.3, 2); // Medicare levy reduction phase-in
       expect(result.hecsRepayment).toBe(0);
       // Verify the calculation components are correct
-      expect(result.tax).toBeCloseTo(2522.40, 1); // Tax on taxable income
-      expect(result.finalTax).toBeCloseTo(2496.70, 1); // Tax - LITO + Medicare
+      expect(result.tax).toBeCloseTo(2522.4, 1); // Tax on taxable income
+      expect(result.finalTax).toBeCloseTo(2496.7, 1); // Tax - LITO + Medicare
     });
 
     test('High income scenario with comprehensive deductions', () => {
@@ -814,16 +897,34 @@ describe('Australian Tax Calculator - Comprehensive Tests', () => {
         abnIncome: '25000',
         taxWithheld: '45000',
         deductions: {
-          workRelated: { travel: '2000', equipment: '1500', uniforms: '500', memberships: '300', other: '700' },
-          selfEducation: { courseFees: '3000', textbooks: '500', conferences: '1000', certifications: '800', other: '200' },
+          workRelated: {
+            travel: '2000',
+            equipment: '1500',
+            uniforms: '500',
+            memberships: '300',
+            other: '700',
+          },
+          selfEducation: {
+            courseFees: '3000',
+            textbooks: '500',
+            conferences: '1000',
+            certifications: '800',
+            other: '200',
+          },
           donations: { charitable: '1000', disasterRelief: '500', religious: '300', other: '200' },
-          other: { investment: '2500', taxAgent: '500', incomeProtection: '1200', bankFees: '100', other: '300' }
+          other: {
+            investment: '2500',
+            taxAgent: '500',
+            incomeProtection: '1200',
+            bankFees: '100',
+            other: '300',
+          },
         },
         workFromHomeHours: '300',
         hecsDebt: true,
         medicareExemption: false,
         dependents: '2',
-        hasDependents: true
+        hasDependents: true,
       };
 
       const result = calculator.calculateCompleteTax(formData);
@@ -850,7 +951,7 @@ describe('Australian Tax Calculator - Comprehensive Tests', () => {
         hecsDebt: false,
         medicareExemption: false,
         dependents: '0',
-        hasDependents: false
+        hasDependents: false,
       };
 
       const result = calculator.calculateCompleteTax(formData);
@@ -869,16 +970,39 @@ describe('Australian Tax Calculator - Comprehensive Tests', () => {
         abnIncome: '100000',
         taxWithheld: '200000',
         deductions: {
-          workRelated: { travel: '10000', equipment: '5000', uniforms: '2000', memberships: '1000', other: '2000' },
-          selfEducation: { courseFees: '15000', textbooks: '2000', conferences: '5000', certifications: '3000', other: '1000' },
-          donations: { charitable: '25000', disasterRelief: '5000', religious: '3000', other: '2000' },
-          other: { investment: '50000', taxAgent: '2000', incomeProtection: '5000', bankFees: '500', other: '5000' }
+          workRelated: {
+            travel: '10000',
+            equipment: '5000',
+            uniforms: '2000',
+            memberships: '1000',
+            other: '2000',
+          },
+          selfEducation: {
+            courseFees: '15000',
+            textbooks: '2000',
+            conferences: '5000',
+            certifications: '3000',
+            other: '1000',
+          },
+          donations: {
+            charitable: '25000',
+            disasterRelief: '5000',
+            religious: '3000',
+            other: '2000',
+          },
+          other: {
+            investment: '50000',
+            taxAgent: '2000',
+            incomeProtection: '5000',
+            bankFees: '500',
+            other: '5000',
+          },
         },
         workFromHomeHours: '2000',
         hecsDebt: true,
         medicareExemption: false,
         dependents: '3',
-        hasDependents: true
+        hasDependents: true,
       };
 
       const result = calculator.calculateCompleteTax(formData);
@@ -899,7 +1023,7 @@ describe('Australian Tax Calculator - Comprehensive Tests', () => {
         hecsDebt: false,
         medicareExemption: true,
         dependents: '0',
-        hasDependents: false
+        hasDependents: false,
       };
 
       const result = calculator.calculateCompleteTax(formData);
@@ -915,13 +1039,13 @@ describe('Australian Tax Calculator - Comprehensive Tests', () => {
         abnIncome: '',
         taxWithheld: '',
         deductions: {
-          workRelated: { travel: '', equipment: '', uniforms: '', memberships: '', other: '' }
+          workRelated: { travel: '', equipment: '', uniforms: '', memberships: '', other: '' },
         },
         workFromHomeHours: '',
         hecsDebt: false,
         medicareExemption: false,
         dependents: '',
-        hasDependents: false
+        hasDependents: false,
       };
 
       const result = calculator.calculateCompleteTax(formData);
@@ -939,7 +1063,7 @@ describe('Australian Tax Calculator - Comprehensive Tests', () => {
         hecsDebt: false,
         medicareExemption: false,
         dependents: '0',
-        hasDependents: false
+        hasDependents: false,
       };
 
       const result = calculator.calculateCompleteTax(formData);
@@ -956,7 +1080,7 @@ describe('Australian Tax Calculator - Comprehensive Tests', () => {
         hecsDebt: false,
         medicareExemption: false,
         dependents: '0',
-        hasDependents: false
+        hasDependents: false,
       };
 
       const result = calculator.calculateCompleteTax(formData);
@@ -972,7 +1096,7 @@ describe('Australian Tax Calculator - Comprehensive Tests', () => {
       expect(calculator.calculateIncomeTax(18200)).toBe(0);
       expect(calculator.calculateIncomeTax(18201)).toBeCloseTo(0.16, 2);
       expect(calculator.calculateIncomeTax(45000)).toBeCloseTo((45000 - 18200) * 0.16, 2);
-      expect(calculator.calculateIncomeTax(45001)).toBeCloseTo(4288 + 0.30, 2);
+      expect(calculator.calculateIncomeTax(45001)).toBeCloseTo(4288 + 0.3, 2);
     });
 
     test('Medicare levy thresholds', () => {

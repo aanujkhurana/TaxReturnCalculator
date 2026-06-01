@@ -44,7 +44,7 @@ class TestFramework {
     total: 0,
     passed: 0,
     failed: 0,
-    errors: []
+    errors: [],
   };
 
   describe(name: string, fn: () => void): void {
@@ -79,7 +79,7 @@ class TestFramework {
       toBeCloseTo: (expected, precision = 2) => {
         const factor = Math.pow(10, precision);
         if (Math.round(actual * factor) !== Math.round(expected * factor)) {
-          throw new Error(`Expected ${expected} (±${1/factor}), but got ${actual}`);
+          throw new Error(`Expected ${expected} (±${1 / factor}), but got ${actual}`);
         }
       },
       toBeGreaterThan: (expected) => {
@@ -91,7 +91,7 @@ class TestFramework {
         if (actual >= expected) {
           throw new Error(`Expected ${actual} to be less than ${expected}`);
         }
-      }
+      },
     };
   }
 
@@ -101,16 +101,16 @@ class TestFramework {
 
   async runTests() {
     console.log('🧮 Running Tax Calculator Tests...\n');
-    
+
     for (const test of this.tests) {
       this.results.total++;
-      
+
       try {
         // Run beforeEach if defined
         if (this.beforeEachFn) {
           this.beforeEachFn();
         }
-        
+
         await test.fn();
         this.results.passed++;
         console.log(`✅ ${test.describe} > ${test.name}`);
@@ -119,19 +119,19 @@ class TestFramework {
         this.results.errors.push({
           describe: test.describe,
           test: test.name,
-          error: error.message
+          error: error.message,
         });
         console.log(`❌ ${test.describe} > ${test.name}`);
         console.log(`   Error: ${error.message}`);
       }
     }
-    
+
     this.generateReport();
   }
 
   generateReport() {
     const passRate = ((this.results.passed / this.results.total) * 100).toFixed(1);
-    
+
     console.log('\n' + '='.repeat(80));
     console.log('📊 TEST RESULTS SUMMARY');
     console.log('='.repeat(80));
@@ -139,7 +139,7 @@ class TestFramework {
     console.log(`Passed: ${this.results.passed} ✅`);
     console.log(`Failed: ${this.results.failed} ❌`);
     console.log(`Pass Rate: ${passRate}%`);
-    
+
     if (this.results.errors.length > 0) {
       console.log('\n❌ FAILED TESTS:');
       this.results.errors.forEach((error, index) => {
@@ -147,30 +147,30 @@ class TestFramework {
         console.log(`   ${error.error}`);
       });
     }
-    
+
     // Generate detailed HTML report
     this.generateHTMLReport();
-    
+
     console.log('\n📄 Detailed HTML report generated: test-report.html');
     console.log('='.repeat(80));
   }
 
   generateHTMLReport() {
     const testsByDescribe = {};
-    
-    this.tests.forEach(test => {
+
+    this.tests.forEach((test) => {
       if (!testsByDescribe[test.describe]) {
         testsByDescribe[test.describe] = [];
       }
-      
-      const error = this.results.errors.find(e => 
-        e.describe === test.describe && e.test === test.name
+
+      const error = this.results.errors.find(
+        (e) => e.describe === test.describe && e.test === test.name
       );
-      
+
       testsByDescribe[test.describe].push({
         name: test.name,
         passed: !error,
-        error: error?.error
+        error: error?.error,
       });
     });
 
@@ -233,10 +233,14 @@ class TestFramework {
         </div>
         
         <div class="test-section">
-            ${Object.entries(testsByDescribe).map(([describe, tests]) => `
+            ${Object.entries(testsByDescribe)
+              .map(
+                ([describe, tests]) => `
                 <div class="test-group">
                     <div class="test-group-header">${describe}</div>
-                    ${tests.map(test => `
+                    ${tests
+                      .map(
+                        (test) => `
                         <div class="test-item">
                             <div class="test-name">
                                 ${test.name}
@@ -246,9 +250,13 @@ class TestFramework {
                                 ${test.passed ? '✅ PASS' : '❌ FAIL'}
                             </div>
                         </div>
-                    `).join('')}
+                    `
+                      )
+                      .join('')}
                 </div>
-            `).join('')}
+            `
+              )
+              .join('')}
         </div>
         
         <div class="timestamp">
@@ -271,7 +279,7 @@ global.beforeEach = framework.beforeEach.bind(framework);
 
 // Mock Jest for compatibility
 global.jest = {
-  fn: () => () => {}
+  fn: () => () => {},
 };
 
 // Load and run the tests

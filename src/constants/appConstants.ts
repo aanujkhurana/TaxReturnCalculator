@@ -46,14 +46,14 @@ export interface DeductionCategories {
 // Storage keys
 export const STORAGE_KEYS: StorageKeys = {
   SAVED_CALCULATIONS: 'savedCalculations',
-  THEME_PREFERENCE: 'app_theme_preference'
+  THEME_PREFERENCE: 'app_theme_preference',
 } as const;
 
 // App information
 export const APP_INFO: AppInfo = {
   NAME: 'MyTaxReturn AU',
   VERSION: '1.0.0',
-  FINANCIAL_YEAR: '2025-26'
+  FINANCIAL_YEAR: '2025-26',
 } as const;
 
 export const CALCULATION_ENGINE_VERSION = '2025-26.1' as const;
@@ -63,7 +63,7 @@ export const CALCULATOR_STEPS: readonly CalculatorStep[] = [
   { id: 1, name: 'Income', label: 'Income' },
   { id: 2, name: 'Deductions', label: 'Deductions' },
   { id: 3, name: 'Details', label: 'Details' },
-  { id: 4, name: 'Results', label: 'Results' }
+  { id: 4, name: 'Results', label: 'Results' },
 ] as const;
 
 // Deduction categories configuration
@@ -78,8 +78,8 @@ export const DEDUCTION_CATEGORIES: DeductionCategories = {
       { id: 'workRelatedTravel', title: 'Travel Expenses', icon: 'car' },
       { id: 'workRelatedEquipment', title: 'Equipment & Tools', icon: 'construct' },
       { id: 'workRelatedUniforms', title: 'Uniforms & Clothing', icon: 'shirt' },
-      { id: 'workRelatedMemberships', title: 'Memberships & Subscriptions', icon: 'card' }
-    ]
+      { id: 'workRelatedMemberships', title: 'Memberships & Subscriptions', icon: 'card' },
+    ],
   },
   SELF_EDUCATION: {
     id: 'selfEducation',
@@ -91,8 +91,8 @@ export const DEDUCTION_CATEGORIES: DeductionCategories = {
       { id: 'selfEducationCourseFees', title: 'Course Fees', icon: 'school' },
       { id: 'selfEducationTextbooks', title: 'Textbooks & Materials', icon: 'book' },
       { id: 'selfEducationConferences', title: 'Conferences & Seminars', icon: 'people' },
-      { id: 'selfEducationCertifications', title: 'Certifications', icon: 'ribbon' }
-    ]
+      { id: 'selfEducationCertifications', title: 'Certifications', icon: 'ribbon' },
+    ],
   },
   DONATIONS: {
     id: 'donations',
@@ -103,16 +103,16 @@ export const DEDUCTION_CATEGORIES: DeductionCategories = {
     subcategories: [
       { id: 'donationsCharitable', title: 'Charitable Donations', icon: 'heart' },
       { id: 'donationsDisasterRelief', title: 'Disaster Relief', icon: 'medical' },
-      { id: 'donationsReligious', title: 'Religious Organizations', icon: 'home' }
-    ]
+      { id: 'donationsReligious', title: 'Religious Organizations', icon: 'home' },
+    ],
   },
   OTHER_DEDUCTIONS: {
     id: 'otherDeductions',
     title: 'Other Deductions',
     description: 'Investment expenses, tax agent fees, and more',
     icon: 'document-text',
-    color: 'categoryOther'
-  }
+    color: 'categoryOther',
+  },
 } as const;
 
 // Additional type definitions
@@ -176,18 +176,18 @@ export const VALIDATION_RULES: ValidationRules = {
   INCOME: {
     MIN: 0,
     MAX: 10000000,
-    DECIMAL_PLACES: 2
+    DECIMAL_PLACES: 2,
   },
   HOURS: {
     MIN: 0,
     MAX: 8760, // Maximum hours in a year
-    DECIMAL_PLACES: 0
+    DECIMAL_PLACES: 0,
   },
   DEPENDENTS: {
     MIN: 0,
     MAX: 20,
-    DECIMAL_PLACES: 0
-  }
+    DECIMAL_PLACES: 0,
+  },
 } as const;
 
 // Loading states and messages
@@ -195,7 +195,7 @@ export const LOADING_STATES: LoadingStates = {
   CALCULATING: 'Calculating your tax return...',
   SAVING: 'Saving calculation...',
   LOADING: 'Loading...',
-  GENERATING_PDF: 'Generating PDF report...'
+  GENERATING_PDF: 'Generating PDF report...',
 } as const;
 
 // Error messages
@@ -205,14 +205,14 @@ export const ERROR_MESSAGES: ErrorMessages = {
   REQUIRED_FIELD: 'This field is required',
   CALCULATION_ERROR: 'Error calculating tax return',
   SAVE_ERROR: 'Error saving calculation',
-  LOAD_ERROR: 'Error loading data'
+  LOAD_ERROR: 'Error loading data',
 } as const;
 
 // Success messages
 export const SUCCESS_MESSAGES: SuccessMessages = {
   CALCULATION_SAVED: 'Calculation saved successfully',
   PDF_GENERATED: 'PDF report generated successfully',
-  DATA_LOADED: 'Data loaded successfully'
+  DATA_LOADED: 'Data loaded successfully',
 } as const;
 
 // External links
@@ -221,20 +221,21 @@ export const EXTERNAL_LINKS: ExternalLinks = {
   ATO_MYDEDUCTIONS: 'https://www.ato.gov.au/calculators-and-tools/mydeductions/',
   ATO_LODGE_ONLINE: 'https://www.ato.gov.au/individuals/lodging-your-tax-return/lodge-online/',
   ATO_TAX_HELP: 'https://www.ato.gov.au/individuals/tax-help-program/',
-  ATO_DEDUCTIONS_GUIDE: 'https://www.ato.gov.au/individuals/income-deductions-offsets-and-records/deductions/',
-  MYGOV: 'https://my.gov.au'
+  ATO_DEDUCTIONS_GUIDE:
+    'https://www.ato.gov.au/individuals/income-deductions-offsets-and-records/deductions/',
+  MYGOV: 'https://my.gov.au',
 } as const;
 
 // Animation durations (in milliseconds)
 export const ANIMATION_DURATIONS: AnimationDurations = {
   SHORT: 200,
   MEDIUM: 300,
-  LONG: 500
+  LONG: 500,
 } as const;
 
 // Screen breakpoints
 export const BREAKPOINTS: Breakpoints = {
   SMALL: 320,
   MEDIUM: 768,
-  LARGE: 1024
+  LARGE: 1024,
 } as const;

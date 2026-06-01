@@ -16,7 +16,7 @@ export const generateId = (): string => {
 export const deepClone = <T>(obj: T): T => {
   if (obj === null || typeof obj !== 'object') return obj;
   if (obj instanceof Date) return new Date(obj.getTime()) as T;
-  if (obj instanceof Array) return obj.map(item => deepClone(item)) as T;
+  if (obj instanceof Array) return obj.map((item) => deepClone(item)) as T;
   if (typeof obj === 'object') {
     const clonedObj: any = {};
     for (const key in obj) {
@@ -32,7 +32,10 @@ export const deepClone = <T>(obj: T): T => {
 /**
  * Debounce function calls
  */
-export const debounce = <T extends (...args: any[]) => any>(func: T, wait: number): (...args: Parameters<T>) => void => {
+export const debounce = <T extends (...args: any[]) => any>(
+  func: T,
+  wait: number
+): ((...args: Parameters<T>) => void) => {
   let timeout: NodeJS.Timeout | undefined;
   return function executedFunction(...args: Parameters<T>) {
     const later = () => {
@@ -47,13 +50,16 @@ export const debounce = <T extends (...args: any[]) => any>(func: T, wait: numbe
 /**
  * Throttle function calls
  */
-export const throttle = <T extends (...args: any[]) => any>(func: T, limit: number): (...args: Parameters<T>) => void => {
+export const throttle = <T extends (...args: any[]) => any>(
+  func: T,
+  limit: number
+): ((...args: Parameters<T>) => void) => {
   let inThrottle: boolean;
   return function executedFunction(...args: Parameters<T>) {
     if (!inThrottle) {
       func.apply(this, args);
       inThrottle = true;
-      setTimeout(() => inThrottle = false, limit);
+      setTimeout(() => (inThrottle = false), limit);
     }
   };
 };
@@ -178,7 +184,7 @@ export const removeDuplicates = <T>(array: T[], key?: string | ((item: T) => any
 
   if (typeof key === 'function') {
     const seen = new Set();
-    return array.filter(item => {
+    return array.filter((item) => {
       const keyValue = key(item);
       if (seen.has(keyValue)) {
         return false;
@@ -189,7 +195,7 @@ export const removeDuplicates = <T>(array: T[], key?: string | ((item: T) => any
   }
 
   const seen = new Set();
-  return array.filter(item => {
+  return array.filter((item) => {
     const keyValue = (item as any)[key];
     if (seen.has(keyValue)) {
       return false;
@@ -202,7 +208,11 @@ export const removeDuplicates = <T>(array: T[], key?: string | ((item: T) => any
 /**
  * Sort array of objects by property
  */
-export const sortByProperty = <T>(array: T[], property: string, direction: 'asc' | 'desc' = 'asc'): T[] => {
+export const sortByProperty = <T>(
+  array: T[],
+  property: string,
+  direction: 'asc' | 'desc' = 'asc'
+): T[] => {
   if (!Array.isArray(array)) return [];
 
   return [...array].sort((a, b) => {
@@ -218,7 +228,10 @@ export const sortByProperty = <T>(array: T[], property: string, direction: 'asc'
 /**
  * Group array of objects by property
  */
-export const groupBy = <T>(array: T[], key: string | ((item: T) => string)): { [key: string]: T[] } => {
+export const groupBy = <T>(
+  array: T[],
+  key: string | ((item: T) => string)
+): { [key: string]: T[] } => {
   if (!Array.isArray(array)) return {};
 
   return array.reduce((groups: { [key: string]: T[] }, item) => {
@@ -235,7 +248,7 @@ export const groupBy = <T>(array: T[], key: string | ((item: T) => string)): { [
  * Wait for specified time (Promise-based delay)
  */
 export const delay = (ms: number): Promise<void> => {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise((resolve) => setTimeout(resolve, ms));
 };
 
 /**

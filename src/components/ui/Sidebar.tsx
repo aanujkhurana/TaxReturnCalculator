@@ -209,12 +209,7 @@ const Sidebar: React.FC<SidebarProps> = ({ visible, onClose, onNavigate, current
   });
 
   return (
-    <Modal
-      visible={visible}
-      transparent={true}
-      animationType="none"
-      onRequestClose={onClose}
-    >
+    <Modal visible={visible} transparent={true} animationType="none" onRequestClose={onClose}>
       <TouchableWithoutFeedback onPress={onClose}>
         <Animated.View style={[styles.overlay, { opacity: overlayAnim }]}>
           <TouchableWithoutFeedback onPress={() => {}}>
@@ -250,10 +245,7 @@ const Sidebar: React.FC<SidebarProps> = ({ visible, onClose, onNavigate, current
                   return (
                     <TouchableOpacity
                       key={item.id}
-                      style={[
-                        styles.menuItem,
-                        isActive && styles.menuItemActive,
-                      ]}
+                      style={[styles.menuItem, isActive && styles.menuItemActive]}
                       onPress={() => handleNavigate(item.id)}
                       activeOpacity={0.7}
                     >
@@ -266,16 +258,11 @@ const Sidebar: React.FC<SidebarProps> = ({ visible, onClose, onNavigate, current
                       </View>
                       <View style={styles.menuItemContent}>
                         <Text
-                          style={[
-                            styles.menuItemTitle,
-                            isActive && styles.menuItemTitleActive,
-                          ]}
+                          style={[styles.menuItemTitle, isActive && styles.menuItemTitleActive]}
                         >
                           {item.title}
                         </Text>
-                        <Text style={styles.menuItemSubtitle}>
-                          {item.subtitle}
-                        </Text>
+                        <Text style={styles.menuItemSubtitle}>{item.subtitle}</Text>
                       </View>
                     </TouchableOpacity>
                   );

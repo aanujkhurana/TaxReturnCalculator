@@ -2,7 +2,6 @@
 
 Australia Tax Return Calculator is a comprehensive mobile application designed to help Australian individuals quickly and accurately estimate their tax refunds or amounts owed to the Australian Taxation Office (ATO). Built with React Native and Expo, it provides a clean, intuitive interface that simplifies the complex process of tax calculations while maintaining accuracy with current Australian tax rates and regulations.
 
-
 <table>
   <tr>
     <td><img src="./mockups/1.png" alt="Mockup 1" width="300"/></td>
@@ -14,6 +13,7 @@ Australia Tax Return Calculator is a comprehensive mobile application designed t
 ## 🎯 Project Overview
 
 This calculator eliminates the complexity of traditional tax estimation tools by providing:
+
 - **Step-by-step guidance** through income, deductions, and personal details
 - **Real-time validation** with helpful error messages and tips
 - **Comprehensive calculations** using 2025-26 Australian tax brackets and rates
@@ -25,6 +25,7 @@ This calculator eliminates the complexity of traditional tax estimation tools by
 ## ✨ Key Features
 
 ### Tax Calculations
+
 - **Income Tax Calculation** using 2025-26 Australian tax brackets
 - **Low Income Tax Offset (LITO)** automatic application
 - **Medicare Levy** calculation (2% of taxable income)
@@ -34,6 +35,7 @@ This calculator eliminates the complexity of traditional tax estimation tools by
 - **PAYG Withholding Estimation** for unknown tax withheld amounts
 
 ### User Experience
+
 - **4-Step Wizard Interface** with progress tracking
 - **Input Validation** with real-time error checking
 - **Contextual Help System** with detailed explanations for each field
@@ -42,6 +44,7 @@ This calculator eliminates the complexity of traditional tax estimation tools by
 - **PDF Report Generation** for record keeping
 
 ### Smart Features
+
 - **Auto-calculation** of work from home deductions
 - **Dynamic PAYG estimation** based on total income
 - **Multiple job income** support with easy add/remove functionality
@@ -49,6 +52,7 @@ This calculator eliminates the complexity of traditional tax estimation tools by
 - **Comprehensive validation** preventing calculation errors
 
 ### Storage & Navigation
+
 - **Home Screen Dashboard** displaying all saved calculations
 - **Local Storage** using AsyncStorage for secure, offline data persistence
 - **Calculation Management** with save, view, and delete functionality
@@ -61,6 +65,7 @@ This calculator eliminates the complexity of traditional tax estimation tools by
 ### Step 1: Income Information
 
 #### Employment Income (TFN Jobs)
+
 - **Field**: `jobIncomes` (Array of monetary values)
 - **Format**: Monetary values with `$` prefix
 - **Purpose**: Gross annual salary/wages from employment where tax was withheld using TFN
@@ -72,6 +77,7 @@ This calculator eliminates the complexity of traditional tax estimation tools by
 - **Tips**: Use gross income before tax, include bonuses and overtime
 
 #### Tax Withheld (PAYG)
+
 - **Field**: `taxWithheld`
 - **Format**: Monetary value with `$` prefix
 - **Purpose**: Total amount of tax withheld by employers from TFN employment income only
@@ -81,6 +87,7 @@ This calculator eliminates the complexity of traditional tax estimation tools by
 - **Important**: PAYG estimation excludes ABN income as no tax is withheld from business income
 
 #### ABN/Business Income
+
 - **Field**: `abnIncome`
 - **Format**: Monetary value with `$` prefix
 - **Purpose**: Income from ABN work, contracting, or business activities
@@ -90,6 +97,7 @@ This calculator eliminates the complexity of traditional tax estimation tools by
 ### Step 2: Deductions
 
 #### Work-Related Expenses
+
 - **Field**: `deductions.workRelated`
 - **Format**: Monetary value with `$` prefix
 - **Purpose**: Job-related expenses like uniforms, tools, professional development
@@ -97,6 +105,7 @@ This calculator eliminates the complexity of traditional tax estimation tools by
 - **Examples**: Safety equipment, professional memberships, work clothing
 
 #### Self-Education Expenses
+
 - **Field**: `deductions.selfEducation`
 - **Format**: Monetary value with `$` prefix
 - **Purpose**: Education costs directly related to current work
@@ -104,6 +113,7 @@ This calculator eliminates the complexity of traditional tax estimation tools by
 - **Examples**: Courses, textbooks, professional certifications
 
 #### Charitable Donations
+
 - **Field**: `deductions.donations`
 - **Format**: Monetary value with `$` prefix
 - **Purpose**: Donations to registered charities (DGR status required)
@@ -111,6 +121,7 @@ This calculator eliminates the complexity of traditional tax estimation tools by
 - **Requirement**: Must have receipts for donations over $2
 
 #### Other Deductions
+
 - **Field**: `deductions.other`
 - **Format**: Monetary value with `$` prefix
 - **Purpose**: Other allowable tax deductions
@@ -118,6 +129,7 @@ This calculator eliminates the complexity of traditional tax estimation tools by
 - **Examples**: Investment property expenses, tax agent fees
 
 #### Work From Home Hours
+
 - **Field**: `workFromHomeHours`
 - **Format**: Numeric value with `hrs` suffix
 - **Purpose**: Total hours worked from home during the financial year
@@ -130,12 +142,14 @@ This calculator eliminates the complexity of traditional tax estimation tools by
 ### Step 3: Personal Details
 
 #### HECS-HELP Debt
+
 - **Field**: `hecsDebt` (Boolean toggle)
 - **Purpose**: Indicates if you have outstanding HECS-HELP debt
 - **Impact**: Triggers additional repayment calculations based on income thresholds
 - **Rates**: Progressive rates from 1% to 10% based on income levels
 
 #### Medicare Levy Exemption
+
 - **Field**: `medicareExemption` (Boolean toggle)
 - **Purpose**: Indicates eligibility for Medicare levy exemption
 - **Default**: Medicare levy applied (2% of taxable income)
@@ -143,6 +157,7 @@ This calculator eliminates the complexity of traditional tax estimation tools by
 - **Help**: Comprehensive help available explaining eligibility criteria
 
 #### Number of Dependents
+
 - **Field**: `dependents`
 - **Format**: Numeric value (whole numbers)
 - **Purpose**: Number of dependent children or family members
@@ -155,22 +170,26 @@ This calculator eliminates the complexity of traditional tax estimation tools by
 ### Tax Calculation Process
 
 #### 1. Income Aggregation
+
 ```
 Total Income = Sum of Employment Income + ABN Income
 ```
 
 #### 2. Deduction Calculation
+
 ```
 Work From Home Deduction = Work From Home Hours × $0.70
 Total Deductions = Work Related + Self Education + Donations + Other + WFH Deduction
 ```
 
 #### 3. Taxable Income
+
 ```
 Taxable Income = Max(0, Total Income - Total Deductions)
 ```
 
 #### 4. Income Tax Calculation (2025-26 Tax Brackets)
+
 - **$0 - $18,200**: 0% (Tax-free threshold)
 - **$18,201 - $45,000**: 16%
 - **$45,001 - $135,000**: 30%
@@ -178,12 +197,14 @@ Taxable Income = Max(0, Total Income - Total Deductions)
 - **$190,001+**: 45%
 
 #### 5. Low Income Tax Offset (LITO)
+
 - **Up to $37,500**: $700 offset
 - **$37,501 - $45,000**: $700 - ((income - $37,500) × 5%)
 - **$45,001 - $66,667**: $325 - ((income - $45,000) × 1.5%)
 - **$66,668+**: No offset
 
 #### 6. Medicare Levy
+
 - **Rate**: 2% of taxable income
 - **Base Threshold**: $27,222 (2024-25 threshold applies to later years until replaced)
 - **Family Threshold**: $45,907 + ($4,216 × dependents)
@@ -191,13 +212,16 @@ Taxable Income = Max(0, Total Income - Total Deductions)
 - **Exemptions**: Available for foreign residents and certain visa holders
 
 #### 7. HECS-HELP Repayment
+
 From 2025-26, compulsory repayments use marginal rates:
+
 - **$0 - $67,000**: Nil
 - **$67,001 - $125,000**: 15c for each $1 over $67,000
 - **$125,001 - $179,285**: $8,700 plus 17c for each $1 over $125,000
 - **$179,286+**: 10% of total repayment income
 
 #### 8. Final Calculation
+
 ```
 Final Tax = Income Tax - LITO + Medicare Levy + HECS Repayment
 Tax Refund/Owing = Tax Withheld - Final Tax
@@ -228,17 +252,20 @@ Plus estimated Medicare levy (2% for TFN income over $27,222).
 ### Installation Steps
 
 1. **Clone the repository**
+
    ```bash
    git clone <repository-url>
    cd TaxReturnCalculator
    ```
 
 2. **Install dependencies**
+
    ```bash
    npm install
    ```
 
 3. **Start the development server**
+
    ```bash
    npm start
    # or
@@ -253,11 +280,13 @@ Plus estimated Medicare levy (2% for TFN income over $27,222).
 ### Development Setup
 
 For development with hot reloading:
+
 ```bash
 expo start --dev-client
 ```
 
 For production build:
+
 ```bash
 expo build:android
 expo build:ios
@@ -437,6 +466,7 @@ The application follows modern React Native best practices with a modular archit
 The app uses a modular component system for consistency and maintainability:
 
 #### **InputField Component** (`src/components/forms/InputField.js`)
+
 - Smart validation with real-time feedback
 - Contextual help integration with detailed explanations
 - Auto-formatting for currency and numbers
@@ -445,12 +475,14 @@ The app uses a modular component system for consistency and maintainability:
 - Prefix/suffix support ($ for currency, hrs for time)
 
 #### **HelpModal Component** (`src/components/ui/HelpModal.js`)
+
 - Comprehensive help system with examples and tips
 - Structured information display with clear sections
 - Easy-to-understand explanations for complex tax concepts
 - "Where to find" guidance for each field
 
 #### **Theme System** (`src/context/ThemeContext.js`)
+
 - Automatic dark/light mode detection
 - Consistent color schemes across all components
 - User preference persistence with AsyncStorage
@@ -503,6 +535,7 @@ TaxReturnCalculator/
 ### Architecture Overview
 
 #### 🏗️ **Modular Design**
+
 The application is organized into distinct layers for maximum maintainability:
 
 - **Components Layer**: Reusable UI components with clear interfaces
@@ -514,16 +547,19 @@ The application is organized into distinct layers for maximum maintainability:
 #### 🔧 **Key Components**
 
 **Core Components:**
+
 - `InputField`: Smart input component with validation, help system, and formatting
 - `HelpModal`: Comprehensive help system with detailed explanations
 - `ThemeToggle`: Theme switching with system preference detection
 
 **Services:**
+
 - `taxCalculationService`: Complete tax calculation engine with 2025-26 rates
 - `storageService`: Secure local data persistence using AsyncStorage
 - `pdfService`: Professional PDF report generation and sharing
 
 **Utilities:**
+
 - `formatters`: Currency, date, and number formatting functions
 - `validation`: Comprehensive form validation with error messages
 - `helpers`: General utility functions for common operations
@@ -604,29 +640,34 @@ npm run test:report
 #### Test Coverage
 
 **✅ Complete Tax Calculation Integration Tests**
+
 - Standard income scenarios with various deduction combinations
 - Edge cases: Very high income with maximum deductions
 - Medicare exemption scenarios
 - Multiple income source calculations
 
 **✅ Field Validation and Edge Cases**
+
 - Empty string inputs handled correctly
 - Multiple job incomes calculation
 - ABN income only scenarios
 - Input validation and error handling
 
 **✅ Boundary Value Tests**
+
 - Tax bracket boundaries (18200, 45000, 135000, 190000)
 - Medicare levy thresholds
 - LITO (Low Income Tax Offset) boundaries
 - HECS-HELP repayment thresholds
 
 **✅ PAYG Estimation Tests**
+
 - Accurate withholding estimation for TFN employment income
 - Proper exclusion of ABN income from PAYG calculations
 - Edge cases and boundary conditions
 
 #### Test Results Summary
+
 - **Total Tests**: 30
 - **Pass Rate**: 100% ✅
 - **Coverage**: All major calculation paths and edge cases
@@ -635,6 +676,7 @@ npm run test:report
 ### Manual Testing Checklist
 
 #### Input Validation Testing
+
 - [ ] Test negative income values (should be rejected)
 - [ ] Test extremely large income values (should be reasonable)
 - [ ] Test non-numeric inputs (should be filtered)
@@ -642,6 +684,7 @@ npm run test:report
 - [ ] Test work from home hours exceeding reasonable limits
 
 #### User Experience Testing
+
 - [ ] Test step navigation (forward/backward)
 - [ ] Test form persistence between steps
 - [ ] Test help modal functionality
@@ -650,6 +693,7 @@ npm run test:report
 - [ ] Test calculation saving and loading
 
 #### Cross-Platform Testing
+
 - [ ] Test on iOS devices/simulator
 - [ ] Test on Android devices/emulator
 - [ ] Test on different screen sizes

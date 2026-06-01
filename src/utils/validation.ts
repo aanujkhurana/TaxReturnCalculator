@@ -27,20 +27,23 @@ export interface FormValidationResult {
 /**
  * Validate if a value is a valid number
  */
-export const validateNumber = (value: string | number, options: ValidationOptions = {}): ValidationResult => {
+export const validateNumber = (
+  value: string | number,
+  options: ValidationOptions = {}
+): ValidationResult => {
   const {
     min = VALIDATION_RULES.INCOME.MIN,
     max = VALIDATION_RULES.INCOME.MAX,
     required = false,
     allowDecimals = true,
-    fieldName = 'Value'
+    fieldName = 'Value',
   } = options;
 
   // Check if required
   if (required && (!value || value.toString().trim() === '')) {
     return {
       isValid: false,
-      error: ERROR_MESSAGES.REQUIRED_FIELD
+      error: ERROR_MESSAGES.REQUIRED_FIELD,
     };
   }
 
@@ -56,7 +59,7 @@ export const validateNumber = (value: string | number, options: ValidationOption
   if (isNaN(numValue)) {
     return {
       isValid: false,
-      error: ERROR_MESSAGES.INVALID_NUMBER
+      error: ERROR_MESSAGES.INVALID_NUMBER,
     };
   }
 
@@ -64,7 +67,7 @@ export const validateNumber = (value: string | number, options: ValidationOption
   if (numValue < 0) {
     return {
       isValid: false,
-      error: ERROR_MESSAGES.NEGATIVE_VALUE
+      error: ERROR_MESSAGES.NEGATIVE_VALUE,
     };
   }
 
@@ -72,7 +75,7 @@ export const validateNumber = (value: string | number, options: ValidationOption
   if (!allowDecimals && numValue % 1 !== 0) {
     return {
       isValid: false,
-      error: 'Please enter a whole number'
+      error: 'Please enter a whole number',
     };
   }
 
@@ -80,14 +83,14 @@ export const validateNumber = (value: string | number, options: ValidationOption
   if (numValue < min) {
     return {
       isValid: false,
-      error: `${fieldName} must be at least ${min}`
+      error: `${fieldName} must be at least ${min}`,
     };
   }
 
   if (numValue > max) {
     return {
       isValid: false,
-      error: `${fieldName} cannot exceed ${max.toLocaleString()}`
+      error: `${fieldName} cannot exceed ${max.toLocaleString()}`,
     };
   }
 
@@ -97,52 +100,64 @@ export const validateNumber = (value: string | number, options: ValidationOption
 /**
  * Validate income amount
  */
-export const validateIncome = (value: string | number, required: boolean = false): ValidationResult => {
+export const validateIncome = (
+  value: string | number,
+  required: boolean = false
+): ValidationResult => {
   return validateNumber(value, {
     min: VALIDATION_RULES.INCOME.MIN,
     max: VALIDATION_RULES.INCOME.MAX,
     required,
     allowDecimals: true,
-    fieldName: 'Income'
+    fieldName: 'Income',
   });
 };
 
 /**
  * Validate deduction amount
  */
-export const validateDeduction = (value: string | number, required: boolean = false): ValidationResult => {
+export const validateDeduction = (
+  value: string | number,
+  required: boolean = false
+): ValidationResult => {
   return validateNumber(value, {
     min: VALIDATION_RULES.INCOME.MIN,
     max: VALIDATION_RULES.INCOME.MAX,
     required,
     allowDecimals: true,
-    fieldName: 'Deduction'
+    fieldName: 'Deduction',
   });
 };
 
 /**
  * Validate hours
  */
-export const validateHours = (value: string | number, required: boolean = false): ValidationResult => {
+export const validateHours = (
+  value: string | number,
+  required: boolean = false
+): ValidationResult => {
   return validateNumber(value, {
     min: VALIDATION_RULES.HOURS.MIN,
     max: VALIDATION_RULES.HOURS.MAX,
     required,
     allowDecimals: false,
-    fieldName: 'Hours'
+    fieldName: 'Hours',
   });
 };
 
 /**
  * Validate number of dependents
  */
-export const validateDependents = (value: string | number, required: boolean = false): ValidationResult => {
+export const validateDependents = (
+  value: string | number,
+  required: boolean = false
+): ValidationResult => {
   return validateNumber(value, {
     min: VALIDATION_RULES.DEPENDENTS.MIN,
     max: VALIDATION_RULES.DEPENDENTS.MAX,
     required,
     allowDecimals: false,
-    fieldName: 'Number of dependents'
+    fieldName: 'Number of dependents',
   });
 };
 
@@ -153,7 +168,7 @@ export const validateEmail = (email: string, required: boolean = false): Validat
   if (required && (!email || email.trim() === '')) {
     return {
       isValid: false,
-      error: ERROR_MESSAGES.REQUIRED_FIELD
+      error: ERROR_MESSAGES.REQUIRED_FIELD,
     };
   }
 
@@ -165,7 +180,7 @@ export const validateEmail = (email: string, required: boolean = false): Validat
   if (!emailRegex.test(email)) {
     return {
       isValid: false,
-      error: 'Please enter a valid email address'
+      error: 'Please enter a valid email address',
     };
   }
 
@@ -179,7 +194,7 @@ export const validatePhone = (phone: string, required: boolean = false): Validat
   if (required && (!phone || phone.trim() === '')) {
     return {
       isValid: false,
-      error: ERROR_MESSAGES.REQUIRED_FIELD
+      error: ERROR_MESSAGES.REQUIRED_FIELD,
     };
   }
 
@@ -194,7 +209,7 @@ export const validatePhone = (phone: string, required: boolean = false): Validat
   if (cleaned.length !== 10) {
     return {
       isValid: false,
-      error: 'Please enter a valid Australian phone number'
+      error: 'Please enter a valid Australian phone number',
     };
   }
 
@@ -203,7 +218,7 @@ export const validatePhone = (phone: string, required: boolean = false): Validat
   if (!cleaned.match(/^(04|02|03|07|08)/)) {
     return {
       isValid: false,
-      error: 'Please enter a valid Australian phone number'
+      error: 'Please enter a valid Australian phone number',
     };
   }
 
@@ -217,7 +232,7 @@ export const validateABN = (abn: string, required: boolean = false): ValidationR
   if (required && (!abn || abn.trim() === '')) {
     return {
       isValid: false,
-      error: ERROR_MESSAGES.REQUIRED_FIELD
+      error: ERROR_MESSAGES.REQUIRED_FIELD,
     };
   }
 
@@ -232,7 +247,7 @@ export const validateABN = (abn: string, required: boolean = false): ValidationR
   if (cleaned.length !== 11) {
     return {
       isValid: false,
-      error: 'ABN must be 11 digits'
+      error: 'ABN must be 11 digits',
     };
   }
 
@@ -252,7 +267,7 @@ export const validateABN = (abn: string, required: boolean = false): ValidationR
   if (sum % 89 !== 0) {
     return {
       isValid: false,
-      error: 'Please enter a valid ABN'
+      error: 'Please enter a valid ABN',
     };
   }
 
@@ -312,10 +327,10 @@ export const validateFormStep = (formData: any, step: number): FormValidationRes
 
       // Validate deduction amounts
       if (formData.deductions) {
-        Object.keys(formData.deductions).forEach(category => {
+        Object.keys(formData.deductions).forEach((category) => {
           if (typeof formData.deductions[category] === 'object') {
             // Nested deductions
-            Object.keys(formData.deductions[category]).forEach(subCategory => {
+            Object.keys(formData.deductions[category]).forEach((subCategory) => {
               const value = formData.deductions[category][subCategory];
               if (value) {
                 const validation = validateDeduction(value);
@@ -354,6 +369,6 @@ export const validateFormStep = (formData: any, step: number): FormValidationRes
 
   return {
     isValid: !hasErrors,
-    errors
+    errors,
   };
 };

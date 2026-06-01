@@ -11,7 +11,7 @@ import {
   TouchableOpacity,
   ScrollView,
   TouchableWithoutFeedback,
-  StyleSheet
+  StyleSheet,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../context/ThemeContext';
@@ -129,12 +129,7 @@ const HelpModal: React.FC<HelpModalProps> = ({ visible, onClose, helpData }) => 
   });
 
   return (
-    <Modal
-      visible={visible}
-      transparent={true}
-      animationType="fade"
-      onRequestClose={onClose}
-    >
+    <Modal visible={visible} transparent={true} animationType="fade" onRequestClose={onClose}>
       <TouchableWithoutFeedback onPress={onClose}>
         <View style={styles.overlay}>
           <TouchableWithoutFeedback onPress={() => {}}>
@@ -142,10 +137,7 @@ const HelpModal: React.FC<HelpModalProps> = ({ visible, onClose, helpData }) => 
               {/* Header */}
               <View style={styles.header}>
                 <Text style={styles.title}>{helpData.title}</Text>
-                <TouchableOpacity
-                  onPress={onClose}
-                  style={styles.closeButton}
-                >
+                <TouchableOpacity onPress={onClose} style={styles.closeButton}>
                   <Ionicons name="close" size={24} color={theme.textSecondary} />
                 </TouchableOpacity>
               </View>
@@ -191,9 +183,7 @@ const HelpModal: React.FC<HelpModalProps> = ({ visible, onClose, helpData }) => 
                   <View style={styles.section}>
                     <Text style={styles.sectionTitle}>Where to Find This Information</Text>
                     <View style={styles.whereToFind}>
-                      <Text style={styles.whereToFindText}>
-                        {helpData.whereToFind}
-                      </Text>
+                      <Text style={styles.whereToFindText}>{helpData.whereToFind}</Text>
                     </View>
                   </View>
                 )}

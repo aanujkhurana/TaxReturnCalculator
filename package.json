@@ -6,6 +6,9 @@
     "start": "expo start",
     "test": "node --experimental-strip-types src/__tests__/run-tests.ts",
     "test:report": "node --experimental-strip-types src/__tests__/run-tests.ts && open test-report.html",
+    "lint": "eslint .",
+    "format:check": "prettier --check \"*.{js,json,md,ts,tsx}\" \"src/**/*.{ts,tsx}\"",
+    "format": "prettier --write \"*.{js,json,md,ts,tsx}\" \"src/**/*.{ts,tsx}\"",
     "type-check": "npx tsc --noEmit",
     "type-check:watch": "npx tsc --noEmit --watch",
     "build": "npx tsc",
@@ -30,7 +33,10 @@
     "react-dom": "19.0.0"
   },
   "devDependencies": {
-    "typescript": "^5.8.3",
-    "@types/react": "~19.0.10"
+    "@types/react": "~19.0.10",
+    "eslint": "^9.39.4",
+    "eslint-config-expo": "^56.0.4",
+    "prettier": "^3.8.3",
+    "typescript": "^5.8.3"
   }
 }

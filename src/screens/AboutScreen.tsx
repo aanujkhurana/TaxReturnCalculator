@@ -336,11 +336,7 @@ const AboutScreen: React.FC<AboutScreenProps> = ({ onBack }) => {
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerContent}>
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={onBack}
-            activeOpacity={0.7}
-          >
+          <TouchableOpacity style={styles.backButton} onPress={onBack} activeOpacity={0.7}>
             <Ionicons name="arrow-back" size={20} color={theme.primary} />
           </TouchableOpacity>
           <View style={styles.headerTextContainer}>
@@ -359,9 +355,9 @@ const AboutScreen: React.FC<AboutScreenProps> = ({ onBack }) => {
             <Text style={styles.appName}>{APP_INFO.NAME}</Text>
             <Text style={styles.appVersion}>Version {APP_INFO.VERSION}</Text>
             <Text style={styles.appDescription}>
-              Professional Australian tax calculator designed to help you estimate
-              your tax return for the {APP_INFO.FINANCIAL_YEAR} financial year.
-              Simple, secure, and private - all data stays on your device.
+              Professional Australian tax calculator designed to help you estimate your tax return
+              for the {APP_INFO.FINANCIAL_YEAR} financial year. Simple, secure, and private - all
+              data stays on your device.
             </Text>
             <View style={styles.disclaimerBanner}>
               <Ionicons name="warning" size={16} color={theme.warning} />

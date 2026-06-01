@@ -96,7 +96,11 @@ export const formatFileSize = (bytes: number): string => {
 /**
  * Truncate text to specified length
  */
-export const truncateText = (text: string, maxLength: number = 50, suffix: string = '...'): string => {
+export const truncateText = (
+  text: string,
+  maxLength: number = 50,
+  suffix: string = '...'
+): string => {
   if (!text || text.length <= maxLength) return text || '';
   return text.substring(0, maxLength - suffix.length) + suffix;
 };
@@ -106,9 +110,7 @@ export const truncateText = (text: string, maxLength: number = 50, suffix: strin
  */
 export const capitalizeWords = (text: string): string => {
   if (!text) return '';
-  return text.replace(/\w\S*/g, (txt) =>
-    txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()
-  );
+  return text.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
 };
 
 /**

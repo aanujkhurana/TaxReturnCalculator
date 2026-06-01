@@ -211,7 +211,9 @@ const generateHTMLContent = (calculationData: CalculationData, calculationName: 
                     </tr>
                 </thead>
                 <tbody>
-                    ${formData.jobIncomes && formData.jobIncomes.length > 0 ? `
+                    ${
+                      formData.jobIncomes && formData.jobIncomes.length > 0
+                        ? `
                         <tr>
                             <td>Employment Income (TFN Jobs)</td>
                             <td class="amount">${formatCurrency(result.breakdown.income.jobIncome)}</td>
@@ -219,19 +221,28 @@ const generateHTMLContent = (calculationData: CalculationData, calculationName: 
                         <tr>
                             <td colspan="2">
                                 <div class="job-income-list">
-                                    ${formData.jobIncomes.map((job, index) => 
-                                        `<div class="job-income-item">Job ${index + 1}: ${formatCurrency(parseFloat(job.income) || 0)}</div>`
-                                    ).join('')}
+                                    ${formData.jobIncomes
+                                      .map(
+                                        (job, index) =>
+                                          `<div class="job-income-item">Job ${index + 1}: ${formatCurrency(parseFloat(job.income) || 0)}</div>`
+                                      )
+                                      .join('')}
                                 </div>
                             </td>
                         </tr>
-                    ` : ''}
-                    ${result.breakdown.income.abnIncome > 0 ? `
+                    `
+                        : ''
+                    }
+                    ${
+                      result.breakdown.income.abnIncome > 0
+                        ? `
                         <tr>
                             <td>ABN/Business Income</td>
                             <td class="amount">${formatCurrency(result.breakdown.income.abnIncome)}</td>
                         </tr>
-                    ` : ''}
+                    `
+                        : ''
+                    }
                     <tr class="total-row">
                         <td><strong>Total Income</strong></td>
                         <td class="amount"><strong>${formatCurrency(result.totalIncome)}</strong></td>
@@ -250,18 +261,26 @@ const generateHTMLContent = (calculationData: CalculationData, calculationName: 
                     </tr>
                 </thead>
                 <tbody>
-                    ${result.breakdown.deductions.workRelated > 0 ? `
+                    ${
+                      result.breakdown.deductions.workRelated > 0
+                        ? `
                         <tr>
                             <td>Work-Related Expenses</td>
                             <td class="amount">${formatCurrency(result.breakdown.deductions.workRelated)}</td>
                         </tr>
-                    ` : ''}
-                    ${result.breakdown.deductions.workFromHome > 0 ? `
+                    `
+                        : ''
+                    }
+                    ${
+                      result.breakdown.deductions.workFromHome > 0
+                        ? `
                         <tr>
                             <td>Work From Home (${formData.workFromHomeHours || 0} hours)</td>
                             <td class="amount">${formatCurrency(result.breakdown.deductions.workFromHome)}</td>
                         </tr>
-                    ` : ''}
+                    `
+                        : ''
+                    }
                     <tr class="total-row">
                         <td><strong>Total Deductions</strong></td>
                         <td class="amount"><strong>${formatCurrency(result.totalDeductions)}</strong></td>
@@ -292,18 +311,26 @@ const generateHTMLContent = (calculationData: CalculationData, calculationName: 
                         <td>Medicare Levy</td>
                         <td class="amount">${formatCurrency(result.medicareLevy)}</td>
                     </tr>
-                    ${result.hecsRepayment > 0 ? `
+                    ${
+                      result.hecsRepayment > 0
+                        ? `
                         <tr>
                             <td>HECS-HELP Repayment</td>
                             <td class="amount">${formatCurrency(result.hecsRepayment)}</td>
                         </tr>
-                    ` : ''}
-                    ${result.lowIncomeTaxOffset > 0 ? `
+                    `
+                        : ''
+                    }
+                    ${
+                      result.lowIncomeTaxOffset > 0
+                        ? `
                         <tr>
                             <td>Low Income Tax Offset</td>
                             <td class="amount">-${formatCurrency(result.lowIncomeTaxOffset)}</td>
                         </tr>
-                    ` : ''}
+                    `
+                        : ''
+                    }
                     <tr class="total-row">
                         <td><strong>Total Tax</strong></td>
                         <td class="amount"><strong>${formatCurrency(result.totalTax)}</strong></td>
@@ -335,7 +362,10 @@ const generateHTMLContent = (calculationData: CalculationData, calculationName: 
 /**
  * Generate and share PDF report
  */
-export const generateAndSharePDF = async (calculationData: CalculationData, calculationName: string = 'Tax Calculation'): Promise<boolean> => {
+export const generateAndSharePDF = async (
+  calculationData: CalculationData,
+  calculationName: string = 'Tax Calculation'
+): Promise<boolean> => {
   try {
     const htmlContent = generateHTMLContent(calculationData, calculationName);
     const fileName = `${calculationName.replace(/[^a-z0-9]/gi, '_')}_${Date.now()}.html`;

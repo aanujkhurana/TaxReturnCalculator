@@ -54,7 +54,10 @@ const generateId = (): string => {
 };
 
 // Save a new calculation
-export const saveCalculation = async (calculationData: any, customName: string | null = null): Promise<string> => {
+export const saveCalculation = async (
+  calculationData: any,
+  customName: string | null = null
+): Promise<string> => {
   try {
     const existingCalculations = await getCalculations();
 
@@ -66,7 +69,8 @@ export const saveCalculation = async (calculationData: any, customName: string |
         appVersion: calculationData.appVersion || APP_INFO.VERSION,
         financialYear: calculationData.financialYear,
         taxYearConfigVersion: calculationData.taxYearConfigVersion,
-        calculationEngineVersion: calculationData.calculationEngineVersion || CALCULATION_ENGINE_VERSION,
+        calculationEngineVersion:
+          calculationData.calculationEngineVersion || CALCULATION_ENGINE_VERSION,
       },
       formData: {
         financialYear: calculationData.financialYear,
@@ -111,7 +115,9 @@ export const getCalculations = async (): Promise<SavedCalculation[]> => {
     if (saved) {
       const calculations: SavedCalculation[] = JSON.parse(saved);
       // Sort by date (newest first)
-      return calculations.sort((a, b) => new Date(b.savedDate).getTime() - new Date(a.savedDate).getTime());
+      return calculations.sort(
+        (a, b) => new Date(b.savedDate).getTime() - new Date(a.savedDate).getTime()
+      );
     }
     return [];
   } catch (error) {
@@ -124,7 +130,7 @@ export const getCalculations = async (): Promise<SavedCalculation[]> => {
 export const getCalculationById = async (id: string): Promise<SavedCalculation | null> => {
   try {
     const calculations = await getCalculations();
-    return calculations.find(calc => calc.id === id) || null;
+    return calculations.find((calc) => calc.id === id) || null;
   } catch (error) {
     console.error('Error loading calculation:', error);
     return null;
@@ -135,7 +141,7 @@ export const getCalculationById = async (id: string): Promise<SavedCalculation |
 export const deleteCalculation = async (id: string): Promise<boolean> => {
   try {
     const calculations = await getCalculations();
-    const updatedCalculations = calculations.filter(calc => calc.id !== id);
+    const updatedCalculations = calculations.filter((calc) => calc.id !== id);
     await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedCalculations));
     return true;
   } catch (error) {
@@ -148,7 +154,7 @@ export const deleteCalculation = async (id: string): Promise<boolean> => {
 export const updateCalculationName = async (id: string, newName: string): Promise<boolean> => {
   try {
     const calculations = await getCalculations();
-    const updatedCalculations = calculations.map(calc =>
+    const updatedCalculations = calculations.map((calc) =>
       calc.id === id ? { ...calc, name: newName } : calc
     );
     await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedCalculations));
@@ -187,11 +193,11 @@ export const getCalculationStats = async (): Promise<CalculationStats> => {
     }
 
     const refunds = calculations
-      .map(calc => calc.result?.refund || 0)
+      .map((calc) => calc.result?.refund || 0)
       .filter((refund: number) => refund > 0);
 
     const owed = calculations
-      .map(calc => calc.result?.refund || 0)
+      .map((calc) => calc.result?.refund || 0)
       .filter((refund: number) => refund < 0)
       .map((amount: number) => Math.abs(amount));
 
@@ -199,7 +205,10 @@ export const getCalculationStats = async (): Promise<CalculationStats> => {
       totalCalculations: calculations.length,
       totalRefunds: refunds.reduce((sum: number, refund: number) => sum + refund, 0),
       totalOwed: owed.reduce((sum: number, amount: number) => sum + amount, 0),
-      averageRefund: refunds.length > 0 ? refunds.reduce((sum: number, refund: number) => sum + refund, 0) / refunds.length : 0,
+      averageRefund:
+        refunds.length > 0
+          ? refunds.reduce((sum: number, refund: number) => sum + refund, 0) / refunds.length
+          : 0,
       refundCount: refunds.length,
       owedCount: owed.length,
     };

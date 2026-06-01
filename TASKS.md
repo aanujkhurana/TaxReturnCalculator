@@ -38,9 +38,10 @@ Make the Australian tax return calculator more valuable, trustworthy, and produc
   - Run type-check, calculation tests, and linting on every pull request.
   - Acceptance: GitHub Actions blocks merges when tests or type-checking fail.
 
-- [ ] Add linting and formatting.
+- [x] Add linting and formatting.
   - Add ESLint and Prettier using React Native/TypeScript-friendly defaults.
   - Acceptance: `npm run lint` and `npm run format:check` are available and documented.
+  - Completed: added Expo ESLint and Prettier configs, `lint`, `format:check`, and `format` scripts, and applied the initial Prettier baseline.
 
 - [ ] Resolve Expo dependency version warnings.
   - Align Expo, React Native, AsyncStorage, and Metro runtime versions with the installed Expo SDK requirements.

@@ -11,7 +11,7 @@ import {
   MEDICARE_LEVY_SURCHARGE,
   LOW_INCOME_TAX_OFFSET,
   WORK_FROM_HOME,
-  TAX_FREE_THRESHOLD
+  TAX_FREE_THRESHOLD,
 } from '../constants/taxConstants';
 
 // Type definitions for tax calculation
@@ -93,7 +93,10 @@ export const calculateIncomeTax = (taxableIncome: number): number => {
 /**
  * Calculate Medicare levy
  */
-export const calculateMedicareLevy = (taxableIncome: number, medicareExemption: boolean = false): number => {
+export const calculateMedicareLevy = (
+  taxableIncome: number,
+  medicareExemption: boolean = false
+): number => {
   if (medicareExemption) {
     return 0;
   }
@@ -123,10 +126,10 @@ export const calculateMedicareLevySurcharge = (
   const familyDependentIncrease = isFamily ? Math.max(0, dependents - 1) * 1500 : 0;
   const surchargeIncome = isFamily ? familyIncome : taxableIncome;
   const tiers = isFamily
-    ? MEDICARE_LEVY_SURCHARGE.family.tiers.map(tier => ({
+    ? MEDICARE_LEVY_SURCHARGE.family.tiers.map((tier) => ({
         ...tier,
         min: tier.min + familyDependentIncrease,
-        max: tier.max === Infinity ? Infinity : tier.max + familyDependentIncrease
+        max: tier.max === Infinity ? Infinity : tier.max + familyDependentIncrease,
       }))
     : MEDICARE_LEVY_SURCHARGE.single.tiers;
   const tier = tiers.find(({ min, max }) => surchargeIncome >= min && surchargeIncome <= max);
@@ -137,7 +140,10 @@ export const calculateMedicareLevySurcharge = (
 /**
  * Calculate HECS-HELP repayment
  */
-export const calculateHecsRepayment = (taxableIncome: number, hasHecsDebt: boolean = false): number => {
+export const calculateHecsRepayment = (
+  taxableIncome: number,
+  hasHecsDebt: boolean = false
+): number => {
   if (!hasHecsDebt) {
     return 0;
   }
@@ -147,7 +153,7 @@ export const calculateHecsRepayment = (taxableIncome: number, hasHecsDebt: boole
       if (threshold.rateAppliesToTotalIncome) {
         return taxableIncome * threshold.rate;
       }
-      return (threshold.base || 0) + ((taxableIncome - threshold.min) * threshold.rate);
+      return (threshold.base || 0) + (taxableIncome - threshold.min) * threshold.rate;
     }
   }
 
@@ -165,7 +171,7 @@ export const calculateLowIncomeTaxOffset = (taxableIncome: number): number => {
     firstPhaseOutRate,
     secondPhaseOutEnd,
     secondPhaseOutBase,
-    secondPhaseOutRate
+    secondPhaseOutRate,
   } = LOW_INCOME_TAX_OFFSET;
 
   if (taxableIncome <= fullOffsetLimit) {
@@ -173,11 +179,14 @@ export const calculateLowIncomeTaxOffset = (taxableIncome: number): number => {
   }
 
   if (taxableIncome <= firstPhaseOutEnd) {
-    return Math.max(0, maxOffset - ((taxableIncome - fullOffsetLimit) * firstPhaseOutRate));
+    return Math.max(0, maxOffset - (taxableIncome - fullOffsetLimit) * firstPhaseOutRate);
   }
 
   if (taxableIncome <= secondPhaseOutEnd) {
-    return Math.max(0, secondPhaseOutBase - ((taxableIncome - firstPhaseOutEnd) * secondPhaseOutRate));
+    return Math.max(
+      0,
+      secondPhaseOutBase - (taxableIncome - firstPhaseOutEnd) * secondPhaseOutRate
+    );
   }
 
   return 0;
@@ -199,14 +208,20 @@ export const calculateWorkFromHomeDeduction = (hours: number | string): number =
 /**
  * Calculate total deductions
  */
-export const calculateTotalDeductions = (deductions: { [key: string]: any }, workFromHomeHours: number | string = 0): number => {
+export const calculateTotalDeductions = (
+  deductions: { [key: string]: any },
+  workFromHomeHours: number | string = 0
+): number => {
   const workFromHomeDeduction = calculateWorkFromHomeDeduction(workFromHomeHours);
 
   const totalDeductions = Object.values(deductions).reduce((sum: number, amount: any) => {
     if (typeof amount === 'object' && amount !== null) {
-      return sum + Object.values(amount).reduce<number>((categorySum: number, value: any) => {
-        return categorySum + (parseFloat(value) || 0);
-      }, 0);
+      return (
+        sum +
+        Object.values(amount).reduce<number>((categorySum: number, value: any) => {
+          return categorySum + (parseFloat(value) || 0);
+        }, 0)
+      );
     }
     return sum + (parseFloat(amount) || 0);
   }, 0);
@@ -220,19 +235,23 @@ export const calculateTotalDeductions = (deductions: { [key: string]: any }, wor
 export const calculateTax = (formData: FormDataForTaxCalculation): TaxCalculationResult => {
   try {
     // Extract data from form
-    const totalJobIncome = formData.jobIncomes?.reduce((sum, job) => sum + (parseFloat(job.income) || 0), 0) || 0;
+    const totalJobIncome =
+      formData.jobIncomes?.reduce((sum, job) => sum + (parseFloat(job.income) || 0), 0) || 0;
     const abnIncome = parseFloat(formData.abnIncome) || 0;
     const totalIncome = totalJobIncome + abnIncome;
-    
-    const totalDeductions = calculateTotalDeductions(formData.deductions || {}, formData.workFromHomeHours);
+
+    const totalDeductions = calculateTotalDeductions(
+      formData.deductions || {},
+      formData.workFromHomeHours
+    );
     const taxableIncome = Math.max(0, totalIncome - totalDeductions);
-    
+
     const taxWithheld = parseFloat(formData.taxWithheld) || 0;
     const hasHecsDebt = formData.hecsDebt === true;
     const medicareExemption = formData.medicareExemption === true;
     const hasSpouse = formData.hasSpouse === true;
-    const spouseIncome = hasSpouse ? (parseFloat(formData.spouseIncome) || 0) : 0;
-    const dependents = formData.hasDependents ? (parseInt(formData.dependents || '0') || 0) : 0;
+    const spouseIncome = hasSpouse ? parseFloat(formData.spouseIncome) || 0 : 0;
+    const dependents = formData.hasDependents ? parseInt(formData.dependents || '0') || 0 : 0;
     const hasPrivateHospitalCover = formData.hasPrivateHospitalCover === true;
 
     // Calculate tax components
@@ -245,7 +264,8 @@ export const calculateTax = (formData: FormDataForTaxCalculation): TaxCalculatio
       hasSpouse,
       dependents
     );
-    const studyLoanRepaymentIncome = taxableIncome +
+    const studyLoanRepaymentIncome =
+      taxableIncome +
       (parseFloat(formData.reportableSuper) || 0) +
       (parseFloat(formData.reportableFringeBenefits) || 0) +
       (parseFloat(formData.netInvestmentLosses) || 0) +
@@ -256,7 +276,7 @@ export const calculateTax = (formData: FormDataForTaxCalculation): TaxCalculatio
     // Calculate total tax
     const totalTaxBeforeOffsets = incomeTax + medicareLevy + medicareLevySurcharge + hecsRepayment;
     const totalTax = Math.max(0, totalTaxBeforeOffsets - lowIncomeTaxOffset);
-    
+
     // Calculate refund or amount owed
     const refund = taxWithheld - totalTax;
 
@@ -278,12 +298,15 @@ export const calculateTax = (formData: FormDataForTaxCalculation): TaxCalculatio
         income: {
           jobIncome: totalJobIncome,
           abnIncome: abnIncome,
-          total: totalIncome
+          total: totalIncome,
         },
         deductions: {
-          workRelated: Object.values(formData.deductions || {}).reduce((sum, amount) => sum + (parseFloat(amount) || 0), 0),
+          workRelated: Object.values(formData.deductions || {}).reduce(
+            (sum, amount) => sum + (parseFloat(amount) || 0),
+            0
+          ),
           workFromHome: calculateWorkFromHomeDeduction(formData.workFromHomeHours),
-          total: totalDeductions
+          total: totalDeductions,
         },
         tax: {
           incomeTax,
@@ -292,9 +315,9 @@ export const calculateTax = (formData: FormDataForTaxCalculation): TaxCalculatio
           hecsRepayment,
           totalBeforeOffsets: totalTaxBeforeOffsets,
           offsets: lowIncomeTaxOffset,
-          totalAfterOffsets: totalTax
-        }
-      }
+          totalAfterOffsets: totalTax,
+        },
+      },
     };
   } catch (error) {
     console.error('Error calculating tax:', error);

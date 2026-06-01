@@ -85,11 +85,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
     isLoading,
   };
 
-  return (
-    <ThemeContext.Provider value={value}>
-      {children}
-    </ThemeContext.Provider>
-  );
+  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 };
 
 // Custom hook to use theme
@@ -102,7 +98,10 @@ export const useTheme = (): ThemeContextType => {
 };
 
 // Helper function to get themed styles
-export const getThemedStyles = <T extends any>(styleFunction: (theme: Theme) => T, theme: Theme): T => {
+export const getThemedStyles = <T extends any>(
+  styleFunction: (theme: Theme) => T,
+  theme: Theme
+): T => {
   return styleFunction(theme);
 };
 
