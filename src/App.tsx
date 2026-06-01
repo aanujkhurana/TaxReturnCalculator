@@ -45,6 +45,8 @@ export interface JobIncome {
 export interface FormData {
   jobIncomes: JobIncome[];
   taxWithheld: string;
+  paygUnknown: boolean;
+  estimatedPayg: string;
   deductions: {
     workRelated: {
       travel: string;
@@ -94,6 +96,11 @@ type ValidationErrors = Record<string, string>;
 type CategoryTotals = Record<string, string>;
 type CollapsedCategories = Record<string, boolean>;
 type TaxResult = any;
+
+interface CalculationAssumption {
+  label: string;
+  detail: string;
+}
 
 const TAX_YEAR = '2025-26';
 const WFH_FIXED_RATE = 0.70;
@@ -1634,6 +1641,61 @@ const getStyles = (theme: Theme) => StyleSheet.create({
     flex: 1,
   },
 
+  assumptionsCard: {
+    backgroundColor: theme.surface,
+    borderRadius: 12,
+    padding: 18,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: theme.border,
+  },
+
+  assumptionsHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+
+  assumptionsTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: theme.text,
+    marginLeft: 8,
+  },
+
+  assumptionsIntro: {
+    fontSize: 13,
+    color: theme.textSecondary,
+    lineHeight: 18,
+    marginBottom: 12,
+  },
+
+  assumptionsList: {
+    gap: 10,
+  },
+
+  assumptionItem: {
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    backgroundColor: theme.background,
+    borderWidth: 1,
+    borderColor: theme.border,
+  },
+
+  assumptionLabel: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: theme.text,
+    marginBottom: 4,
+  },
+
+  assumptionDetail: {
+    fontSize: 13,
+    color: theme.textSecondary,
+    lineHeight: 18,
+  },
+
   // Enhanced Results Screen styles
   resultMainCard: {
     backgroundColor: theme.surface,
@@ -2193,6 +2255,8 @@ const AppContent: React.FC = () => {
     setHasPrivateHospitalCover(calculation.formData.hasPrivateHospitalCover || false);
     setDependents(calculation.formData.dependents || '0');
     setHasDependents(calculation.formData.hasDependents || false);
+    setPaygUnknown(calculation.formData.paygUnknown || false);
+    setEstimatedPayg(calculation.formData.estimatedPayg || '');
     setResult(calculation.result);
     setCurrentStep(4); // Go directly to results
     setCurrentScreen('calculator');
@@ -2273,6 +2337,8 @@ const AppContent: React.FC = () => {
               const calculationData = {
                 jobIncomes,
                 taxWithheld,
+                paygUnknown,
+                estimatedPayg,
                 deductions,
                 workFromHomeHours,
                 abnIncome,
@@ -2287,6 +2353,7 @@ const AppContent: React.FC = () => {
                 hasPrivateHospitalCover,
                 dependents,
                 hasDependents,
+                assumptions: getCalculationAssumptions(),
                 result,
               };
 
@@ -2895,6 +2962,77 @@ const AppContent: React.FC = () => {
     }, 2400); // Complete after all loading steps
   }, [jobIncomes, abnIncome, taxWithheld, deductions, workFromHomeHours, hecsDebt, reportableSuper, reportableFringeBenefits, netInvestmentLosses, exemptForeignIncome, medicareExemption, hasSpouse, spouseIncome, hasPrivateHospitalCover, dependents, hasDependents]);
 
+  const getCalculationAssumptions = useCallback((): CalculationAssumption[] => {
+    const dependentsNum = hasDependents ? parseInt(dependents || '0') || 0 : 0;
+    const helpAdjustments = [
+      ['reportable super', reportableSuper],
+      ['reportable fringe benefits', reportableFringeBenefits],
+      ['net investment losses', netInvestmentLosses],
+      ['exempt foreign income', exemptForeignIncome]
+    ].filter(([, value]) => (parseFloat(value || '0') || 0) > 0);
+    const employmentIncome = result?.totalTFNIncome ?? jobIncomes.reduce((sum, income) => sum + (parseFloat(income || '0') || 0), 0);
+
+    return [
+      {
+        label: 'Estimate only',
+        detail: 'This is an estimate for planning and record keeping. It is not a lodged tax return or tax agent advice.'
+      },
+      {
+        label: 'Residency and tax year',
+        detail: `Uses ${TAX_YEAR} Australian resident individual tax rates and assumes the taxpayer is an Australian resident for the full financial year.`
+      },
+      {
+        label: 'Deductions',
+        detail: 'Assumes every deduction entered is allowable, correctly apportioned, and supported by records.'
+      },
+      {
+        label: 'Medicare levy',
+        detail: medicareExemption
+          ? 'Applies the Medicare levy exemption based on your selection.'
+          : `Assumes full-year Medicare levy settings. ${hasSpouse || dependentsNum > 0 ? 'Family thresholds use the spouse/dependent details entered.' : 'Single thresholds are used because no spouse/dependents were entered.'}`
+      },
+      {
+        label: 'Private hospital cover',
+        detail: hasPrivateHospitalCover
+          ? 'Treats appropriate private hospital cover as held for the relevant period. Partial-year cover is not prorated yet.'
+          : 'Treats private hospital cover as not held for Medicare levy surcharge purposes.'
+      },
+      {
+        label: 'Spouse and family income',
+        detail: hasSpouse
+          ? `Includes spouse income of ${formatCurrency(parseFloat(spouseIncome || '0') || 0)} for family Medicare calculations.`
+          : 'Assumes no spouse income unless entered.'
+      },
+      {
+        label: 'HELP/STSL',
+        detail: hecsDebt
+          ? `Applies HELP/STSL repayment using taxable income plus ${helpAdjustments.length > 0 ? helpAdjustments.map(([label]) => label).join(', ') : 'no extra repayment-income adjustments entered'}.`
+          : 'Assumes no HELP/STSL debt.'
+      },
+      {
+        label: 'PAYG withholding',
+        detail: paygUnknown
+          ? `Uses an ATO weekly scale 2 withholding estimate from ${formatCurrency(employmentIncome)} of TFN employment income. ABN/business income is excluded from PAYG withholding.`
+          : 'Uses the PAYG withholding amount entered by the user; it is not verified against payslips or income statements.'
+      }
+    ];
+  }, [
+    dependents,
+    exemptForeignIncome,
+    hasDependents,
+    hasPrivateHospitalCover,
+    hasSpouse,
+    hecsDebt,
+    jobIncomes,
+    medicareExemption,
+    netInvestmentLosses,
+    paygUnknown,
+    reportableFringeBenefits,
+    reportableSuper,
+    result,
+    spouseIncome
+  ]);
+
   // Auto-calculate when reaching step 4 if no result exists
   useEffect(() => {
     if (currentStep === 4 && !result) {
@@ -2906,6 +3044,13 @@ const AppContent: React.FC = () => {
 
   const exportCSV = async () => {
     if (!result) return;
+    const escapeCsvCell = (value: string | number) => {
+      const stringValue = String(value);
+      return stringValue.includes(',') || stringValue.includes('"') || stringValue.includes('\n')
+        ? `"${stringValue.replace(/"/g, '""')}"`
+        : stringValue;
+    };
+    const assumptions = getCalculationAssumptions();
     
     const headers = [
       'Date', 'TFN Income', 'ABN Income', 'WFH Deduction', 'Manual Deductions', 'Total Deductions',
@@ -2928,7 +3073,15 @@ const AppContent: React.FC = () => {
       result.refund.toFixed(2)
     ];
     
-    const csv = `${headers.join(',')}\n${row.join(',')}`;
+    const csvRows = [
+      headers,
+      row,
+      [],
+      ['Calculation Assumptions'],
+      ['Area', 'Assumption'],
+      ...assumptions.map(({ label, detail }) => [label, detail])
+    ];
+    const csv = csvRows.map(csvRow => csvRow.map(escapeCsvCell).join(',')).join('\n');
     const filename = `MyTaxReturn_${new Date().toISOString().split('T')[0]}.csv`;
     const path = FileSystem.documentDirectory + filename;
     
@@ -2942,6 +3095,7 @@ const AppContent: React.FC = () => {
 
   const exportPDF = async () => {
     if (!result) return;
+    const assumptions = getCalculationAssumptions();
 
     try {
       // Create HTML content for the PDF
@@ -2966,6 +3120,11 @@ const AppContent: React.FC = () => {
             .breakdown-table th, .breakdown-table td { padding: 10px; text-align: left; border-bottom: 1px solid #E2E8F0; }
             .breakdown-table th { background: #F8FAFC; font-weight: 600; color: #2D3748; }
             .breakdown-table .total-row { font-weight: bold; border-top: 2px solid #4A90E2; background: #F0F9FF; }
+            .assumption-list { border: 1px solid #E2E8F0; border-radius: 8px; overflow: hidden; }
+            .assumption-item { padding: 12px 14px; border-bottom: 1px solid #E2E8F0; background: #F8FAFC; }
+            .assumption-item:last-child { border-bottom: 0; }
+            .assumption-label { font-weight: bold; color: #2D3748; margin-bottom: 4px; }
+            .assumption-detail { color: #475569; font-size: 13px; }
             .footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #E2E8F0; text-align: center; color: #666; font-size: 12px; }
           </style>
         </head>
@@ -3069,6 +3228,18 @@ const AppContent: React.FC = () => {
               <tr><td>Tax Withheld (PAYG)</td><td>-${formatCurrency(parseFloat(taxWithheld || '0')).replace('$', '$')}</td></tr>
               <tr class="total-row"><td>${result.refund >= 0 ? 'Tax Refund' : 'Tax Owing'}</td><td style="color: ${result.refund >= 0 ? '#28a745' : '#dc3545'}">${formatCurrency(Math.abs(result.refund)).replace('$', '$')}</td></tr>
             </table>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Calculation Assumptions</div>
+            <div class="assumption-list">
+              ${assumptions.map(({ label, detail }) => `
+                <div class="assumption-item">
+                  <div class="assumption-label">${label}</div>
+                  <div class="assumption-detail">${detail}</div>
+                </div>
+              `).join('')}
+            </div>
           </div>
 
           <div class="footer">
@@ -4425,6 +4596,30 @@ const AppContent: React.FC = () => {
     );
   };
 
+  const renderAssumptionsCard = () => {
+    const assumptions = getCalculationAssumptions();
+
+    return (
+      <View style={styles.assumptionsCard}>
+        <View style={styles.assumptionsHeader}>
+          <Ionicons name="shield-checkmark-outline" size={20} color={theme.warning} />
+          <Text style={styles.assumptionsTitle}>Calculation Assumptions</Text>
+        </View>
+        <Text style={styles.assumptionsIntro}>
+          Review these before saving or exporting this estimate.
+        </Text>
+        <View style={styles.assumptionsList}>
+          {assumptions.map(({ label, detail }) => (
+            <View key={label} style={styles.assumptionItem}>
+              <Text style={styles.assumptionLabel}>{label}</Text>
+              <Text style={styles.assumptionDetail}>{detail}</Text>
+            </View>
+          ))}
+        </View>
+      </View>
+    );
+  };
+
   const renderResults = () => {
     console.log('renderResults called - isCalculating:', isCalculating, 'result:', !!result);
 
@@ -4720,6 +4915,8 @@ const AppContent: React.FC = () => {
             </View>
           </View>
         </View>
+
+        {renderAssumptionsCard()}
 
             {/* Action Buttons Section - Only visible in card view */}
             <View style={styles.quickAddGrid}>

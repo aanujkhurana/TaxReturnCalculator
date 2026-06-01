@@ -16,10 +16,11 @@ Make the Australian tax return calculator more valuable, trustworthy, and produc
   - Acceptance: tests fail when any threshold, rate, or formula changes unexpectedly.
   - Completed: added active tax-year config and major calculation output snapshots, including resident tax bands, LITO, Medicare levy, HELP, MLS, and PAYG withholding.
 
-- [ ] Add visible calculation assumptions and disclaimers.
+- [x] Add visible calculation assumptions and disclaimers.
   - Explain that the app estimates individual tax outcomes and is not tax agent advice.
   - Show assumptions around residency, full-year Medicare status, private health cover, spouse income, dependents, HELP, and PAYG withholding.
   - Acceptance: users can inspect assumptions before saving/exporting a result.
+  - Completed: added a results-screen assumptions card before save/export actions and included the assumptions in saved calculation data, CSV export, and HTML report export.
 
 - [ ] Add tax-year selection to the UI.
   - Use the existing annual tax-year config so users can choose supported years.

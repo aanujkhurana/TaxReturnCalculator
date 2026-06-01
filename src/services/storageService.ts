@@ -9,12 +9,23 @@ export interface SavedCalculation {
   formData: {
     jobIncomes?: any[];
     taxWithheld?: string;
+    paygUnknown?: boolean;
+    estimatedPayg?: string;
     deductions?: { [key: string]: any };
     workFromHomeHours?: string;
     abnIncome?: string;
     hecsDebt?: boolean;
+    reportableSuper?: string;
+    reportableFringeBenefits?: string;
+    netInvestmentLosses?: string;
+    exemptForeignIncome?: string;
     medicareExemption?: boolean;
+    hasSpouse?: boolean;
+    spouseIncome?: string;
+    hasPrivateHospitalCover?: boolean;
+    hasDependents?: boolean;
     dependents?: string;
+    assumptions?: any[];
   };
   result: any;
 }
@@ -47,12 +58,23 @@ export const saveCalculation = async (calculationData: any, customName: string |
       formData: {
         jobIncomes: calculationData.jobIncomes,
         taxWithheld: calculationData.taxWithheld,
+        paygUnknown: calculationData.paygUnknown,
+        estimatedPayg: calculationData.estimatedPayg,
         deductions: calculationData.deductions,
         workFromHomeHours: calculationData.workFromHomeHours,
         abnIncome: calculationData.abnIncome,
         hecsDebt: calculationData.hecsDebt,
+        reportableSuper: calculationData.reportableSuper,
+        reportableFringeBenefits: calculationData.reportableFringeBenefits,
+        netInvestmentLosses: calculationData.netInvestmentLosses,
+        exemptForeignIncome: calculationData.exemptForeignIncome,
         medicareExemption: calculationData.medicareExemption,
+        hasSpouse: calculationData.hasSpouse,
+        spouseIncome: calculationData.spouseIncome,
+        hasPrivateHospitalCover: calculationData.hasPrivateHospitalCover,
+        hasDependents: calculationData.hasDependents,
         dependents: calculationData.dependents,
+        assumptions: calculationData.assumptions,
       },
       result: calculationData.result,
     };
