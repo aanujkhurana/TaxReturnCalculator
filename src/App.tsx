@@ -19,7 +19,6 @@ import {
 } from 'react-native';
 import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
-import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
 import { setStatusBarBackgroundColor } from 'expo-status-bar';
 
@@ -50,6 +49,7 @@ import {
 } from './components/results/ResultInfoCards';
 import TaxYearSelector from './components/details/TaxYearSelector';
 import StepIndicator from './components/navigation/StepIndicator';
+import StepActionButton from './components/navigation/StepActionButton';
 import { Theme } from './constants/themes';
 
 // Type definitions for the main App component
@@ -870,98 +870,6 @@ const getStyles = (theme: Theme) =>
     },
     navButtonSpacer: {
       flex: 1,
-    },
-    // Step button styles
-    stepButtonContainer: {
-      marginTop: 32,
-      marginBottom: 20,
-      paddingHorizontal: 16,
-    },
-    stepButton: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'center',
-      paddingVertical: 16,
-      paddingHorizontal: 32,
-      borderRadius: 12,
-      borderWidth: 1.5,
-      shadowOffset: { width: 0, height: 3 },
-      shadowOpacity: 0.2,
-      shadowRadius: 5,
-      elevation: 3,
-      minHeight: 56,
-    },
-    stepButtonNext: {
-      borderRadius: 20,
-      overflow: 'hidden',
-      elevation: 10,
-      shadowColor: theme.primary,
-      shadowOffset: { width: 0, height: 6 },
-      shadowOpacity: 0.25,
-      shadowRadius: 12,
-      borderWidth: 1,
-      borderColor: theme.primaryBorder,
-    },
-    stepButtonNextGradient: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'center',
-      paddingVertical: 16,
-      paddingHorizontal: 32,
-      minHeight: 56,
-    },
-    stepButtonNextIconContainer: {
-      width: 32,
-      height: 32,
-      borderRadius: 16,
-      backgroundColor: 'rgba(255, 255, 255, 0.2)',
-      alignItems: 'center',
-      justifyContent: 'center',
-      borderWidth: 1,
-      borderColor: 'rgba(255, 255, 255, 0.3)',
-      marginRight: 12,
-    },
-    stepButtonCalculate: {
-      borderRadius: 20,
-      overflow: 'hidden',
-      elevation: 10,
-      shadowColor: theme.accent,
-      shadowOffset: { width: 0, height: 6 },
-      shadowOpacity: 0.25,
-      shadowRadius: 12,
-      borderWidth: 1,
-      borderColor: theme.accentBorder,
-    },
-    stepButtonCalculateGradient: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'center',
-      paddingVertical: 16,
-      paddingHorizontal: 32,
-      minHeight: 56,
-    },
-    stepButtonCalculateIconContainer: {
-      width: 32,
-      height: 32,
-      borderRadius: 16,
-      backgroundColor: 'rgba(255, 255, 255, 0.2)',
-      alignItems: 'center',
-      justifyContent: 'center',
-      borderWidth: 1,
-      borderColor: 'rgba(255, 255, 255, 0.3)',
-      marginRight: 12,
-    },
-    stepButtonText: {
-      fontSize: 16,
-      color: '#fff',
-      fontWeight: '600',
-      marginRight: 8,
-    },
-    stepButtonNextText: {
-      fontSize: 16,
-      color: '#fff',
-      fontWeight: '600',
-      marginLeft: 8,
     },
     readyToCalculateLabel: {
       flexDirection: 'row',
@@ -4413,22 +4321,7 @@ const AppContent: React.FC = () => {
           )}
         </View>
 
-        {/* Next Button */}
-        <View style={styles.stepButtonContainer}>
-          <TouchableOpacity style={styles.stepButtonNext} onPress={nextStep} activeOpacity={0.8}>
-            <LinearGradient
-              colors={['#4A90E2', '#2C5F8C']}
-              style={styles.stepButtonNextGradient}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-            >
-              <View style={styles.stepButtonNextIconContainer}>
-                <Ionicons name="chevron-forward" size={20} color="#fff" />
-              </View>
-              <Text style={styles.stepButtonNextText}>Next</Text>
-            </LinearGradient>
-          </TouchableOpacity>
-        </View>
+        <StepActionButton variant="next" icon="chevron-forward" label="Next" onPress={nextStep} />
       </View>
     );
   };
@@ -5138,22 +5031,7 @@ const AppContent: React.FC = () => {
           )}
         </View>
 
-        {/* Next Button */}
-        <View style={styles.stepButtonContainer}>
-          <TouchableOpacity style={styles.stepButtonNext} onPress={nextStep} activeOpacity={0.8}>
-            <LinearGradient
-              colors={['#4A90E2', '#2C5F8C']}
-              style={styles.stepButtonNextGradient}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-            >
-              <View style={styles.stepButtonNextIconContainer}>
-                <Ionicons name="chevron-forward" size={20} color="#fff" />
-              </View>
-              <Text style={styles.stepButtonNextText}>Next</Text>
-            </LinearGradient>
-          </TouchableOpacity>
-        </View>
+        <StepActionButton variant="next" icon="chevron-forward" label="Next" onPress={nextStep} />
       </View>
     );
   };
@@ -5536,33 +5414,13 @@ const AppContent: React.FC = () => {
           <Text style={styles.readyToCalculateLabelText}>Ready to Calculate</Text>
         </View>
 
-        {/* Calculate Button */}
-        <View style={styles.stepButtonContainer}>
-          <TouchableOpacity
-            style={[styles.stepButtonCalculate, isCalculating && { opacity: 0.7 }]}
-            onPress={estimateTax}
-            disabled={isCalculating}
-            activeOpacity={0.8}
-          >
-            <LinearGradient
-              colors={['#10B981', '#059669']}
-              style={styles.stepButtonCalculateGradient}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-            >
-              <View style={styles.stepButtonCalculateIconContainer}>
-                <Ionicons
-                  name={isCalculating ? 'hourglass-outline' : 'calculator-outline'}
-                  size={20}
-                  color="#fff"
-                />
-              </View>
-              <Text style={styles.stepButtonText}>
-                {isCalculating ? 'Calculating...' : 'Calculate Tax Return'}
-              </Text>
-            </LinearGradient>
-          </TouchableOpacity>
-        </View>
+        <StepActionButton
+          variant="calculate"
+          icon={isCalculating ? 'hourglass-outline' : 'calculator-outline'}
+          label={isCalculating ? 'Calculating...' : 'Calculate Tax Return'}
+          onPress={estimateTax}
+          disabled={isCalculating}
+        />
       </View>
     );
   };
