@@ -30,6 +30,7 @@ import AboutScreen from './screens/AboutScreen';
 import { saveCalculation } from './services/storageService';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
 import { calculateTax } from './services/taxCalculationService';
+import { reportError } from './services/crashReportingService';
 import { generateAndSharePDF } from './services/pdfService';
 import { formatCurrency } from './utils/formatters';
 import { HELP_TEXT } from './constants/helpText';
@@ -3022,130 +3023,147 @@ const AppContent: React.FC = () => {
       }, delay);
     });
 
-    const parsedJobIncomes = jobIncomes.map((val) => parseFloat(val || '0'));
-    const totalTFNIncome = parsedJobIncomes.reduce(
-      (sum, curr) => sum + (isNaN(curr) ? 0 : curr),
-      0
-    );
-    const abnIncomeNum = parseFloat(abnIncome || '0');
-    const taxWithheldNum = parseFloat(taxWithheld || '0');
-    const wfhHours = parseFloat(workFromHomeHours || '0');
-    const dependentsNum = hasDependents ? parseInt(dependents || '0') : 0;
-    const spouseIncomeNum = hasSpouse ? parseFloat(spouseIncome || '0') || 0 : 0;
-    const reportableSuperNum = parseFloat(reportableSuper || '0') || 0;
-    const reportableFringeBenefitsNum = parseFloat(reportableFringeBenefits || '0') || 0;
-    const netInvestmentLossesNum = parseFloat(netInvestmentLosses || '0') || 0;
-    const exemptForeignIncomeNum = parseFloat(exemptForeignIncome || '0') || 0;
+    try {
+      const parsedJobIncomes = jobIncomes.map((val) => parseFloat(val || '0'));
+      const totalTFNIncome = parsedJobIncomes.reduce(
+        (sum, curr) => sum + (isNaN(curr) ? 0 : curr),
+        0
+      );
+      const abnIncomeNum = parseFloat(abnIncome || '0');
+      const taxWithheldNum = parseFloat(taxWithheld || '0');
+      const wfhHours = parseFloat(workFromHomeHours || '0');
+      const dependentsNum = hasDependents ? parseInt(dependents || '0') : 0;
+      const spouseIncomeNum = hasSpouse ? parseFloat(spouseIncome || '0') || 0 : 0;
+      const reportableSuperNum = parseFloat(reportableSuper || '0') || 0;
+      const reportableFringeBenefitsNum = parseFloat(reportableFringeBenefits || '0') || 0;
+      const netInvestmentLossesNum = parseFloat(netInvestmentLosses || '0') || 0;
+      const exemptForeignIncomeNum = parseFloat(exemptForeignIncome || '0') || 0;
 
-    // Calculate total deductions
-    const workFromHomeDeduction = wfhHours * selectedWfhFixedRate;
+      // Calculate total deductions
+      const workFromHomeDeduction = wfhHours * selectedWfhFixedRate;
 
-    // Calculate total manual deductions from nested structure
-    const totalManualDeductions = Object.values(deductions).reduce(
-      (categorySum: number, category) => {
-        if (typeof category === 'object' && category !== null) {
-          // New nested structure
-          return (
-            categorySum +
-            Object.values(category as CategoryTotals).reduce((subSum: number, val) => {
-              return subSum + parseFloat(String(val || '0'));
-            }, 0)
-          );
-        } else {
-          // Backward compatibility for old flat structure
-          return categorySum + parseFloat(String(category || '0'));
-        }
-      },
-      0
-    );
+      // Calculate total manual deductions from nested structure
+      const totalManualDeductions = Object.values(deductions).reduce(
+        (categorySum: number, category) => {
+          if (typeof category === 'object' && category !== null) {
+            // New nested structure
+            return (
+              categorySum +
+              Object.values(category as CategoryTotals).reduce((subSum: number, val) => {
+                return subSum + parseFloat(String(val || '0'));
+              }, 0)
+            );
+          } else {
+            // Backward compatibility for old flat structure
+            return categorySum + parseFloat(String(category || '0'));
+          }
+        },
+        0
+      );
 
-    const totalDeductions = totalManualDeductions + workFromHomeDeduction;
+      const totalDeductions = totalManualDeductions + workFromHomeDeduction;
 
-    const totalIncome = totalTFNIncome + abnIncomeNum;
-    const taxableIncome = Math.max(0, totalIncome - totalDeductions);
+      const totalIncome = totalTFNIncome + abnIncomeNum;
+      const taxableIncome = Math.max(0, totalIncome - totalDeductions);
 
-    const tax = calculateResidentIncomeTax(taxableIncome, selectedTaxYearConfig);
+      const tax = calculateResidentIncomeTax(taxableIncome, selectedTaxYearConfig);
 
-    const lito = calculateLowIncomeTaxOffset(taxableIncome, selectedTaxYearConfig);
+      const lito = calculateLowIncomeTaxOffset(taxableIncome, selectedTaxYearConfig);
 
-    const familyIncomeForMedicare = taxableIncome + spouseIncomeNum;
-    const medicare = calculateMedicareLevyAmount(
-      taxableIncome,
-      dependentsNum,
-      medicareExemption,
-      hasSpouse,
-      spouseIncomeNum,
-      selectedTaxYearConfig
-    );
-    const medicareLevySurcharge = calculateMedicareLevySurcharge(
-      taxableIncome,
-      familyIncomeForMedicare,
-      hasPrivateHospitalCover,
-      hasSpouse,
-      dependentsNum,
-      selectedTaxYearConfig
-    );
+      const familyIncomeForMedicare = taxableIncome + spouseIncomeNum;
+      const medicare = calculateMedicareLevyAmount(
+        taxableIncome,
+        dependentsNum,
+        medicareExemption,
+        hasSpouse,
+        spouseIncomeNum,
+        selectedTaxYearConfig
+      );
+      const medicareLevySurcharge = calculateMedicareLevySurcharge(
+        taxableIncome,
+        familyIncomeForMedicare,
+        hasPrivateHospitalCover,
+        hasSpouse,
+        dependentsNum,
+        selectedTaxYearConfig
+      );
 
-    const studyLoanRepaymentIncome =
-      taxableIncome +
-      reportableSuperNum +
-      reportableFringeBenefitsNum +
-      netInvestmentLossesNum +
-      exemptForeignIncomeNum;
-    const hecsRepayment = calculateStudyLoanRepayment(
-      studyLoanRepaymentIncome,
-      hecsDebt,
-      selectedTaxYearConfig
-    );
+      const studyLoanRepaymentIncome =
+        taxableIncome +
+        reportableSuperNum +
+        reportableFringeBenefitsNum +
+        netInvestmentLossesNum +
+        exemptForeignIncomeNum;
+      const hecsRepayment = calculateStudyLoanRepayment(
+        studyLoanRepaymentIncome,
+        hecsDebt,
+        selectedTaxYearConfig
+      );
 
-    const finalTax = Math.max(0, tax - lito + medicare + medicareLevySurcharge + hecsRepayment);
-    const refund = taxWithheldNum - finalTax;
+      const finalTax = Math.max(0, tax - lito + medicare + medicareLevySurcharge + hecsRepayment);
+      const refund = taxWithheldNum - finalTax;
 
-    setResult({
-      financialYear: selectedFinancialYear,
-      appVersion: APP_INFO.VERSION,
-      taxYearConfigVersion: selectedTaxYearConfig.configVersion,
-      calculationEngineVersion: CALCULATION_ENGINE_VERSION,
-      totalTFNIncome,
-      abnIncomeNum,
-      totalIncome, // Add totalIncome for HomeScreen display
-      workFromHomeDeduction,
-      totalManualDeductions,
-      totalDeductions,
-      taxableIncome,
-      studyLoanRepaymentIncome,
-      reportableSuper: reportableSuperNum,
-      reportableFringeBenefits: reportableFringeBenefitsNum,
-      netInvestmentLosses: netInvestmentLossesNum,
-      exemptForeignIncome: exemptForeignIncomeNum,
-      tax,
-      lito,
-      medicare,
-      medicareLevySurcharge,
-      spouseIncome: spouseIncomeNum,
-      hasPrivateHospitalCover,
-      familyIncomeForMedicare,
-      hecsRepayment,
-      finalTax,
-      totalTax: finalTax, // Add totalTax for HomeScreen display
-      refund,
-      effectiveTaxRate: taxableIncome > 0 ? (finalTax / taxableIncome) * 100 : 0,
-    });
+      setResult({
+        financialYear: selectedFinancialYear,
+        appVersion: APP_INFO.VERSION,
+        taxYearConfigVersion: selectedTaxYearConfig.configVersion,
+        calculationEngineVersion: CALCULATION_ENGINE_VERSION,
+        totalTFNIncome,
+        abnIncomeNum,
+        totalIncome, // Add totalIncome for HomeScreen display
+        workFromHomeDeduction,
+        totalManualDeductions,
+        totalDeductions,
+        taxableIncome,
+        studyLoanRepaymentIncome,
+        reportableSuper: reportableSuperNum,
+        reportableFringeBenefits: reportableFringeBenefitsNum,
+        netInvestmentLosses: netInvestmentLossesNum,
+        exemptForeignIncome: exemptForeignIncomeNum,
+        tax,
+        lito,
+        medicare,
+        medicareLevySurcharge,
+        spouseIncome: spouseIncomeNum,
+        hasPrivateHospitalCover,
+        familyIncomeForMedicare,
+        hecsRepayment,
+        finalTax,
+        totalTax: finalTax, // Add totalTax for HomeScreen display
+        refund,
+        effectiveTaxRate: taxableIncome > 0 ? (finalTax / taxableIncome) * 100 : 0,
+      });
 
-    // Complete the calculation after final loading step
-    setTimeout(() => {
+      // Complete the calculation after final loading step
+      setTimeout(() => {
+        setIsCalculating(false);
+        setLoadingStep(0);
+        setShowSuccessAnimation(true);
+        setCurrentStep(4);
+        // Scroll to top when calculation completes
+        setTimeout(() => scrollToTop(), 100);
+
+        // Hide success animation after 3 seconds
+        setTimeout(() => {
+          setShowSuccessAnimation(false);
+        }, 3000);
+      }, 2400); // Complete after all loading steps
+    } catch (error) {
       setIsCalculating(false);
       setLoadingStep(0);
-      setShowSuccessAnimation(true);
-      setCurrentStep(4);
-      // Scroll to top when calculation completes
-      setTimeout(() => scrollToTop(), 100);
-
-      // Hide success animation after 3 seconds
-      setTimeout(() => {
-        setShowSuccessAnimation(false);
-      }, 3000);
-    }, 2400); // Complete after all loading steps
+      reportError(error, {
+        area: 'tax-calculation',
+        financialYear: selectedFinancialYear,
+        hasHecsDebt: hecsDebt,
+        hasSpouse,
+        hasDependents,
+        hasPrivateHospitalCover,
+      });
+      Alert.alert(
+        'Calculation Error',
+        'Something went wrong while calculating your estimate. Please review your inputs and try again.'
+      );
+    }
   }, [
     jobIncomes,
     abnIncome,

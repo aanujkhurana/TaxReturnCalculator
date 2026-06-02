@@ -17,6 +17,6 @@
     "web": {
       "bundler": "metro"
     },
-    "plugins": ["expo-font"]
+    "plugins": ["expo-font", "@sentry/react-native"]
   }
 }

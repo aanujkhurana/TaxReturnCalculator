@@ -49,9 +49,10 @@ Make the Australian tax return calculator more valuable, trustworthy, and produc
   - Acceptance: `npx expo-doctor` has no dependency compatibility warnings.
   - Completed: aligned Expo SDK 53 package versions and verified with `npx expo install --check` using the local Expo dependency map.
 
-- [ ] Add error boundaries and crash reporting.
+- [x] Add error boundaries and crash reporting.
   - Add a top-level error boundary and production crash reporting provider.
   - Acceptance: calculation and rendering errors show a useful fallback and are reported with non-sensitive context.
+  - Completed: added a top-level error boundary, Sentry-backed crash reporting behind environment flags, non-sensitive calculation error reporting, and `.env.example` configuration.
 
 - [ ] Add analytics with privacy controls.
   - Track feature usage, step completion, export usage, and validation failure patterns without collecting sensitive tax amounts by default.
