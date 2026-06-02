@@ -44,6 +44,10 @@ import {
 } from './constants/taxConstants';
 import InputField from './components/forms/InputField';
 import HelpModal from './components/ui/HelpModal';
+import {
+  CalculationAssumptionsCard,
+  DocumentChecklistCard,
+} from './components/results/ResultInfoCards';
 import { Theme } from './constants/themes';
 
 // Type definitions for the main App component
@@ -1920,61 +1924,6 @@ const getStyles = (theme: Theme) =>
       color: theme.text,
       lineHeight: 20,
       flex: 1,
-    },
-
-    assumptionsCard: {
-      backgroundColor: theme.surface,
-      borderRadius: 12,
-      padding: 18,
-      marginBottom: 20,
-      borderWidth: 1,
-      borderColor: theme.border,
-    },
-
-    assumptionsHeader: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      marginBottom: 8,
-    },
-
-    assumptionsTitle: {
-      fontSize: 18,
-      fontWeight: '700',
-      color: theme.text,
-      marginLeft: 8,
-    },
-
-    assumptionsIntro: {
-      fontSize: 13,
-      color: theme.textSecondary,
-      lineHeight: 18,
-      marginBottom: 12,
-    },
-
-    assumptionsList: {
-      gap: 10,
-    },
-
-    assumptionItem: {
-      paddingVertical: 10,
-      paddingHorizontal: 12,
-      borderRadius: 8,
-      backgroundColor: theme.background,
-      borderWidth: 1,
-      borderColor: theme.border,
-    },
-
-    assumptionLabel: {
-      fontSize: 13,
-      fontWeight: '700',
-      color: theme.text,
-      marginBottom: 4,
-    },
-
-    assumptionDetail: {
-      fontSize: 13,
-      color: theme.textSecondary,
-      lineHeight: 18,
     },
 
     taxYearOptionGrid: {
@@ -5930,54 +5879,6 @@ const AppContent: React.FC = () => {
     );
   };
 
-  const renderAssumptionsCard = () => {
-    const assumptions = getCalculationAssumptions();
-
-    return (
-      <View style={styles.assumptionsCard}>
-        <View style={styles.assumptionsHeader}>
-          <Ionicons name="shield-checkmark-outline" size={20} color={theme.warning} />
-          <Text style={styles.assumptionsTitle}>Calculation Assumptions</Text>
-        </View>
-        <Text style={styles.assumptionsIntro}>
-          Review these before saving or exporting this estimate.
-        </Text>
-        <View style={styles.assumptionsList}>
-          {assumptions.map(({ label, detail }) => (
-            <View key={label} style={styles.assumptionItem}>
-              <Text style={styles.assumptionLabel}>{label}</Text>
-              <Text style={styles.assumptionDetail}>{detail}</Text>
-            </View>
-          ))}
-        </View>
-      </View>
-    );
-  };
-
-  const renderDocumentChecklistCard = () => {
-    const documentChecklist = getDocumentChecklist();
-
-    return (
-      <View style={styles.assumptionsCard}>
-        <View style={styles.assumptionsHeader}>
-          <Ionicons name="folder-open-outline" size={20} color={theme.primary} />
-          <Text style={styles.assumptionsTitle}>Document and Receipt Checklist</Text>
-        </View>
-        <Text style={styles.assumptionsIntro}>
-          Keep these records with your estimate before saving or lodging.
-        </Text>
-        <View style={styles.assumptionsList}>
-          {documentChecklist.map(({ label, detail }) => (
-            <View key={label} style={styles.assumptionItem}>
-              <Text style={styles.assumptionLabel}>{label}</Text>
-              <Text style={styles.assumptionDetail}>{detail}</Text>
-            </View>
-          ))}
-        </View>
-      </View>
-    );
-  };
-
   const renderResults = () => {
     console.log('renderResults called - isCalculating:', isCalculating, 'result:', !!result);
 
@@ -6422,8 +6323,8 @@ const AppContent: React.FC = () => {
               </View>
             </View>
 
-            {renderDocumentChecklistCard()}
-            {renderAssumptionsCard()}
+            <DocumentChecklistCard documentChecklist={getDocumentChecklist()} />
+            <CalculationAssumptionsCard assumptions={getCalculationAssumptions()} />
 
             {/* Action Buttons Section - Only visible in card view */}
             <View style={styles.quickAddGrid}>
