@@ -7,6 +7,7 @@ export type AnalyticsEventName =
   | 'screen_viewed'
   | 'calculator_step_viewed'
   | 'calculator_step_completed'
+  | 'deduction_checklist_opened'
   | 'validation_failed'
   | 'tax_calculation_completed'
   | 'tax_calculation_failed'

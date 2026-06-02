@@ -35,6 +35,7 @@ import { trackAnalyticsEvent } from './services/analyticsService';
 import { generateAndSharePDF } from './services/pdfService';
 import { formatCurrency } from './utils/formatters';
 import { HELP_TEXT } from './constants/helpText';
+import { DEDUCTION_CHECKLIST_ITEMS, DeductionChecklistItem } from './constants/deductionChecklist';
 import { APP_INFO, CALCULATION_ENGINE_VERSION } from './constants/appConstants';
 import {
   ACTIVE_FINANCIAL_YEAR,
@@ -1286,6 +1287,119 @@ const getStyles = (theme: Theme) =>
       shadowOpacity: 0.1,
       shadowRadius: 4,
       elevation: 2,
+    },
+
+    deductionChecklist: {
+      backgroundColor: theme.surface,
+      borderRadius: 8,
+      padding: 16,
+      marginBottom: 20,
+      borderWidth: 1,
+      borderColor: theme.border,
+    },
+
+    checklistHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginBottom: 8,
+    },
+
+    checklistTitleRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      flex: 1,
+    },
+
+    checklistTitle: {
+      fontSize: 16,
+      fontWeight: '700',
+      color: theme.text,
+      marginLeft: 8,
+    },
+
+    checklistProgressBadge: {
+      backgroundColor: theme.primary,
+      borderRadius: 8,
+      paddingHorizontal: 8,
+      paddingVertical: 4,
+    },
+
+    checklistProgressText: {
+      fontSize: 12,
+      fontWeight: '700',
+      color: '#FFFFFF',
+    },
+
+    checklistIntro: {
+      fontSize: 13,
+      lineHeight: 18,
+      color: theme.textSecondary,
+      marginBottom: 12,
+    },
+
+    checklistItems: {
+      gap: 8,
+    },
+
+    checklistItem: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      minHeight: 76,
+      padding: 12,
+      borderRadius: 8,
+      borderWidth: 1,
+      borderColor: theme.border,
+      backgroundColor: theme.surfaceSecondary,
+    },
+
+    checklistItemComplete: {
+      borderColor: theme.success,
+      backgroundColor: theme.successLight,
+    },
+
+    checklistItemIcon: {
+      width: 34,
+      height: 34,
+      borderRadius: 17,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginRight: 12,
+      backgroundColor: theme.primaryLight,
+    },
+
+    checklistItemIconComplete: {
+      backgroundColor: theme.success,
+    },
+
+    checklistItemContent: {
+      flex: 1,
+      paddingRight: 8,
+    },
+
+    checklistItemTitle: {
+      fontSize: 14,
+      fontWeight: '700',
+      color: theme.text,
+      marginBottom: 3,
+    },
+
+    checklistItemDetail: {
+      fontSize: 12,
+      lineHeight: 17,
+      color: theme.textSecondary,
+      marginBottom: 6,
+    },
+
+    checklistSourceRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+
+    checklistSourceText: {
+      fontSize: 11,
+      color: theme.textSecondary,
+      marginLeft: 4,
     },
 
     summaryHeader: {
@@ -4177,6 +4291,34 @@ const AppContent: React.FC = () => {
     );
   };
 
+  const isDeductionChecklistItemComplete = (item: DeductionChecklistItem): boolean => {
+    if (item.categoryKey === 'workFromHome') {
+      return parseFloat(workFromHomeHours || '0') > 0;
+    }
+
+    const category = deductions[item.categoryKey];
+    if (!category) {
+      return false;
+    }
+
+    if (item.fieldKey) {
+      return parseFloat(String(category[item.fieldKey] || '0')) > 0;
+    }
+
+    return categoryHasValues(category);
+  };
+
+  const openDeductionChecklistItem = (item: DeductionChecklistItem): void => {
+    setCollapsedCategories((prev) => ({
+      ...prev,
+      [item.categoryKey]: false,
+    }));
+    trackAnalyticsEvent('deduction_checklist_opened', {
+      area: item.categoryKey,
+      financialYear: selectedFinancialYear,
+    });
+  };
+
   const renderDeductionsTab = () => {
     const workRelatedTotal = calculateCategoryTotal(deductions.workRelated);
     const selfEducationTotal = calculateCategoryTotal(deductions.selfEducation);
@@ -4185,10 +4327,70 @@ const AppContent: React.FC = () => {
     const wfhTotal = parseFloat(workFromHomeHours || '0') * selectedWfhFixedRate;
     const grandTotal =
       workRelatedTotal + selfEducationTotal + donationsTotal + otherTotal + wfhTotal;
+    const completedChecklistCount = DEDUCTION_CHECKLIST_ITEMS.filter(
+      isDeductionChecklistItemComplete
+    ).length;
 
     return (
       <View style={styles.tabContent}>
         <Text style={styles.sectionTitle}>Tax Deductions</Text>
+
+        <View style={styles.deductionChecklist}>
+          <View style={styles.checklistHeader}>
+            <View style={styles.checklistTitleRow}>
+              <Ionicons name="list-outline" size={20} color={theme.primary} />
+              <Text style={styles.checklistTitle}>Deduction Checklist</Text>
+            </View>
+            <View style={styles.checklistProgressBadge}>
+              <Text style={styles.checklistProgressText}>
+                {completedChecklistCount}/{DEDUCTION_CHECKLIST_ITEMS.length}
+              </Text>
+            </View>
+          </View>
+          <Text style={styles.checklistIntro}>
+            Review common claim areas, then open the matching field when one applies to you.
+          </Text>
+
+          <View style={styles.checklistItems}>
+            {DEDUCTION_CHECKLIST_ITEMS.map((item) => {
+              const isComplete = isDeductionChecklistItemComplete(item);
+              return (
+                <TouchableOpacity
+                  key={item.id}
+                  style={[styles.checklistItem, isComplete && styles.checklistItemComplete]}
+                  onPress={() => openDeductionChecklistItem(item)}
+                  activeOpacity={0.75}
+                >
+                  <View
+                    style={[
+                      styles.checklistItemIcon,
+                      isComplete && styles.checklistItemIconComplete,
+                    ]}
+                  >
+                    <Ionicons
+                      name={
+                        (isComplete ? 'checkmark' : item.icon) as React.ComponentProps<
+                          typeof Ionicons
+                        >['name']
+                      }
+                      size={18}
+                      color={isComplete ? '#FFFFFF' : theme.primary}
+                    />
+                  </View>
+                  <View style={styles.checklistItemContent}>
+                    <Text style={styles.checklistItemTitle}>{item.title}</Text>
+                    <Text style={styles.checklistItemDetail}>{item.detail}</Text>
+                    <View style={styles.checklistSourceRow}>
+                      <Ionicons name="link-outline" size={12} color={theme.textSecondary} />
+                      <Text style={styles.checklistSourceText}>{item.sourceLabel}</Text>
+                    </View>
+                  </View>
+                  <Ionicons name="chevron-forward" size={18} color={theme.textSecondary} />
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </View>
 
         {/* Quick Add Common Deductions */}
         {grandTotal === 0 && (

@@ -66,9 +66,10 @@ Make the Australian tax return calculator more valuable, trustworthy, and produc
 
 ## Priority 2 - User Value
 
-- [ ] Add a guided deduction checklist.
+- [x] Add a guided deduction checklist.
   - Include work-related, self-education, donations, WFH, tax agent fees, income protection, union fees, investment expenses, and rental property prompts.
   - Acceptance: users can discover common deductions without reading long help text.
+  - Completed: added an ATO source-backed deduction checklist for common claim areas, completion indicators from entered deduction fields, and tap-to-open navigation into the matching deduction category.
 
 - [ ] Add document and receipt checklist.
   - Generate a personalized list based on entered income, deductions, HELP, Medicare, spouse, dependents, and private health cover.
