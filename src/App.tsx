@@ -49,6 +49,7 @@ import {
   DocumentChecklistCard,
 } from './components/results/ResultInfoCards';
 import TaxYearSelector from './components/details/TaxYearSelector';
+import StepIndicator from './components/navigation/StepIndicator';
 import { Theme } from './constants/themes';
 
 // Type definitions for the main App component
@@ -867,111 +868,6 @@ const getStyles = (theme: Theme) =>
       marginLeft: 10,
       letterSpacing: 0.2,
     },
-    // Step indicator styles - Compact and contemporary design
-    stepIndicatorContainer: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      paddingHorizontal: 20,
-      paddingTop: 20,
-      paddingBottom: 8,
-    },
-    stepBackButton: {
-      width: 36,
-      height: 36,
-      borderRadius: 18,
-      backgroundColor: theme.surfaceSecondary,
-      alignItems: 'center',
-      justifyContent: 'center',
-      marginRight: 12,
-      borderWidth: 1,
-      borderColor: theme.border,
-    },
-    stepIndicator: {
-      flex: 1,
-      flexDirection: 'row',
-      alignItems: 'center',
-      backgroundColor: theme.surface,
-      borderRadius: 12,
-      paddingVertical: 12,
-      paddingHorizontal: 16,
-      elevation: 2,
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 1 },
-      shadowOpacity: 0.08,
-      shadowRadius: 3,
-      borderWidth: 1,
-      borderColor: theme.borderLight,
-    },
-    stepIndicatorRow: {
-      flex: 1,
-      alignItems: 'center',
-      position: 'relative',
-    },
-    stepCircle: {
-      width: 28,
-      height: 28,
-      borderRadius: 14,
-      backgroundColor: theme.surfaceSecondary,
-      borderWidth: 1.5,
-      borderColor: theme.border,
-      alignItems: 'center',
-      justifyContent: 'center',
-      marginBottom: 6,
-    },
-    stepCircleActive: {
-      backgroundColor: theme.primary,
-      borderColor: theme.primary,
-    },
-    stepCircleCurrent: {
-      backgroundColor: theme.primary,
-      borderColor: theme.primary,
-      transform: [{ scale: 1.1 }],
-    },
-    stepCircleDisabled: {
-      backgroundColor: theme.surfaceSecondary,
-      borderColor: theme.borderLight,
-      opacity: 0.6,
-    },
-    stepNumber: {
-      fontSize: 12,
-      fontWeight: '600',
-      color: theme.textSecondary,
-    },
-    stepNumberActive: {
-      color: '#FFFFFF',
-      fontWeight: '700',
-    },
-    stepNumberDisabled: {
-      color: theme.textTertiary,
-    },
-    stepLabel: {
-      fontSize: 11,
-      color: theme.textSecondary,
-      fontWeight: '500',
-      textAlign: 'center',
-      letterSpacing: 0.1,
-    },
-    stepLabelActive: {
-      color: theme.text,
-      fontWeight: '600',
-    },
-    stepLabelDisabled: {
-      color: theme.textTertiary,
-      opacity: 0.7,
-    },
-    stepLine: {
-      position: 'absolute',
-      top: 14,
-      left: '60%',
-      right: '-40%',
-      height: 1.5,
-      backgroundColor: theme.borderLight,
-      zIndex: -1,
-    },
-    stepLineActive: {
-      backgroundColor: theme.primary,
-    },
-
     navButtonSpacer: {
       flex: 1,
     },
@@ -4113,92 +4009,23 @@ const AppContent: React.FC = () => {
     }
   };
 
-  // Step Progress Indicator Component with integrated back button
-  const StepIndicator = () => {
-    // Check if step 1 is complete for navigation purposes
-    const isStep1Complete = () => {
-      const hasValidJobIncome = jobIncomes.some((income) => {
-        const trimmed = income?.trim();
-        const parsed = parseFloat(trimmed);
-        return trimmed && !isNaN(parsed) && parsed > 0;
-      });
+  const isIncomeStepComplete = useMemo(() => {
+    const hasValidJobIncome = jobIncomes.some((income) => {
+      const trimmed = income?.trim();
+      const parsed = parseFloat(trimmed);
+      return trimmed && !isNaN(parsed) && parsed > 0;
+    });
 
-      const hasValidAbnIncome =
-        abnIncome?.trim() &&
-        !isNaN(parseFloat(abnIncome.trim())) &&
-        parseFloat(abnIncome.trim()) > 0;
-      const taxWithheldTrimmed = taxWithheld?.trim();
-      const isValidTaxWithheld =
-        taxWithheldTrimmed &&
-        !isNaN(parseFloat(taxWithheldTrimmed)) &&
-        parseFloat(taxWithheldTrimmed) >= 0;
+    const hasValidAbnIncome =
+      abnIncome?.trim() && !isNaN(parseFloat(abnIncome.trim())) && parseFloat(abnIncome.trim()) > 0;
+    const taxWithheldTrimmed = taxWithheld?.trim();
+    const isValidTaxWithheld =
+      taxWithheldTrimmed &&
+      !isNaN(parseFloat(taxWithheldTrimmed)) &&
+      parseFloat(taxWithheldTrimmed) >= 0;
 
-      return (hasValidJobIncome || hasValidAbnIncome) && isValidTaxWithheld;
-    };
-
-    const step1Complete = isStep1Complete();
-
-    return (
-      <View style={styles.stepIndicatorContainer}>
-        {/* Back button */}
-        <TouchableOpacity style={styles.stepBackButton} onPress={handleBackNavigation}>
-          <Ionicons name="chevron-back" size={20} color={theme.textSecondary} />
-        </TouchableOpacity>
-
-        {/* Step indicator */}
-        <View style={styles.stepIndicator}>
-          {[1, 2, 3, 4].map((step) => {
-            // Determine if step is accessible
-            const isAccessible =
-              step === 1 || (step <= 3 && step1Complete) || (step === 4 && result);
-
-            return (
-              <View key={step} style={styles.stepIndicatorRow}>
-                <TouchableOpacity
-                  style={[
-                    styles.stepCircle,
-                    currentStep >= step && styles.stepCircleActive,
-                    currentStep === step && styles.stepCircleCurrent,
-                    !isAccessible && styles.stepCircleDisabled,
-                  ]}
-                  onPress={() => goToStep(step)}
-                  disabled={!isAccessible}
-                >
-                  <Text
-                    style={[
-                      styles.stepNumber,
-                      currentStep >= step && styles.stepNumberActive,
-                      !isAccessible && styles.stepNumberDisabled,
-                    ]}
-                  >
-                    {step}
-                  </Text>
-                </TouchableOpacity>
-                <Text
-                  style={[
-                    styles.stepLabel,
-                    currentStep >= step && styles.stepLabelActive,
-                    !isAccessible && styles.stepLabelDisabled,
-                  ]}
-                >
-                  {step === 1
-                    ? 'Income'
-                    : step === 2
-                      ? 'Deductions'
-                      : step === 3
-                        ? 'Details'
-                        : 'Results'}
-                </Text>
-                {step < 4 && (
-                  <View style={[styles.stepLine, currentStep > step && styles.stepLineActive]} />
-                )}
-              </View>
-            );
-          })}
-        </View>
-      </View>
-    );
-  };
+    return Boolean((hasValidJobIncome || hasValidAbnIncome) && isValidTaxWithheld);
+  }, [abnIncome, jobIncomes, taxWithheld]);
 
   // Income category color mapping for consistency
   const getIncomeCategoryColors = (categoryKey) => {
@@ -6430,7 +6257,14 @@ const AppContent: React.FC = () => {
           </Animated.View>
         )}
 
-        <StepIndicator />
+        <StepIndicator
+          currentStep={currentStep}
+          totalSteps={totalSteps}
+          isIncomeStepComplete={isIncomeStepComplete}
+          resultAvailable={Boolean(result)}
+          onBack={handleBackNavigation}
+          onStepPress={goToStep}
+        />
 
         <ScrollView
           ref={scrollViewRef}
