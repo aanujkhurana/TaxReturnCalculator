@@ -86,9 +86,10 @@ Make the Australian tax return calculator more valuable, trustworthy, and produc
   - Acceptance: ABN users get clearer estimates without mixing employment and business assumptions.
   - Completed: added ABN business deduction and deductible personal super fields, included them in calculation/save/export totals, and added ABN guidance for PAYG instalments, GST/BAS record keeping, and personal super deduction evidence.
 
-- [ ] Add private health insurance detail.
+- [x] Add private health insurance detail.
   - Capture days covered, single/family policy type, dependents, and partial-year coverage.
   - Acceptance: Medicare levy surcharge estimates support partial-year private hospital cover.
+  - Completed: added private hospital policy type and covered-days inputs, saved/exported those fields, and prorated Medicare levy surcharge by uncovered days for partial-year cover.
 
 - [ ] Add spouse and family guidance.
   - Explain spouse income, dependents, family thresholds, Medicare levy reduction, and surcharge impacts.

@@ -99,6 +99,8 @@ export interface FormData {
   hasSpouse: boolean;
   spouseIncome: string;
   hasPrivateHospitalCover: boolean;
+  privateHospitalCoverDays: string;
+  privateHealthPolicyType: string;
   dependents: string;
   hasDependents: boolean;
 }
@@ -243,9 +245,10 @@ const calculateMedicareLevySurcharge = (
   hasPrivateHospitalCover: boolean,
   hasSpouse: boolean,
   dependents: number,
-  taxYearConfig = ACTIVE_TAX_YEAR_CONFIG
+  taxYearConfig = ACTIVE_TAX_YEAR_CONFIG,
+  privateHospitalCoverDays: number = hasPrivateHospitalCover ? 365 : 0
 ): number => {
-  if (hasPrivateHospitalCover || taxableIncome <= 0) return 0;
+  if (taxableIncome <= 0) return 0;
 
   const isFamily = hasSpouse || dependents > 0;
   const familyDependentIncrease = isFamily ? Math.max(0, dependents - 1) * 1500 : 0;
@@ -261,7 +264,14 @@ const calculateMedicareLevySurcharge = (
     ({ min, max }) => surchargeIncome >= min && surchargeIncome <= max
   );
 
-  return tier ? taxableIncome * tier.rate : 0;
+  if (!tier) return 0;
+
+  const coveredDays = hasPrivateHospitalCover
+    ? Math.min(365, Math.max(0, privateHospitalCoverDays))
+    : 0;
+  const uncoveredDays = 365 - coveredDays;
+
+  return taxableIncome * tier.rate * (uncoveredDays / 365);
 };
 
 // Styles definition - now a function that takes theme
@@ -424,6 +434,35 @@ const getStyles = (theme: Theme) =>
       marginLeft: 38,
       marginTop: 4,
       lineHeight: 18,
+    },
+    policyTypeSegment: {
+      flexDirection: 'row',
+      gap: 8,
+      marginBottom: 12,
+    },
+    policyTypeOption: {
+      flex: 1,
+      minHeight: 44,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderRadius: 8,
+      borderWidth: 1,
+      borderColor: theme.border,
+      backgroundColor: theme.surfaceSecondary,
+      paddingHorizontal: 10,
+    },
+    policyTypeOptionActive: {
+      borderColor: theme.primary,
+      backgroundColor: theme.primaryLight,
+    },
+    policyTypeText: {
+      fontSize: 13,
+      fontWeight: '700',
+      color: theme.textSecondary,
+      textAlign: 'center',
+    },
+    policyTypeTextActive: {
+      color: theme.primary,
     },
     wfhInfo: {
       flexDirection: 'row',
@@ -2359,6 +2398,8 @@ const AppContent: React.FC = () => {
   const [hasSpouse, setHasSpouse] = useState(false);
   const [spouseIncome, setSpouseIncome] = useState('');
   const [hasPrivateHospitalCover, setHasPrivateHospitalCover] = useState(false);
+  const [privateHospitalCoverDays, setPrivateHospitalCoverDays] = useState('365');
+  const [privateHealthPolicyType, setPrivateHealthPolicyType] = useState('single');
   const [dependents, setDependents] = useState('0');
   const [hasDependents, setHasDependents] = useState(false);
 
@@ -2527,6 +2568,8 @@ const AppContent: React.FC = () => {
     setHasSpouse(calculation.formData.hasSpouse || false);
     setSpouseIncome(calculation.formData.spouseIncome || '');
     setHasPrivateHospitalCover(calculation.formData.hasPrivateHospitalCover || false);
+    setPrivateHospitalCoverDays(calculation.formData.privateHospitalCoverDays || '365');
+    setPrivateHealthPolicyType(calculation.formData.privateHealthPolicyType || 'single');
     setDependents(calculation.formData.dependents || '0');
     setHasDependents(calculation.formData.hasDependents || false);
     setPaygUnknown(calculation.formData.paygUnknown || false);
@@ -2596,6 +2639,8 @@ const AppContent: React.FC = () => {
     setHasSpouse(false);
     setSpouseIncome('');
     setHasPrivateHospitalCover(false);
+    setPrivateHospitalCoverDays('365');
+    setPrivateHealthPolicyType('single');
     setDependents('0');
     setHasDependents(false);
     setResult(null);
@@ -2645,6 +2690,8 @@ const AppContent: React.FC = () => {
                 hasSpouse,
                 spouseIncome,
                 hasPrivateHospitalCover,
+                privateHospitalCoverDays,
+                privateHealthPolicyType,
                 dependents,
                 hasDependents,
                 assumptions: getCalculationAssumptions(),
@@ -3188,7 +3235,14 @@ const AppContent: React.FC = () => {
         return !hasErrors;
       case 2: // Deductions step - optional, always valid
         return true;
-      case 3: // Details step - optional, always valid
+      case 3: // Details step
+        if (hasPrivateHospitalCover) {
+          const coveredDays = parseInt(privateHospitalCoverDays || '');
+          if (isNaN(coveredDays) || coveredDays < 0 || coveredDays > 365) {
+            setFieldError('privateHospitalCoverDays', 'Enter covered days from 0 to 365');
+            return false;
+          }
+        }
         return true;
       case 4: // Results step
         return true;
@@ -3201,6 +3255,8 @@ const AppContent: React.FC = () => {
     abnIncome,
     abnBusinessDeductions,
     personalSuperContributions,
+    hasPrivateHospitalCover,
+    privateHospitalCoverDays,
     taxWithheld,
     paygUnknown,
     calculateEstimatedPayg,
@@ -3294,6 +3350,15 @@ const AppContent: React.FC = () => {
       }
     }
 
+    if (hasPrivateHospitalCover) {
+      const coveredDays = parseInt(privateHospitalCoverDays || '');
+      if (isNaN(coveredDays) || coveredDays < 0 || coveredDays > 365) {
+        setFieldError('privateHospitalCoverDays', 'Enter covered days from 0 to 365');
+        hasErrors = true;
+        validationErrorCount += 1;
+      }
+    }
+
     // Check if at least one income source is valid
     if (!hasValidJobIncome && !hasValidAbnIncome) {
       if (!jobIncomes.some((income) => income?.trim())) {
@@ -3353,6 +3418,9 @@ const AppContent: React.FC = () => {
       const wfhHours = parseFloat(workFromHomeHours || '0');
       const dependentsNum = hasDependents ? parseInt(dependents || '0') : 0;
       const spouseIncomeNum = hasSpouse ? parseFloat(spouseIncome || '0') || 0 : 0;
+      const privateHospitalCoverDaysNum = hasPrivateHospitalCover
+        ? Math.min(365, Math.max(0, parseInt(privateHospitalCoverDays || '365') || 0))
+        : 0;
       const reportableSuperNum = parseFloat(reportableSuper || '0') || 0;
       const reportableFringeBenefitsNum = parseFloat(reportableFringeBenefits || '0') || 0;
       const netInvestmentLossesNum = parseFloat(netInvestmentLosses || '0') || 0;
@@ -3409,7 +3477,8 @@ const AppContent: React.FC = () => {
         hasPrivateHospitalCover,
         hasSpouse,
         dependentsNum,
-        selectedTaxYearConfig
+        selectedTaxYearConfig,
+        privateHospitalCoverDaysNum
       );
 
       const studyLoanRepaymentIncome =
@@ -3453,6 +3522,8 @@ const AppContent: React.FC = () => {
         medicareLevySurcharge,
         spouseIncome: spouseIncomeNum,
         hasPrivateHospitalCover,
+        privateHospitalCoverDays: privateHospitalCoverDaysNum,
+        privateHealthPolicyType,
         familyIncomeForMedicare,
         hecsRepayment,
         finalTax,
@@ -3531,6 +3602,8 @@ const AppContent: React.FC = () => {
     hasSpouse,
     spouseIncome,
     hasPrivateHospitalCover,
+    privateHospitalCoverDays,
+    privateHealthPolicyType,
     dependents,
     hasDependents,
     selectedFinancialYear,
@@ -3581,7 +3654,7 @@ const AppContent: React.FC = () => {
       {
         label: 'Private hospital cover',
         detail: hasPrivateHospitalCover
-          ? 'Treats appropriate private hospital cover as held for the relevant period. Partial-year cover is not prorated yet.'
+          ? `Treats appropriate ${privateHealthPolicyType} private hospital cover as held for ${parseInt(privateHospitalCoverDays || '365') || 0} days and prorates Medicare levy surcharge for uncovered days.`
           : 'Treats private hospital cover as not held for Medicare levy surcharge purposes.',
       },
       {
@@ -3619,6 +3692,8 @@ const AppContent: React.FC = () => {
     exemptForeignIncome,
     hasDependents,
     hasPrivateHospitalCover,
+    privateHospitalCoverDays,
+    privateHealthPolicyType,
     hasSpouse,
     hecsDebt,
     jobIncomes,
@@ -3750,8 +3825,7 @@ const AppContent: React.FC = () => {
     if (hasPrivateHospitalCover) {
       checklist.push({
         label: 'Private health insurance statement',
-        detail:
-          'Keep the private hospital cover statement showing policy type and covered period for the year.',
+        detail: `Keep the ${privateHealthPolicyType} private hospital cover statement showing policy type and ${privateHospitalCoverDays || '365'} covered days for the year.`,
       });
     }
 
@@ -3770,6 +3844,8 @@ const AppContent: React.FC = () => {
     deductions,
     hasDependents,
     hasPrivateHospitalCover,
+    privateHospitalCoverDays,
+    privateHealthPolicyType,
     hasSpouse,
     hecsDebt,
     jobIncomes,
@@ -3817,6 +3893,8 @@ const AppContent: React.FC = () => {
       'LITO',
       'Medicare',
       'Medicare Surcharge',
+      'Private Health Policy Type',
+      'Private Hospital Cover Days',
       'HECS',
       'Final Tax',
       'Refund/Owing',
@@ -3836,6 +3914,8 @@ const AppContent: React.FC = () => {
       result.lito.toFixed(2),
       result.medicare.toFixed(2),
       (result.medicareLevySurcharge || 0).toFixed(2),
+      result.privateHealthPolicyType || 'none',
+      String(result.privateHospitalCoverDays || 0),
       result.hecsRepayment.toFixed(2),
       result.finalTax.toFixed(2),
       result.refund.toFixed(2),
@@ -5590,7 +5670,13 @@ const AppContent: React.FC = () => {
 
               <TouchableOpacity
                 style={[styles.toggleButton, hasPrivateHospitalCover && styles.toggleButtonActive]}
-                onPress={() => setHasPrivateHospitalCover(!hasPrivateHospitalCover)}
+                onPress={() => {
+                  const nextValue = !hasPrivateHospitalCover;
+                  setHasPrivateHospitalCover(nextValue);
+                  if (nextValue && !privateHospitalCoverDays) {
+                    setPrivateHospitalCoverDays('365');
+                  }
+                }}
               >
                 <Ionicons
                   name={hasPrivateHospitalCover ? 'checkbox-outline' : 'square-outline'}
@@ -5603,6 +5689,54 @@ const AppContent: React.FC = () => {
                   I had appropriate private hospital cover
                 </Text>
               </TouchableOpacity>
+
+              {hasPrivateHospitalCover && (
+                <>
+                  <View style={styles.policyTypeSegment}>
+                    {['single', 'family'].map((policyType) => (
+                      <TouchableOpacity
+                        key={policyType}
+                        style={[
+                          styles.policyTypeOption,
+                          privateHealthPolicyType === policyType && styles.policyTypeOptionActive,
+                        ]}
+                        onPress={() => setPrivateHealthPolicyType(policyType)}
+                      >
+                        <Text
+                          style={[
+                            styles.policyTypeText,
+                            privateHealthPolicyType === policyType && styles.policyTypeTextActive,
+                          ]}
+                        >
+                          {policyType === 'single' ? 'Single Policy' : 'Family Policy'}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+
+                  <InputField
+                    label="Private Hospital Cover Days"
+                    value={privateHospitalCoverDays}
+                    onChangeText={(value) => {
+                      setPrivateHospitalCoverDays(value);
+                      clearFieldError('privateHospitalCoverDays');
+                    }}
+                    placeholder="Days covered in the year (0-365)"
+                    keyboardType="number-pad"
+                    icon="calendar-outline"
+                    error={validationErrors.privateHospitalCoverDays}
+                    suffix=" days"
+                  />
+
+                  <View style={styles.wfhInfo}>
+                    <Ionicons name="information-circle-outline" size={16} color="#666" />
+                    <Text style={styles.infoText}>
+                      Medicare levy surcharge is prorated for days without appropriate private
+                      hospital cover.
+                    </Text>
+                  </View>
+                </>
+              )}
 
               <TouchableOpacity
                 style={[styles.toggleButton, hasDependents && styles.toggleButtonActive]}
@@ -6159,6 +6293,17 @@ const AppContent: React.FC = () => {
                       <Text style={styles.summaryBreakdownLabel}>Medicare Levy Surcharge</Text>
                       <Text style={styles.summaryBreakdownValue}>
                         +{formatCurrency(result.medicareLevySurcharge)}
+                      </Text>
+                    </View>
+                  )}
+                  {result.hasPrivateHospitalCover && (
+                    <View style={styles.summaryBreakdownItem}>
+                      <View
+                        style={[styles.summaryBreakdownDot, { backgroundColor: theme.primary }]}
+                      />
+                      <Text style={styles.summaryBreakdownLabel}>Private Hospital Cover</Text>
+                      <Text style={styles.summaryBreakdownValue}>
+                        {result.privateHospitalCoverDays || 0}/365 days
                       </Text>
                     </View>
                   )}

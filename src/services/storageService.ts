@@ -32,6 +32,8 @@ export interface SavedCalculation {
     hasSpouse?: boolean;
     spouseIncome?: string;
     hasPrivateHospitalCover?: boolean;
+    privateHospitalCoverDays?: string;
+    privateHealthPolicyType?: string;
     hasDependents?: boolean;
     dependents?: string;
     assumptions?: any[];
@@ -95,6 +97,8 @@ export const saveCalculation = async (
         hasSpouse: calculationData.hasSpouse,
         spouseIncome: calculationData.spouseIncome,
         hasPrivateHospitalCover: calculationData.hasPrivateHospitalCover,
+        privateHospitalCoverDays: calculationData.privateHospitalCoverDays,
+        privateHealthPolicyType: calculationData.privateHealthPolicyType,
         hasDependents: calculationData.hasDependents,
         dependents: calculationData.dependents,
         assumptions: calculationData.assumptions,
