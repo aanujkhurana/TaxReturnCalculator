@@ -31,6 +31,7 @@ import { saveCalculation } from './services/storageService';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
 import { calculateTax } from './services/taxCalculationService';
 import { reportError } from './services/crashReportingService';
+import { trackAnalyticsEvent } from './services/analyticsService';
 import { generateAndSharePDF } from './services/pdfService';
 import { formatCurrency } from './utils/formatters';
 import { HELP_TEXT } from './constants/helpText';
@@ -2203,6 +2204,19 @@ const AppContent: React.FC = () => {
   const selectedTaxYearDisplay = selectedTaxYearConfig.taxYearInfo.display;
   const selectedWfhFixedRate = selectedTaxYearConfig.workFromHome.shortcutRate;
 
+  useEffect(() => {
+    trackAnalyticsEvent('screen_viewed', { screen: currentScreen });
+  }, [currentScreen]);
+
+  useEffect(() => {
+    if (currentScreen === 'calculator') {
+      trackAnalyticsEvent('calculator_step_viewed', {
+        step: currentStep,
+        financialYear: selectedFinancialYear,
+      });
+    }
+  }, [currentScreen, currentStep, selectedFinancialYear]);
+
   // Form validation errors
   const [validationErrors, setValidationErrors] = useState<ValidationErrors>({});
 
@@ -2276,9 +2290,11 @@ const AppContent: React.FC = () => {
   // Function to handle opening external URLs
   const openExternalURL = async (url) => {
     try {
+      const linkHost = new URL(url).hostname;
       const supported = await Linking.canOpenURL(url);
       if (supported) {
         await Linking.openURL(url);
+        trackAnalyticsEvent('external_link_opened', { linkHost });
       } else {
         Alert.alert('Error', 'Unable to open this link on your device');
       }
@@ -2289,6 +2305,9 @@ const AppContent: React.FC = () => {
   };
 
   const viewCalculation = async (calculation) => {
+    trackAnalyticsEvent('saved_calculation_opened', {
+      financialYear: calculation.formData.financialYear || DEFAULT_FINANCIAL_YEAR,
+    });
     setViewingCalculation(calculation);
     // Load the calculation data into the form
     setSelectedFinancialYear(calculation.formData.financialYear || DEFAULT_FINANCIAL_YEAR);
@@ -2446,6 +2465,11 @@ const AppContent: React.FC = () => {
               };
 
               await saveCalculation(calculationData, name);
+              trackAnalyticsEvent('calculation_saved', {
+                financialYear: selectedFinancialYear,
+                taxYearConfigVersion: selectedTaxYearConfig.configVersion,
+                calculationEngineVersion: CALCULATION_ENGINE_VERSION,
+              });
               Alert.alert('Success', 'Calculation saved successfully!', [
                 {
                   text: 'OK',
@@ -2454,6 +2478,11 @@ const AppContent: React.FC = () => {
               ]);
             } catch (error) {
               console.error('Error saving calculation:', error);
+              trackAnalyticsEvent('calculation_save_failed', {
+                area: 'save-calculation',
+                financialYear: selectedFinancialYear,
+                errorType: error instanceof Error ? error.name : 'unknown',
+              });
               Alert.alert('Error', 'Failed to save calculation');
             }
           },
@@ -2503,6 +2532,10 @@ const AppContent: React.FC = () => {
   const handlePaygUnknownToggle = useCallback(() => {
     const newPaygUnknown = !paygUnknown;
     setPaygUnknown(newPaygUnknown);
+    trackAnalyticsEvent('payg_estimate_toggled', {
+      paygMode: newPaygUnknown ? 'estimated' : 'manual',
+      financialYear: selectedFinancialYear,
+    });
 
     if (newPaygUnknown) {
       // When enabling estimation, calculate and set estimated value
@@ -2517,7 +2550,7 @@ const AppContent: React.FC = () => {
 
     // Clear any validation errors
     clearFieldError('taxWithheld');
-  }, [paygUnknown, calculateEstimatedPayg, clearFieldError]);
+  }, [paygUnknown, selectedFinancialYear, calculateEstimatedPayg, clearFieldError]);
 
   // Update estimated PAYG when TFN income values change and estimation is enabled
   // Note: ABN income changes don't affect PAYG estimation as no tax is withheld from ABN income
@@ -2763,6 +2796,12 @@ const AppContent: React.FC = () => {
   const goToStep = (step) => {
     // Prevent direct access to results step unless calculation is complete
     if (step === 4 && !result) {
+      trackAnalyticsEvent('validation_failed', {
+        area: 'results-direct-navigation',
+        currentStep,
+        targetStep: step,
+        financialYear: selectedFinancialYear,
+      });
       Alert.alert(
         'Complete Form First',
         'Please complete the form and calculate your tax estimate before viewing results.'
@@ -2832,11 +2871,22 @@ const AppContent: React.FC = () => {
 
       if (hasErrors) {
         // Stay on step 1 to show validation errors
+        trackAnalyticsEvent('validation_failed', {
+          area: 'step-direct-navigation',
+          currentStep,
+          targetStep: step,
+          financialYear: selectedFinancialYear,
+        });
         setCurrentStep(1);
         return;
       }
     }
 
+    trackAnalyticsEvent('calculator_step_completed', {
+      previousStep: currentStep,
+      targetStep: step,
+      financialYear: selectedFinancialYear,
+    });
     setCurrentStep(step);
     // Scroll to top when navigating to a step
     setTimeout(() => scrollToTop(), 100);
@@ -2938,26 +2988,39 @@ const AppContent: React.FC = () => {
 
   // Step navigation functions
   const nextStep = useCallback(() => {
-    console.log('Next step clicked. Current values:', { jobIncomes, abnIncome, taxWithheld });
     if (validateCurrentStep()) {
+      trackAnalyticsEvent('calculator_step_completed', {
+        step: currentStep,
+        targetStep: Math.min(currentStep + 1, totalSteps),
+        financialYear: selectedFinancialYear,
+      });
       setCurrentStep((prev) => Math.min(prev + 1, totalSteps));
       // Scroll to top when moving to next step
       setTimeout(() => scrollToTop(), 100);
+    } else {
+      trackAnalyticsEvent('validation_failed', {
+        area: 'step-navigation',
+        step: currentStep,
+        financialYear: selectedFinancialYear,
+      });
     }
-  }, [totalSteps, validateCurrentStep, jobIncomes, abnIncome, taxWithheld, scrollToTop]);
+  }, [currentStep, totalSteps, selectedFinancialYear, validateCurrentStep, scrollToTop]);
 
   const validateInputs = () => {
     clearAllErrors(); // Clear previous errors
     let hasErrors = false;
+    let validationErrorCount = 0;
 
     // Check tax withheld
     const taxWithheldTrimmed = taxWithheld?.trim();
     if (!taxWithheldTrimmed) {
       setFieldError('taxWithheld', 'Tax withheld is required');
       hasErrors = true;
+      validationErrorCount += 1;
     } else if (isNaN(parseFloat(taxWithheldTrimmed)) || parseFloat(taxWithheldTrimmed) < 0) {
       setFieldError('taxWithheld', 'Must be a valid number (0 or greater)');
       hasErrors = true;
+      validationErrorCount += 1;
     }
 
     // Check if at least one income source has a valid positive value
@@ -2977,6 +3040,7 @@ const AppContent: React.FC = () => {
       if (trimmed && (isNaN(parsed) || parsed <= 0)) {
         setFieldError(`jobIncome_${index}`, 'Must be a valid number greater than 0');
         hasErrors = true;
+        validationErrorCount += 1;
       }
     });
 
@@ -2986,6 +3050,7 @@ const AppContent: React.FC = () => {
       if (isNaN(parsed) || parsed <= 0) {
         setFieldError('abnIncome', 'Must be a valid number greater than 0');
         hasErrors = true;
+        validationErrorCount += 1;
       }
     }
 
@@ -2993,11 +3058,23 @@ const AppContent: React.FC = () => {
     if (!hasValidJobIncome && !hasValidAbnIncome) {
       if (!jobIncomes.some((income) => income?.trim())) {
         setFieldError('jobIncome_0', 'At least one income source is required');
+        validationErrorCount += 1;
       }
       if (!abnIncome?.trim()) {
         setFieldError('abnIncome', 'Enter ABN income or at least one job income');
+        validationErrorCount += 1;
       }
       hasErrors = true;
+    }
+
+    if (hasErrors) {
+      trackAnalyticsEvent('validation_failed', {
+        area: 'calculate',
+        step: currentStep,
+        validationErrorCount,
+        financialYear: selectedFinancialYear,
+        paygMode: paygUnknown ? 'estimated' : 'manual',
+      });
     }
 
     return !hasErrors;
@@ -3134,6 +3211,24 @@ const AppContent: React.FC = () => {
         effectiveTaxRate: taxableIncome > 0 ? (finalTax / taxableIncome) * 100 : 0,
       });
 
+      trackAnalyticsEvent('tax_calculation_completed', {
+        financialYear: selectedFinancialYear,
+        taxYearConfigVersion: selectedTaxYearConfig.configVersion,
+        calculationEngineVersion: CALCULATION_ENGINE_VERSION,
+        hasEmployment: totalTFNIncome > 0,
+        hasAbn: abnIncomeNum > 0,
+        inputSourceCount:
+          parsedJobIncomes.filter((income) => !isNaN(income) && income > 0).length +
+          (abnIncomeNum > 0 ? 1 : 0),
+        hasHecsDebt: hecsDebt,
+        hasSpouse,
+        hasDependents,
+        hasPrivateHospitalCover,
+        medicareExemption,
+        paygMode: paygUnknown ? 'estimated' : 'manual',
+        resultType: refund >= 0 ? 'refund' : 'owing',
+      });
+
       // Complete the calculation after final loading step
       setTimeout(() => {
         setIsCalculating(false);
@@ -3158,6 +3253,11 @@ const AppContent: React.FC = () => {
         hasSpouse,
         hasDependents,
         hasPrivateHospitalCover,
+      });
+      trackAnalyticsEvent('tax_calculation_failed', {
+        financialYear: selectedFinancialYear,
+        taxYearConfigVersion: selectedTaxYearConfig.configVersion,
+        errorType: error instanceof Error ? error.name : 'unknown',
       });
       Alert.alert(
         'Calculation Error',
@@ -3184,6 +3284,8 @@ const AppContent: React.FC = () => {
     selectedFinancialYear,
     selectedTaxYearConfig,
     selectedWfhFixedRate,
+    currentStep,
+    paygUnknown,
   ]);
 
   const getCalculationAssumptions = useCallback((): CalculationAssumption[] => {
@@ -3271,6 +3373,10 @@ const AppContent: React.FC = () => {
 
   const exportCSV = async () => {
     if (!result) return;
+    trackAnalyticsEvent('export_started', {
+      exportFormat: 'csv',
+      financialYear: selectedFinancialYear,
+    });
     const escapeCsvCell = (value: string | number) => {
       const stringValue = String(value);
       return stringValue.includes(',') || stringValue.includes('"') || stringValue.includes('\n')
@@ -3329,13 +3435,26 @@ const AppContent: React.FC = () => {
     try {
       await FileSystem.writeAsStringAsync(path, csv, { encoding: FileSystem.EncodingType.UTF8 });
       await Sharing.shareAsync(path, { dialogTitle: 'Export Tax Summary' });
+      trackAnalyticsEvent('export_completed', {
+        exportFormat: 'csv',
+        financialYear: selectedFinancialYear,
+      });
     } catch (error) {
+      trackAnalyticsEvent('export_failed', {
+        exportFormat: 'csv',
+        financialYear: selectedFinancialYear,
+        errorType: error instanceof Error ? error.name : 'unknown',
+      });
       Alert.alert('Export Error', 'Failed to export CSV file');
     }
   };
 
   const exportPDF = async () => {
     if (!result) return;
+    trackAnalyticsEvent('export_started', {
+      exportFormat: 'html-report',
+      financialYear: selectedFinancialYear,
+    });
     const assumptions = getCalculationAssumptions();
 
     try {
@@ -3509,7 +3628,16 @@ const AppContent: React.FC = () => {
       } else {
         Alert.alert('Success', `Report saved to ${fileUri}`);
       }
+      trackAnalyticsEvent('export_completed', {
+        exportFormat: 'html-report',
+        financialYear: selectedFinancialYear,
+      });
     } catch (error) {
+      trackAnalyticsEvent('export_failed', {
+        exportFormat: 'html-report',
+        financialYear: selectedFinancialYear,
+        errorType: error instanceof Error ? error.name : 'unknown',
+      });
       Alert.alert('Error', 'Failed to export PDF report');
       console.error('PDF export error:', error);
     }
@@ -4619,6 +4747,10 @@ const AppContent: React.FC = () => {
 
   const handleTaxYearSelection = (financialYear: string) => {
     if (financialYear === selectedFinancialYear) return;
+    trackAnalyticsEvent('tax_year_changed', {
+      previousFinancialYear: selectedFinancialYear,
+      financialYear,
+    });
     setSelectedFinancialYear(financialYear);
     setResult(null);
   };

@@ -54,9 +54,10 @@ Make the Australian tax return calculator more valuable, trustworthy, and produc
   - Acceptance: calculation and rendering errors show a useful fallback and are reported with non-sensitive context.
   - Completed: added a top-level error boundary, Sentry-backed crash reporting behind environment flags, non-sensitive calculation error reporting, and `.env.example` configuration.
 
-- [ ] Add analytics with privacy controls.
+- [x] Add analytics with privacy controls.
   - Track feature usage, step completion, export usage, and validation failure patterns without collecting sensitive tax amounts by default.
   - Acceptance: analytics can be disabled and no raw income, deduction, TFN, or identity data is sent.
+  - Completed: added an environment-gated analytics service with allowlisted event properties, debug-only local logging, and sanitized tracking for screens, step flow, validation failures, calculations, saves, exports, PAYG estimate toggles, tax-year changes, and saved-calculation opens.
 
 - [ ] Add environment configuration.
   - Separate development, preview, and production settings.
