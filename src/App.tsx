@@ -48,6 +48,7 @@ import {
 } from './components/results/ResultInfoCards';
 import CalculationLoadingState from './components/results/CalculationLoadingState';
 import TaxYearSelector from './components/details/TaxYearSelector';
+import HelpDebtSection from './components/details/HelpDebtSection';
 import StepIndicator from './components/navigation/StepIndicator';
 import StepActionButton from './components/navigation/StepActionButton';
 import { Theme } from './constants/themes';
@@ -5042,78 +5043,21 @@ const AppContent: React.FC = () => {
           onToggle={() => toggleDetailsCategory('taxYear')}
         />
 
-        {/* HECS-HELP Debt Section */}
-        <View style={styles.deductionCategory}>
-          {renderDetailsCategoryHeader(
-            'hecsDebt',
-            'HECS-HELP Debt',
-            'Student loan repayment obligations',
-            'school-outline',
-            hecsCompleted
-          )}
-
-          {!detailsCollapsedCategories.hecsDebt && (
-            <View style={styles.categoryContent}>
-              <TouchableOpacity
-                style={[styles.toggleButton, hecsDebt && styles.toggleButtonActive]}
-                onPress={() => setHecsDebt(!hecsDebt)}
-              >
-                <View style={{ flex: 1 }}>
-                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                    <Ionicons
-                      name={hecsDebt ? 'checkbox-outline' : 'square-outline'}
-                      size={24}
-                      color={hecsDebt ? '#4A90E2' : '#666'}
-                    />
-                    <Text style={[styles.toggleText, hecsDebt && styles.toggleTextActive]}>
-                      I have HECS-HELP debt
-                    </Text>
-                  </View>
-                  <Text style={styles.toggleSubtext}>
-                    HECS-HELP repayments use the 2025-26 marginal method and include
-                    repayment-income adjustments below.
-                  </Text>
-                </View>
-              </TouchableOpacity>
-              {hecsDebt && (
-                <>
-                  <InputField
-                    label="Reportable Super Contributions"
-                    value={reportableSuper}
-                    onChangeText={setReportableSuper}
-                    placeholder="Salary sacrifice super (e.g., 5000)"
-                    icon="wallet-outline"
-                    prefix="$"
-                  />
-                  <InputField
-                    label="Reportable Fringe Benefits"
-                    value={reportableFringeBenefits}
-                    onChangeText={setReportableFringeBenefits}
-                    placeholder="Reportable fringe benefits (e.g., 3500)"
-                    icon="briefcase-outline"
-                    prefix="$"
-                  />
-                  <InputField
-                    label="Net Investment Losses"
-                    value={netInvestmentLosses}
-                    onChangeText={setNetInvestmentLosses}
-                    placeholder="Rental/investment losses (e.g., 2000)"
-                    icon="trending-down-outline"
-                    prefix="$"
-                  />
-                  <InputField
-                    label="Exempt Foreign Income"
-                    value={exemptForeignIncome}
-                    onChangeText={setExemptForeignIncome}
-                    placeholder="Exempt foreign income (e.g., 10000)"
-                    icon="earth-outline"
-                    prefix="$"
-                  />
-                </>
-              )}
-            </View>
-          )}
-        </View>
+        <HelpDebtSection
+          hasHelpDebt={hecsDebt}
+          isCollapsed={detailsCollapsedCategories.hecsDebt}
+          reportableSuper={reportableSuper}
+          reportableFringeBenefits={reportableFringeBenefits}
+          netInvestmentLosses={netInvestmentLosses}
+          exemptForeignIncome={exemptForeignIncome}
+          taxYearDisplay={selectedTaxYearDisplay}
+          onToggleCollapsed={() => toggleDetailsCategory('hecsDebt')}
+          onToggleHelpDebt={() => setHecsDebt(!hecsDebt)}
+          onChangeReportableSuper={setReportableSuper}
+          onChangeReportableFringeBenefits={setReportableFringeBenefits}
+          onChangeNetInvestmentLosses={setNetInvestmentLosses}
+          onChangeExemptForeignIncome={setExemptForeignIncome}
+        />
 
         {/* Medicare Levy Section */}
         <View style={styles.deductionCategory}>
