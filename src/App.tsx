@@ -49,6 +49,7 @@ import {
 import CalculationLoadingState from './components/results/CalculationLoadingState';
 import TaxYearSelector from './components/details/TaxYearSelector';
 import HelpDebtSection from './components/details/HelpDebtSection';
+import MedicareDetailsSection from './components/details/MedicareDetailsSection';
 import StepIndicator from './components/navigation/StepIndicator';
 import StepActionButton from './components/navigation/StepActionButton';
 import { Theme } from './constants/themes';
@@ -442,35 +443,6 @@ const getStyles = (theme: Theme) =>
       marginTop: 4,
       lineHeight: 18,
     },
-    policyTypeSegment: {
-      flexDirection: 'row',
-      gap: 8,
-      marginBottom: 12,
-    },
-    policyTypeOption: {
-      flex: 1,
-      minHeight: 44,
-      alignItems: 'center',
-      justifyContent: 'center',
-      borderRadius: 8,
-      borderWidth: 1,
-      borderColor: theme.border,
-      backgroundColor: theme.surfaceSecondary,
-      paddingHorizontal: 10,
-    },
-    policyTypeOptionActive: {
-      borderColor: theme.primary,
-      backgroundColor: theme.primaryLight,
-    },
-    policyTypeText: {
-      fontSize: 13,
-      fontWeight: '700',
-      color: theme.textSecondary,
-      textAlign: 'center',
-    },
-    policyTypeTextActive: {
-      color: theme.primary,
-    },
     wfhInfo: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -531,31 +503,6 @@ const getStyles = (theme: Theme) =>
       fontSize: 12,
       lineHeight: 17,
       color: theme.textSecondary,
-    },
-    familyGuidanceCard: {
-      marginBottom: 12,
-      padding: 14,
-      borderRadius: 8,
-      borderWidth: 1,
-      borderColor: theme.categoryPink,
-      backgroundColor: theme.categoryPinkLight,
-    },
-    familyGuidanceHeader: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      marginBottom: 8,
-    },
-    familyGuidanceTitle: {
-      fontSize: 14,
-      fontWeight: '700',
-      color: theme.text,
-      marginLeft: 8,
-    },
-    familyGuidanceText: {
-      fontSize: 12,
-      lineHeight: 18,
-      color: theme.textSecondary,
-      marginTop: 4,
     },
     infoBox: {
       flexDirection: 'row',
@@ -4938,82 +4885,12 @@ const AppContent: React.FC = () => {
     );
   };
 
-  // Additional details category color mapping
-  const getDetailsCategoryColors = (categoryKey) => {
-    const colorMap = {
-      taxYear: { primary: theme.primary, light: theme.primaryLight, accent: theme.primary },
-      hecsDebt: {
-        primary: theme.categoryWork,
-        light: theme.categoryWorkLight,
-        accent: theme.categoryWork,
-      },
-      medicareLevy: {
-        primary: theme.categoryPink,
-        light: theme.categoryPinkLight,
-        accent: theme.categoryPink,
-      },
-      disclaimer: {
-        primary: theme.categoryDonations,
-        light: theme.categoryDonationsLight,
-        accent: theme.categoryDonations,
-      },
-    };
-    return colorMap[categoryKey] || colorMap.hecsDebt;
-  };
-
   // Toggle details category collapse state
   const toggleDetailsCategory = (categoryKey) => {
     setDetailsCollapsedCategories((prev) => ({
       ...prev,
       [categoryKey]: !prev[categoryKey],
     }));
-  };
-
-  // Render details category header
-  const renderDetailsCategoryHeader = (categoryKey, title, description, icon, hasValues) => {
-    const isCollapsed = detailsCollapsedCategories[categoryKey];
-    const colors = getDetailsCategoryColors(categoryKey);
-
-    return (
-      <TouchableOpacity
-        style={[
-          styles.deductionCategoryHeader,
-          isCollapsed && styles.deductionCategoryHeaderCollapsed,
-          { backgroundColor: hasValues ? colors.light : theme.surfaceSecondary },
-        ]}
-        onPress={() => toggleDetailsCategory(categoryKey)}
-        activeOpacity={0.7}
-      >
-        <View style={styles.categoryHeaderLeft}>
-          <View
-            style={[
-              styles.categoryIcon,
-              { backgroundColor: hasValues ? colors.primary : colors.light },
-              hasValues && styles.categoryIconActive,
-            ]}
-          >
-            <Ionicons
-              name={icon}
-              size={22}
-              color={hasValues ? (isDark ? '#000' : '#fff') : colors.primary}
-            />
-          </View>
-          <View style={styles.categoryTitleContainer}>
-            <Text style={[styles.categoryTitle, hasValues && { color: colors.accent }]}>
-              {title}
-            </Text>
-            <Text style={styles.categoryDescription}>{description}</Text>
-          </View>
-        </View>
-        <View style={[styles.categoryToggle, hasValues && { borderColor: colors.primary }]}>
-          <Ionicons
-            name={isCollapsed ? 'chevron-down' : 'chevron-up'}
-            size={20}
-            color={hasValues ? colors.primary : '#64748B'}
-          />
-        </View>
-      </TouchableOpacity>
-    );
   };
 
   const handleTaxYearSelection = (financialYear: string) => {
@@ -5059,190 +4936,47 @@ const AppContent: React.FC = () => {
           onChangeExemptForeignIncome={setExemptForeignIncome}
         />
 
-        {/* Medicare Levy Section */}
-        <View style={styles.deductionCategory}>
-          {renderDetailsCategoryHeader(
-            'medicareLevy',
-            'Medicare Levy',
-            'Medicare levy exemptions and dependents',
-            'medical-outline',
-            medicareCompleted
-          )}
-
-          {!detailsCollapsedCategories.medicareLevy && (
-            <View style={styles.categoryContent}>
-              <View style={styles.familyGuidanceCard}>
-                <View style={styles.familyGuidanceHeader}>
-                  <Ionicons name="people-outline" size={18} color={theme.categoryPink} />
-                  <Text style={styles.familyGuidanceTitle}>Spouse and Family Guidance</Text>
-                </View>
-                <Text style={styles.familyGuidanceText}>
-                  Spouse income and dependents can increase Medicare levy family thresholds and
-                  change whether Medicare levy surcharge uses single or family tiers.
-                </Text>
-                <Text style={styles.familyGuidanceText}>
-                  Private hospital cover affects only the Medicare levy surcharge. Medicare levy
-                  exemptions are separate and should be used only when you have evidence.
-                </Text>
-              </View>
-
-              <TouchableOpacity
-                style={[styles.toggleButton, medicareExemption && styles.toggleButtonActive]}
-                onPress={() => setMedicareExemption(!medicareExemption)}
-              >
-                <View style={{ flex: 1 }}>
-                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                    <Ionicons
-                      name={medicareExemption ? 'checkbox-outline' : 'square-outline'}
-                      size={24}
-                      color={medicareExemption ? '#4A90E2' : '#666'}
-                    />
-                    <Text style={[styles.toggleText, medicareExemption && styles.toggleTextActive]}>
-                      I am exempt from Medicare Levy
-                    </Text>
-                  </View>
-                  <Text style={styles.toggleSubtext}>
-                    Tick this if you are a temporary visa holder, foreign resident, or Norfolk
-                    Island resident. Leave unticked if you are an Australian resident for tax
-                    purposes.
-                  </Text>
-                </View>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={[styles.toggleButton, hasSpouse && styles.toggleButtonActive]}
-                onPress={() => {
-                  setHasSpouse(!hasSpouse);
-                  if (hasSpouse) {
-                    setSpouseIncome('');
-                  }
-                }}
-              >
-                <Ionicons
-                  name={hasSpouse ? 'checkbox-outline' : 'square-outline'}
-                  size={24}
-                  color={hasSpouse ? '#4A90E2' : '#666'}
-                />
-                <Text style={[styles.toggleText, hasSpouse && styles.toggleTextActive]}>
-                  I had a spouse for Medicare levy purposes
-                </Text>
-              </TouchableOpacity>
-
-              {hasSpouse && (
-                <InputField
-                  label="Spouse Taxable Income"
-                  value={spouseIncome}
-                  onChangeText={setSpouseIncome}
-                  placeholder="Spouse taxable income (e.g., 42000)"
-                  keyboardType="numeric"
-                  icon="person-outline"
-                  prefix="$"
-                />
-              )}
-
-              <TouchableOpacity
-                style={[styles.toggleButton, hasPrivateHospitalCover && styles.toggleButtonActive]}
-                onPress={() => {
-                  const nextValue = !hasPrivateHospitalCover;
-                  setHasPrivateHospitalCover(nextValue);
-                  if (nextValue && !privateHospitalCoverDays) {
-                    setPrivateHospitalCoverDays('365');
-                  }
-                }}
-              >
-                <Ionicons
-                  name={hasPrivateHospitalCover ? 'checkbox-outline' : 'square-outline'}
-                  size={24}
-                  color={hasPrivateHospitalCover ? '#4A90E2' : '#666'}
-                />
-                <Text
-                  style={[styles.toggleText, hasPrivateHospitalCover && styles.toggleTextActive]}
-                >
-                  I had appropriate private hospital cover
-                </Text>
-              </TouchableOpacity>
-
-              {hasPrivateHospitalCover && (
-                <>
-                  <View style={styles.policyTypeSegment}>
-                    {['single', 'family'].map((policyType) => (
-                      <TouchableOpacity
-                        key={policyType}
-                        style={[
-                          styles.policyTypeOption,
-                          privateHealthPolicyType === policyType && styles.policyTypeOptionActive,
-                        ]}
-                        onPress={() => setPrivateHealthPolicyType(policyType)}
-                      >
-                        <Text
-                          style={[
-                            styles.policyTypeText,
-                            privateHealthPolicyType === policyType && styles.policyTypeTextActive,
-                          ]}
-                        >
-                          {policyType === 'single' ? 'Single Policy' : 'Family Policy'}
-                        </Text>
-                      </TouchableOpacity>
-                    ))}
-                  </View>
-
-                  <InputField
-                    label="Private Hospital Cover Days"
-                    value={privateHospitalCoverDays}
-                    onChangeText={(value) => {
-                      setPrivateHospitalCoverDays(value);
-                      clearFieldError('privateHospitalCoverDays');
-                    }}
-                    placeholder="Days covered in the year (0-365)"
-                    keyboardType="number-pad"
-                    icon="calendar-outline"
-                    error={validationErrors.privateHospitalCoverDays}
-                    suffix=" days"
-                  />
-
-                  <View style={styles.wfhInfo}>
-                    <Ionicons name="information-circle-outline" size={16} color="#666" />
-                    <Text style={styles.infoText}>
-                      Medicare levy surcharge is prorated for days without appropriate private
-                      hospital cover.
-                    </Text>
-                  </View>
-                </>
-              )}
-
-              <TouchableOpacity
-                style={[styles.toggleButton, hasDependents && styles.toggleButtonActive]}
-                onPress={() => {
-                  setHasDependents(!hasDependents);
-                  if (hasDependents) {
-                    setDependents('0');
-                  }
-                }}
-              >
-                <Ionicons
-                  name={hasDependents ? 'checkbox-outline' : 'square-outline'}
-                  size={24}
-                  color={hasDependents ? '#4A90E2' : '#666'}
-                />
-                <Text style={[styles.toggleText, hasDependents && styles.toggleTextActive]}>
-                  I have dependents
-                </Text>
-              </TouchableOpacity>
-
-              {hasDependents && (
-                <InputField
-                  label="Number of Dependents"
-                  value={dependents}
-                  onChangeText={setDependents}
-                  placeholder="Number of children/dependents (e.g., 2)"
-                  keyboardType="number-pad"
-                  icon="people-outline"
-                  helpKey="dependents"
-                />
-              )}
-            </View>
-          )}
-        </View>
+        <MedicareDetailsSection
+          isCollapsed={detailsCollapsedCategories.medicareLevy}
+          isComplete={medicareCompleted}
+          medicareExemption={medicareExemption}
+          hasSpouse={hasSpouse}
+          spouseIncome={spouseIncome}
+          hasPrivateHospitalCover={hasPrivateHospitalCover}
+          privateHospitalCoverDays={privateHospitalCoverDays}
+          privateHospitalCoverDaysError={validationErrors.privateHospitalCoverDays}
+          privateHealthPolicyType={privateHealthPolicyType}
+          hasDependents={hasDependents}
+          dependents={dependents}
+          onToggleCollapsed={() => toggleDetailsCategory('medicareLevy')}
+          onToggleMedicareExemption={() => setMedicareExemption(!medicareExemption)}
+          onToggleSpouse={() => {
+            setHasSpouse(!hasSpouse);
+            if (hasSpouse) {
+              setSpouseIncome('');
+            }
+          }}
+          onChangeSpouseIncome={setSpouseIncome}
+          onTogglePrivateHospitalCover={() => {
+            const nextValue = !hasPrivateHospitalCover;
+            setHasPrivateHospitalCover(nextValue);
+            if (nextValue && !privateHospitalCoverDays) {
+              setPrivateHospitalCoverDays('365');
+            }
+          }}
+          onChangePrivateHospitalCoverDays={(value) => {
+            setPrivateHospitalCoverDays(value);
+            clearFieldError('privateHospitalCoverDays');
+          }}
+          onSelectPrivateHealthPolicyType={setPrivateHealthPolicyType}
+          onToggleDependents={() => {
+            setHasDependents(!hasDependents);
+            if (hasDependents) {
+              setDependents('0');
+            }
+          }}
+          onChangeDependents={setDependents}
+        />
 
         {/* Important Information Warning Card */}
         <View style={styles.warningCard}>
