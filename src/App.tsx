@@ -10,7 +10,6 @@ import {
   Animated,
   Platform,
   KeyboardAvoidingView,
-  ActivityIndicator,
   Modal,
   Linking,
   Keyboard,
@@ -47,6 +46,7 @@ import {
   CalculationAssumptionsCard,
   DocumentChecklistCard,
 } from './components/results/ResultInfoCards';
+import CalculationLoadingState from './components/results/CalculationLoadingState';
 import TaxYearSelector from './components/details/TaxYearSelector';
 import StepIndicator from './components/navigation/StepIndicator';
 import StepActionButton from './components/navigation/StepActionButton';
@@ -597,105 +597,6 @@ const getStyles = (theme: Theme) =>
     },
 
     // Professional loading styles
-    loadingContainer: {
-      flex: 1,
-      justifyContent: 'center',
-      alignItems: 'center',
-      paddingVertical: 60,
-      paddingHorizontal: 24,
-    },
-    loadingCard: {
-      backgroundColor: theme.surface,
-      borderRadius: 24,
-      padding: 36,
-      alignItems: 'center',
-      elevation: 10,
-      shadowColor: theme.shadow,
-      shadowOffset: { width: 0, height: 6 },
-      shadowOpacity: 0.18,
-      shadowRadius: 16,
-      minWidth: 300,
-      maxWidth: 340,
-      borderWidth: 1,
-      borderColor: theme.border,
-    },
-    loadingIconContainer: {
-      marginBottom: 24,
-      padding: 16,
-      borderRadius: 50,
-      backgroundColor: theme.primaryLight,
-    },
-    loadingTitle: {
-      fontSize: 20,
-      fontWeight: '600',
-      color: theme.text,
-      textAlign: 'center',
-      marginBottom: 8,
-    },
-    loadingSubtitle: {
-      fontSize: 15,
-      color: theme.textSecondary,
-      textAlign: 'center',
-      marginBottom: 24,
-      lineHeight: 22,
-    },
-    loadingProgressContainer: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      marginBottom: 16,
-    },
-    loadingSpinner: {
-      marginRight: 12,
-    },
-    loadingProgressText: {
-      fontSize: 14,
-      color: theme.primary,
-      fontWeight: '500',
-    },
-    loadingSteps: {
-      alignSelf: 'stretch',
-      marginTop: 8,
-    },
-    loadingStep: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      paddingVertical: 6,
-    },
-    loadingStepIcon: {
-      width: 16,
-      height: 16,
-      borderRadius: 8,
-      backgroundColor: theme.primaryLight,
-      marginRight: 12,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    loadingStepIconActive: {
-      backgroundColor: theme.primary,
-    },
-    loadingStepText: {
-      fontSize: 13,
-      color: theme.textSecondary,
-      flex: 1,
-    },
-    loadingStepTextActive: {
-      color: theme.text,
-      fontWeight: '500',
-    },
-    loadingFooter: {
-      marginTop: 20,
-      paddingTop: 16,
-      borderTopWidth: 1,
-      borderTopColor: theme.borderLight,
-      alignSelf: 'stretch',
-    },
-    loadingFooterText: {
-      fontSize: 12,
-      color: theme.textTertiary,
-      textAlign: 'center',
-      lineHeight: 18,
-    },
-
     // Success banner styles
     successBanner: {
       position: 'absolute',
@@ -5503,73 +5404,10 @@ const AppContent: React.FC = () => {
     if (isCalculating) {
       return (
         <View style={styles.tabContent}>
-          <View style={styles.loadingContainer}>
-            <View style={styles.loadingCard}>
-              <View style={styles.loadingIconContainer}>
-                <Ionicons name="calculator" size={32} color={theme.primary} />
-              </View>
-
-              <Text style={styles.loadingTitle}>Processing Your Tax Return</Text>
-              <Text style={styles.loadingSubtitle}>
-                Our advanced algorithms are analyzing your financial data to provide accurate tax
-                calculations
-              </Text>
-
-              <View style={styles.loadingProgressContainer}>
-                <ActivityIndicator
-                  size="small"
-                  color={theme.primary}
-                  style={styles.loadingSpinner}
-                />
-                <Text style={styles.loadingProgressText}>Calculating...</Text>
-              </View>
-
-              <View style={styles.loadingSteps}>
-                {[
-                  'Validating income sources',
-                  'Processing deductions',
-                  'Applying tax brackets & offsets',
-                  'Generating comprehensive report',
-                ].map((stepText, index) => {
-                  const stepNumber = index + 1;
-                  const isCompleted = loadingStep > stepNumber;
-                  const isActive = loadingStep === stepNumber;
-
-                  return (
-                    <View key={stepNumber} style={styles.loadingStep}>
-                      <View
-                        style={[
-                          styles.loadingStepIcon,
-                          isCompleted && styles.loadingStepIconActive,
-                        ]}
-                      >
-                        {isCompleted ? (
-                          <Ionicons name="checkmark" size={10} color="#fff" />
-                        ) : isActive ? (
-                          <ActivityIndicator size={8} color={theme.primary} />
-                        ) : null}
-                      </View>
-                      <Text
-                        style={[
-                          styles.loadingStepText,
-                          (isCompleted || isActive) && styles.loadingStepTextActive,
-                        ]}
-                      >
-                        {stepText}
-                      </Text>
-                    </View>
-                  );
-                })}
-              </View>
-
-              <View style={styles.loadingFooter}>
-                <Text style={styles.loadingFooterText}>
-                  Using 2025-26 ATO tax rates and thresholds{'\n'}
-                  Calculations typically complete within 3-5 seconds
-                </Text>
-              </View>
-            </View>
-          </View>
+          <CalculationLoadingState
+            loadingStep={loadingStep}
+            taxYearDisplay={selectedTaxYearDisplay}
+          />
         </View>
       );
     }
