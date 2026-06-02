@@ -33,6 +33,7 @@ export interface SavedCalculation {
     hasDependents?: boolean;
     dependents?: string;
     assumptions?: any[];
+    documentChecklist?: any[];
   };
   result: any;
 }
@@ -93,6 +94,7 @@ export const saveCalculation = async (
         hasDependents: calculationData.hasDependents,
         dependents: calculationData.dependents,
         assumptions: calculationData.assumptions,
+        documentChecklist: calculationData.documentChecklist,
       },
       result: calculationData.result,
     };

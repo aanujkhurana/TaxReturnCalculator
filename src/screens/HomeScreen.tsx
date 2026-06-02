@@ -30,10 +30,16 @@ export interface SavedCalculation {
 export interface HomeScreenProps {
   onCreateNew: () => void;
   onViewCalculation: (calculation: SavedCalculation) => void;
+  onDuplicateCalculation: (calculation: SavedCalculation) => void;
   onNavigate: (screen: string) => void;
 }
 
-const HomeScreen: React.FC<HomeScreenProps> = ({ onCreateNew, onViewCalculation, onNavigate }) => {
+const HomeScreen: React.FC<HomeScreenProps> = ({
+  onCreateNew,
+  onViewCalculation,
+  onDuplicateCalculation,
+  onNavigate,
+}) => {
   const { theme } = useTheme();
   const styles = getStyles(theme);
 
@@ -143,6 +149,117 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ onCreateNew, onViewCalculation,
     return 'Break Even';
   };
 
+  const getCalculationTitle = (calculation) =>
+    calculation.name || `Tax Calculation ${calculation.id.slice(-4)}`;
+
+  const getTotalIncome = (calculation) =>
+    calculation.result?.totalIncome ||
+    (calculation.result?.totalTFNIncome || 0) + (calculation.result?.abnIncomeNum || 0);
+
+  const getTotalDeductions = (calculation) => calculation.result?.totalDeductions || 0;
+
+  const getRefund = (calculation) => calculation.result?.refund || 0;
+
+  const getScenarioBooleanText = (value) => (value ? 'Yes' : 'No');
+
+  const renderComparisonMetric = (
+    label,
+    firstValue,
+    secondValue,
+    firstColor = undefined,
+    secondColor = undefined
+  ) => (
+    <View style={styles.comparisonMetricRow} key={label}>
+      <Text style={styles.comparisonMetricLabel}>{label}</Text>
+      <View style={styles.comparisonMetricValues}>
+        <Text style={[styles.comparisonMetricValue, firstColor && { color: firstColor }]}>
+          {firstValue}
+        </Text>
+        <Ionicons name="arrow-forward" size={14} color={theme.textSecondary} />
+        <Text style={[styles.comparisonMetricValue, secondColor && { color: secondColor }]}>
+          {secondValue}
+        </Text>
+      </View>
+    </View>
+  );
+
+  const renderScenarioComparison = () => {
+    if (savedCalculations.length < 2) {
+      return null;
+    }
+
+    const [currentScenario, comparisonScenario] = savedCalculations;
+    const currentRefund = getRefund(currentScenario);
+    const comparisonRefund = getRefund(comparisonScenario);
+    const refundDelta = currentRefund - comparisonRefund;
+    const refundDeltaColor =
+      refundDelta > 0 ? theme.success : refundDelta < 0 ? theme.error : theme.textSecondary;
+
+    return (
+      <View style={styles.comparisonContainer}>
+        <View style={styles.comparisonHeader}>
+          <View style={styles.comparisonIconContainer}>
+            <Ionicons name="git-compare-outline" size={20} color={theme.primary} />
+          </View>
+          <View style={styles.comparisonTitleContainer}>
+            <Text style={styles.comparisonTitle}>Scenario Comparison</Text>
+            <Text style={styles.comparisonSubtitle}>Two most recent saved calculations</Text>
+          </View>
+        </View>
+
+        <View style={styles.comparisonScenarioNames}>
+          <Text style={styles.comparisonScenarioName}>
+            {getCalculationTitle(comparisonScenario)}
+          </Text>
+          <Ionicons name="swap-horizontal-outline" size={16} color={theme.textSecondary} />
+          <Text style={styles.comparisonScenarioName}>{getCalculationTitle(currentScenario)}</Text>
+        </View>
+
+        {renderComparisonMetric(
+          'Refund / owing',
+          `$${formatCurrency(Math.abs(comparisonRefund))}`,
+          `$${formatCurrency(Math.abs(currentRefund))}`,
+          getRefundStatusColor(comparisonRefund),
+          getRefundStatusColor(currentRefund)
+        )}
+        {renderComparisonMetric(
+          'Total income',
+          `$${formatCurrency(getTotalIncome(comparisonScenario))}`,
+          `$${formatCurrency(getTotalIncome(currentScenario))}`
+        )}
+        {renderComparisonMetric(
+          'Deductions',
+          `$${formatCurrency(getTotalDeductions(comparisonScenario))}`,
+          `$${formatCurrency(getTotalDeductions(currentScenario))}`
+        )}
+        {renderComparisonMetric(
+          'HELP debt',
+          getScenarioBooleanText(comparisonScenario.formData?.hecsDebt),
+          getScenarioBooleanText(currentScenario.formData?.hecsDebt)
+        )}
+        {renderComparisonMetric(
+          'Spouse income used',
+          getScenarioBooleanText(comparisonScenario.formData?.hasSpouse),
+          getScenarioBooleanText(currentScenario.formData?.hasSpouse)
+        )}
+        {renderComparisonMetric(
+          'Private hospital cover',
+          getScenarioBooleanText(comparisonScenario.formData?.hasPrivateHospitalCover),
+          getScenarioBooleanText(currentScenario.formData?.hasPrivateHospitalCover)
+        )}
+
+        <View style={styles.comparisonDeltaBox}>
+          <Text style={styles.comparisonDeltaLabel}>Change from previous saved scenario</Text>
+          <Text style={[styles.comparisonDeltaValue, { color: refundDeltaColor }]}>
+            {refundDelta === 0
+              ? '$0'
+              : `${refundDelta > 0 ? '+' : '-'}$${formatCurrency(Math.abs(refundDelta))}`}
+          </Text>
+        </View>
+      </View>
+    );
+  };
+
   const renderCalculationCard = (calculation) => {
     const refund = calculation.result?.refund || 0;
     const statusColor = getRefundStatusColor(refund);
@@ -216,8 +333,18 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ onCreateNew, onViewCalculation,
             <Text style={styles.cardDate}>Saved {formatDate(calculation.savedDate)}</Text>
           </View>
           <View style={styles.cardFooterRight}>
-            <Text style={styles.cardViewText}>View Details</Text>
-            <Ionicons name="chevron-forward" size={16} color={theme.primary} />
+            <TouchableOpacity
+              style={styles.cardActionButton}
+              onPress={() => onDuplicateCalculation(calculation)}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="copy-outline" size={15} color={theme.primary} />
+              <Text style={styles.cardActionText}>Duplicate</Text>
+            </TouchableOpacity>
+            <View style={styles.cardViewAction}>
+              <Text style={styles.cardViewText}>View</Text>
+              <Ionicons name="chevron-forward" size={16} color={theme.primary} />
+            </View>
           </View>
         </View>
       </TouchableOpacity>
@@ -288,6 +415,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ onCreateNew, onViewCalculation,
                 {savedCalculations.length !== 1 ? 's' : ''}
               </Text>
             </View>
+            {renderScenarioComparison()}
             {savedCalculations.map(renderCalculationCard)}
           </View>
         )}
@@ -616,6 +744,106 @@ const getStyles = (theme: Theme) =>
       paddingHorizontal: 20,
       paddingBottom: 20,
     },
+    comparisonContainer: {
+      backgroundColor: theme.surface,
+      borderRadius: 12,
+      padding: 16,
+      marginBottom: 16,
+      borderWidth: 1,
+      borderColor: theme.border,
+    },
+    comparisonHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: 12,
+    },
+    comparisonIconContainer: {
+      width: 36,
+      height: 36,
+      borderRadius: 18,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginRight: 10,
+      backgroundColor: theme.primaryLight,
+      borderWidth: 1,
+      borderColor: theme.primaryBorder,
+    },
+    comparisonTitleContainer: {
+      flex: 1,
+    },
+    comparisonTitle: {
+      fontSize: 16,
+      fontWeight: '700',
+      color: theme.text,
+      marginBottom: 2,
+    },
+    comparisonSubtitle: {
+      fontSize: 12,
+      color: theme.textSecondary,
+    },
+    comparisonScenarioNames: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      gap: 8,
+      paddingVertical: 10,
+      paddingHorizontal: 12,
+      borderRadius: 8,
+      backgroundColor: theme.surfaceSecondary,
+      marginBottom: 10,
+    },
+    comparisonScenarioName: {
+      flex: 1,
+      fontSize: 12,
+      fontWeight: '700',
+      color: theme.text,
+      textAlign: 'center',
+    },
+    comparisonMetricRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      minHeight: 34,
+      borderBottomWidth: 1,
+      borderBottomColor: theme.borderLight,
+    },
+    comparisonMetricLabel: {
+      flex: 1,
+      fontSize: 12,
+      color: theme.textSecondary,
+      paddingRight: 8,
+    },
+    comparisonMetricValues: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+    },
+    comparisonMetricValue: {
+      minWidth: 58,
+      fontSize: 12,
+      fontWeight: '700',
+      color: theme.text,
+      textAlign: 'right',
+    },
+    comparisonDeltaBox: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginTop: 12,
+      padding: 12,
+      borderRadius: 8,
+      backgroundColor: theme.surfaceSecondary,
+    },
+    comparisonDeltaLabel: {
+      flex: 1,
+      fontSize: 12,
+      color: theme.textSecondary,
+      paddingRight: 10,
+    },
+    comparisonDeltaValue: {
+      fontSize: 18,
+      fontWeight: '800',
+    },
     sectionTitle: {
       fontSize: 17,
       fontWeight: '600',
@@ -758,12 +986,30 @@ const getStyles = (theme: Theme) =>
     cardFooterRight: {
       flexDirection: 'row',
       alignItems: 'center',
+      gap: 8,
+    },
+    cardActionButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      minHeight: 32,
+      paddingHorizontal: 8,
+      borderRadius: 8,
+      backgroundColor: theme.primaryLight,
+    },
+    cardActionText: {
+      fontSize: 12,
+      color: theme.primary,
+      fontWeight: '700',
+      marginLeft: 4,
+    },
+    cardViewAction: {
+      flexDirection: 'row',
+      alignItems: 'center',
     },
     cardViewText: {
       fontSize: 13,
       color: theme.primary,
       fontWeight: '600',
-      marginRight: 4,
       letterSpacing: 0.1,
     },
 

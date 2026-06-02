@@ -2485,6 +2485,17 @@ const AppContent: React.FC = () => {
     setTimeout(() => scrollToTop(), 100);
   };
 
+  const duplicateCalculation = async (calculation) => {
+    await viewCalculation(calculation);
+    setViewingCalculation(null);
+    setResult(null);
+    setCurrentStep(1);
+    trackAnalyticsEvent('scenario_duplicated', {
+      financialYear: calculation.formData.financialYear || DEFAULT_FINANCIAL_YEAR,
+    });
+    setTimeout(() => scrollToTop(), 100);
+  };
+
   const resetForm = () => {
     setCurrentStep(1);
     setSelectedFinancialYear(DEFAULT_FINANCIAL_YEAR);
@@ -6054,6 +6065,7 @@ const AppContent: React.FC = () => {
           <HomeScreen
             onCreateNew={navigateToCalculator}
             onViewCalculation={viewCalculation}
+            onDuplicateCalculation={duplicateCalculation}
             onNavigate={handleNavigation}
           />
         </View>

@@ -19,6 +19,7 @@ export type AnalyticsEventName =
   | 'tax_year_changed'
   | 'external_link_opened'
   | 'payg_estimate_toggled'
+  | 'scenario_duplicated'
   | 'saved_calculation_opened';
 
 type AnalyticsValue = string | number | boolean | null | undefined;

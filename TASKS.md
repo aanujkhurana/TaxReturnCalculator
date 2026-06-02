@@ -76,9 +76,10 @@ Make the Australian tax return calculator more valuable, trustworthy, and produc
   - Acceptance: the app can export a checklist with the tax estimate report.
   - Completed: added a personalized document checklist to result cards, saved calculation data, CSV export, and HTML report export based on income, deductions, HELP, Medicare, spouse, dependents, and private health cover inputs.
 
-- [ ] Add scenario comparison.
+- [x] Add scenario comparison.
   - Let users duplicate a calculation and compare refund/owing differences across deductions, income, HELP, spouse income, and private health cover.
   - Acceptance: users can see a side-by-side summary of at least two scenarios.
+  - Completed: added saved-calculation duplication into an editable scenario and a home-screen comparison panel for the two most recent saved scenarios covering refund/owing, income, deductions, HELP, spouse, and private hospital cover differences.
 
 - [ ] Add ABN/business income improvements.
   - Add business deductions, GST/BAS notes, super contributions, and tax instalment warnings.
