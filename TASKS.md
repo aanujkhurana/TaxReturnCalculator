@@ -71,9 +71,10 @@ Make the Australian tax return calculator more valuable, trustworthy, and produc
   - Acceptance: users can discover common deductions without reading long help text.
   - Completed: added an ATO source-backed deduction checklist for common claim areas, completion indicators from entered deduction fields, and tap-to-open navigation into the matching deduction category.
 
-- [ ] Add document and receipt checklist.
+- [x] Add document and receipt checklist.
   - Generate a personalized list based on entered income, deductions, HELP, Medicare, spouse, dependents, and private health cover.
   - Acceptance: the app can export a checklist with the tax estimate report.
+  - Completed: added a personalized document checklist to result cards, saved calculation data, CSV export, and HTML report export based on income, deductions, HELP, Medicare, spouse, dependents, and private health cover inputs.
 
 - [ ] Add scenario comparison.
   - Let users duplicate a calculation and compare refund/owing differences across deductions, income, HELP, spouse income, and private health cover.

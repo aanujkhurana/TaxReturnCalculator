@@ -112,6 +112,11 @@ interface CalculationAssumption {
   detail: string;
 }
 
+interface DocumentChecklistItem {
+  label: string;
+  detail: string;
+}
+
 const DEFAULT_FINANCIAL_YEAR = ACTIVE_FINANCIAL_YEAR;
 const SUPPORTED_TAX_YEAR_OPTIONS = Object.values(TAX_YEAR_CONFIGS).map((config) => ({
   value: config.financialYear,
@@ -2575,6 +2580,7 @@ const AppContent: React.FC = () => {
                 dependents,
                 hasDependents,
                 assumptions: getCalculationAssumptions(),
+                documentChecklist: getDocumentChecklist(),
                 result,
               };
 
@@ -3478,6 +3484,130 @@ const AppContent: React.FC = () => {
     spouseIncome,
   ]);
 
+  const getDocumentChecklist = useCallback((): DocumentChecklistItem[] => {
+    const employmentIncome =
+      result?.totalTFNIncome ??
+      jobIncomes.reduce((sum, income) => sum + (parseFloat(income || '0') || 0), 0);
+    const abnIncomeNum = (result?.abnIncomeNum ?? parseFloat(abnIncome || '0')) || 0;
+    const checklist: DocumentChecklistItem[] = [
+      {
+        label: 'Final estimate report',
+        detail:
+          'Keep this estimate with the tax year, app version, assumptions, and calculation date.',
+      },
+    ];
+
+    if (employmentIncome > 0) {
+      checklist.push({
+        label: 'Income statement or payslips',
+        detail: paygUnknown
+          ? 'Keep your income statement/payslips to confirm employment income and actual PAYG withholding.'
+          : 'Keep your income statement or final payslips showing employment income and tax withheld.',
+      });
+    }
+
+    if (abnIncomeNum > 0) {
+      checklist.push({
+        label: 'ABN/business income records',
+        detail: 'Keep invoices, payment records, bank statements, and related business records.',
+      });
+    }
+
+    if (categoryHasValues(deductions.workRelated)) {
+      checklist.push({
+        label: 'Work-related expense receipts',
+        detail:
+          'Keep receipts, invoices, logbooks, diary entries, and work-use calculations for claimed work expenses.',
+      });
+    }
+
+    if (categoryHasValues(deductions.selfEducation)) {
+      checklist.push({
+        label: 'Self-education records',
+        detail:
+          'Keep course invoices, seminar receipts, textbook records, travel records, and evidence the study relates to current work.',
+      });
+    }
+
+    if (categoryHasValues(deductions.donations)) {
+      checklist.push({
+        label: 'Donation receipts',
+        detail:
+          'Keep receipts or donation summaries and confirm the organisation was a deductible gift recipient.',
+      });
+    }
+
+    if (categoryHasValues(deductions.other)) {
+      checklist.push({
+        label: 'Other deduction records',
+        detail:
+          'Keep tax agent invoices, income protection premium notices, investment statements, and rental or investment expense records.',
+      });
+    }
+
+    if ((parseFloat(workFromHomeHours || '0') || 0) > 0) {
+      checklist.push({
+        label: 'Work-from-home evidence',
+        detail:
+          'Keep a record of hours worked from home and evidence of extra running expenses for the fixed-rate method.',
+      });
+    }
+
+    if (hecsDebt) {
+      checklist.push({
+        label: 'HELP/STSL repayment details',
+        detail:
+          'Keep ATO or myGov loan information and records for reportable super, fringe benefits, investment losses, or exempt foreign income entered.',
+      });
+    }
+
+    if (hasSpouse) {
+      checklist.push({
+        label: 'Spouse income evidence',
+        detail:
+          'Keep spouse taxable income and family income details used for Medicare levy and surcharge calculations.',
+      });
+    }
+
+    if (hasDependents) {
+      checklist.push({
+        label: 'Dependent details',
+        detail:
+          'Keep dependent count and family details used for Medicare levy family threshold calculations.',
+      });
+    }
+
+    if (hasPrivateHospitalCover) {
+      checklist.push({
+        label: 'Private health insurance statement',
+        detail:
+          'Keep the private hospital cover statement showing policy type and covered period for the year.',
+      });
+    }
+
+    if (medicareExemption) {
+      checklist.push({
+        label: 'Medicare levy exemption evidence',
+        detail:
+          'Keep Medicare levy exemption certificate or other evidence supporting the exemption.',
+      });
+    }
+
+    return checklist;
+  }, [
+    abnIncome,
+    deductions,
+    hasDependents,
+    hasPrivateHospitalCover,
+    hasSpouse,
+    hecsDebt,
+    jobIncomes,
+    medicareExemption,
+    paygUnknown,
+    result,
+    workFromHomeHours,
+  ]);
+
   // Auto-calculate when reaching step 4 if no result exists
   useEffect(() => {
     if (currentStep === 4 && !result) {
@@ -3498,6 +3628,7 @@ const AppContent: React.FC = () => {
         : stringValue;
     };
     const assumptions = getCalculationAssumptions();
+    const documentChecklist = getDocumentChecklist();
 
     const headers = [
       'Date',
@@ -3541,6 +3672,10 @@ const AppContent: React.FC = () => {
       ['Calculation Assumptions'],
       ['Area', 'Assumption'],
       ...assumptions.map(({ label, detail }) => [label, detail]),
+      [],
+      ['Document and Receipt Checklist'],
+      ['Record', 'What to keep'],
+      ...documentChecklist.map(({ label, detail }) => [label, detail]),
     ];
     const csv = csvRows.map((csvRow) => csvRow.map(escapeCsvCell).join(',')).join('\n');
     const filename = `MyTaxReturn_${new Date().toISOString().split('T')[0]}.csv`;
@@ -3570,6 +3705,7 @@ const AppContent: React.FC = () => {
       financialYear: selectedFinancialYear,
     });
     const assumptions = getCalculationAssumptions();
+    const documentChecklist = getDocumentChecklist();
 
     try {
       // Create HTML content for the PDF
@@ -3709,6 +3845,22 @@ const AppContent: React.FC = () => {
             <div class="section-title">Calculation Assumptions</div>
             <div class="assumption-list">
               ${assumptions
+                .map(
+                  ({ label, detail }) => `
+                <div class="assumption-item">
+                  <div class="assumption-label">${label}</div>
+                  <div class="assumption-detail">${detail}</div>
+                </div>
+              `
+                )
+                .join('')}
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Document and Receipt Checklist</div>
+            <div class="assumption-list">
+              ${documentChecklist
                 .map(
                   ({ label, detail }) => `
                 <div class="assumption-item">
@@ -5339,6 +5491,30 @@ const AppContent: React.FC = () => {
     );
   };
 
+  const renderDocumentChecklistCard = () => {
+    const documentChecklist = getDocumentChecklist();
+
+    return (
+      <View style={styles.assumptionsCard}>
+        <View style={styles.assumptionsHeader}>
+          <Ionicons name="folder-open-outline" size={20} color={theme.primary} />
+          <Text style={styles.assumptionsTitle}>Document and Receipt Checklist</Text>
+        </View>
+        <Text style={styles.assumptionsIntro}>
+          Keep these records with your estimate before saving or lodging.
+        </Text>
+        <View style={styles.assumptionsList}>
+          {documentChecklist.map(({ label, detail }) => (
+            <View key={label} style={styles.assumptionItem}>
+              <Text style={styles.assumptionLabel}>{label}</Text>
+              <Text style={styles.assumptionDetail}>{detail}</Text>
+            </View>
+          ))}
+        </View>
+      </View>
+    );
+  };
+
   const renderResults = () => {
     console.log('renderResults called - isCalculating:', isCalculating, 'result:', !!result);
 
@@ -5747,6 +5923,7 @@ const AppContent: React.FC = () => {
               </View>
             </View>
 
+            {renderDocumentChecklistCard()}
             {renderAssumptionsCard()}
 
             {/* Action Buttons Section - Only visible in card view */}
