@@ -48,6 +48,7 @@ import {
   CalculationAssumptionsCard,
   DocumentChecklistCard,
 } from './components/results/ResultInfoCards';
+import TaxYearSelector from './components/details/TaxYearSelector';
 import { Theme } from './constants/themes';
 
 // Type definitions for the main App component
@@ -1924,40 +1925,6 @@ const getStyles = (theme: Theme) =>
       color: theme.text,
       lineHeight: 20,
       flex: 1,
-    },
-
-    taxYearOptionGrid: {
-      gap: 10,
-    },
-
-    taxYearOption: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      paddingVertical: 12,
-      paddingHorizontal: 14,
-      borderRadius: 8,
-      borderWidth: 1,
-      borderColor: theme.border,
-      backgroundColor: theme.surface,
-    },
-
-    taxYearOptionActive: {
-      borderColor: theme.primary,
-      backgroundColor: theme.primaryLight,
-    },
-
-    taxYearOptionText: {
-      fontSize: 15,
-      fontWeight: '700',
-      color: theme.text,
-    },
-
-    taxYearOptionSubtext: {
-      fontSize: 12,
-      color: theme.textSecondary,
-      lineHeight: 16,
-      marginTop: 3,
     },
 
     // Enhanced Results Screen styles
@@ -5452,46 +5419,6 @@ const AppContent: React.FC = () => {
     setResult(null);
   };
 
-  const renderTaxYearSelector = () => (
-    <View style={styles.deductionCategory}>
-      {renderDetailsCategoryHeader(
-        'taxYear',
-        'Tax Year',
-        'Rates and thresholds used for this estimate',
-        'calendar-outline',
-        true
-      )}
-
-      {!detailsCollapsedCategories.taxYear && (
-        <View style={styles.categoryContent}>
-          <View style={styles.taxYearOptionGrid}>
-            {SUPPORTED_TAX_YEAR_OPTIONS.map((option) => {
-              const isSelected = option.value === selectedFinancialYear;
-              return (
-                <TouchableOpacity
-                  key={option.value}
-                  style={[styles.taxYearOption, isSelected && styles.taxYearOptionActive]}
-                  onPress={() => handleTaxYearSelection(option.value)}
-                  activeOpacity={0.75}
-                >
-                  <View style={{ flex: 1, paddingRight: 12 }}>
-                    <Text style={styles.taxYearOptionText}>Financial Year {option.label}</Text>
-                    <Text style={styles.taxYearOptionSubtext}>{option.note}</Text>
-                  </View>
-                  <Ionicons
-                    name={isSelected ? 'checkmark-circle' : 'ellipse-outline'}
-                    size={22}
-                    color={isSelected ? theme.primary : theme.textSecondary}
-                  />
-                </TouchableOpacity>
-              );
-            })}
-          </View>
-        </View>
-      )}
-    </View>
-  );
-
   const renderDetailsTab = () => {
     const hecsCompleted = hecsDebt;
     const medicareCompleted = medicareExemption || hasDependents;
@@ -5501,7 +5428,13 @@ const AppContent: React.FC = () => {
       <View style={styles.tabContent}>
         <Text style={styles.sectionTitle}>Additional Details</Text>
 
-        {renderTaxYearSelector()}
+        <TaxYearSelector
+          options={SUPPORTED_TAX_YEAR_OPTIONS}
+          selectedFinancialYear={selectedFinancialYear}
+          isCollapsed={detailsCollapsedCategories.taxYear}
+          onSelectFinancialYear={handleTaxYearSelection}
+          onToggle={() => toggleDetailsCategory('taxYear')}
+        />
 
         {/* HECS-HELP Debt Section */}
         <View style={styles.deductionCategory}>
