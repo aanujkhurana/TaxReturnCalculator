@@ -1,6 +1,7 @@
 import { Platform } from 'react-native';
 import { APP_INFO, CALCULATION_ENGINE_VERSION } from '../constants/appConstants';
 import { ACTIVE_FINANCIAL_YEAR } from '../constants/taxConstants';
+import { ENVIRONMENT_CONFIG } from '../config/environment';
 
 export type AnalyticsEventName =
   | 'screen_viewed'
@@ -21,13 +22,6 @@ export type AnalyticsEventName =
 
 type AnalyticsValue = string | number | boolean | null | undefined;
 type AnalyticsProperties = Record<string, AnalyticsValue>;
-
-declare const process: { env?: Record<string, string | undefined> };
-
-const ENVIRONMENT = process.env.EXPO_PUBLIC_APP_ENV || (__DEV__ ? 'development' : 'production');
-const ANALYTICS_ENABLED = process.env.EXPO_PUBLIC_ANALYTICS_ENABLED === 'true';
-const ANALYTICS_ENDPOINT = process.env.EXPO_PUBLIC_ANALYTICS_ENDPOINT;
-const ANALYTICS_DEBUG = process.env.EXPO_PUBLIC_ANALYTICS_DEBUG === 'true';
 
 const ALLOWED_PROPERTY_KEYS = new Set([
   'area',
@@ -78,21 +72,21 @@ const sendAnalyticsEvent = async (
       appVersion: APP_INFO.VERSION,
       calculationEngineVersion: CALCULATION_ENGINE_VERSION,
       defaultFinancialYear: ACTIVE_FINANCIAL_YEAR,
-      environment: ENVIRONMENT,
+      environment: ENVIRONMENT_CONFIG.appEnv,
       platform: Platform.OS,
       timestamp: new Date().toISOString(),
     },
   };
 
-  if (!ANALYTICS_ENABLED || !ANALYTICS_ENDPOINT) {
-    if (__DEV__ && ANALYTICS_DEBUG) {
+  if (!ENVIRONMENT_CONFIG.analyticsEnabled || !ENVIRONMENT_CONFIG.analyticsEndpoint) {
+    if (__DEV__ && ENVIRONMENT_CONFIG.analyticsDebug) {
       console.info('Analytics event', payload);
     }
     return;
   }
 
   try {
-    await fetch(ANALYTICS_ENDPOINT, {
+    await fetch(ENVIRONMENT_CONFIG.analyticsEndpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),

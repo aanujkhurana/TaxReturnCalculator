@@ -59,9 +59,10 @@ Make the Australian tax return calculator more valuable, trustworthy, and produc
   - Acceptance: analytics can be disabled and no raw income, deduction, TFN, or identity data is sent.
   - Completed: added an environment-gated analytics service with allowlisted event properties, debug-only local logging, and sanitized tracking for screens, step flow, validation failures, calculations, saves, exports, PAYG estimate toggles, tax-year changes, and saved-calculation opens.
 
-- [ ] Add environment configuration.
+- [x] Add environment configuration.
   - Separate development, preview, and production settings.
   - Acceptance: build-time config controls analytics, crash reporting, app name, and support links.
+  - Completed: added Expo dynamic config for development/preview/production defaults, shared runtime environment config, environment-driven analytics/crash toggles, app naming, and support/privacy links surfaced through app constants and About screen.
 
 ## Priority 2 - User Value
 

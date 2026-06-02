@@ -3,6 +3,8 @@
  * Contains app-wide configuration values and constants
  */
 
+import { ENVIRONMENT_CONFIG } from '../config/environment';
+
 // Type definitions for constants
 export interface StorageKeys {
   readonly SAVED_CALCULATIONS: string;
@@ -51,7 +53,7 @@ export const STORAGE_KEYS: StorageKeys = {
 
 // App information
 export const APP_INFO: AppInfo = {
-  NAME: 'MyTaxReturn AU',
+  NAME: ENVIRONMENT_CONFIG.appName,
   VERSION: '1.0.0',
   FINANCIAL_YEAR: '2025-26',
 } as const;
@@ -157,6 +159,8 @@ export interface ExternalLinks {
   readonly ATO_TAX_HELP: string;
   readonly ATO_DEDUCTIONS_GUIDE: string;
   readonly MYGOV: string;
+  readonly SUPPORT: string;
+  readonly PRIVACY_POLICY: string;
 }
 
 export interface AnimationDurations {
@@ -224,6 +228,8 @@ export const EXTERNAL_LINKS: ExternalLinks = {
   ATO_DEDUCTIONS_GUIDE:
     'https://www.ato.gov.au/individuals/income-deductions-offsets-and-records/deductions/',
   MYGOV: 'https://my.gov.au',
+  SUPPORT: ENVIRONMENT_CONFIG.supportUrl,
+  PRIVACY_POLICY: ENVIRONMENT_CONFIG.privacyPolicyUrl,
 } as const;
 
 // Animation durations (in milliseconds)

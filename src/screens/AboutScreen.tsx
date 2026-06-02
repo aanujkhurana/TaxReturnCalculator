@@ -17,7 +17,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../context/ThemeContext';
-import { APP_INFO } from '../constants/appConstants';
+import { APP_INFO, EXTERNAL_LINKS } from '../constants/appConstants';
 import { Theme } from '../constants/themes';
 
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
@@ -86,13 +86,25 @@ const AboutScreen: React.FC<AboutScreenProps> = ({ onBack }) => {
       icon: 'globe-outline',
       title: 'Australian Taxation Office',
       subtitle: 'Official ATO website',
-      url: 'https://www.ato.gov.au',
+      url: EXTERNAL_LINKS.ATO_WEBSITE,
     },
     {
       icon: 'document-outline',
       title: 'Tax Guide 2025-26',
       subtitle: 'Complete tax guide for individuals',
-      url: 'https://www.ato.gov.au/individuals/income-and-deductions',
+      url: EXTERNAL_LINKS.ATO_DEDUCTIONS_GUIDE,
+    },
+    {
+      icon: 'mail-outline',
+      title: 'Support',
+      subtitle: 'Contact app support',
+      url: EXTERNAL_LINKS.SUPPORT,
+    },
+    {
+      icon: 'shield-checkmark-outline',
+      title: 'Privacy Policy',
+      subtitle: 'How app data is handled',
+      url: EXTERNAL_LINKS.PRIVACY_POLICY,
     },
   ];
 

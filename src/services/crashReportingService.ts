@@ -2,14 +2,9 @@ import * as Sentry from '@sentry/react-native';
 import { Platform } from 'react-native';
 import { APP_INFO, CALCULATION_ENGINE_VERSION } from '../constants/appConstants';
 import { ACTIVE_FINANCIAL_YEAR } from '../constants/taxConstants';
+import { ENVIRONMENT_CONFIG } from '../config/environment';
 
 type CrashContext = Record<string, string | number | boolean | undefined | null>;
-
-declare const process: { env?: Record<string, string | undefined> };
-
-const SENTRY_DSN = process.env.EXPO_PUBLIC_SENTRY_DSN;
-const ENVIRONMENT = process.env.EXPO_PUBLIC_APP_ENV || (__DEV__ ? 'development' : 'production');
-const CRASH_REPORTING_ENABLED = process.env.EXPO_PUBLIC_CRASH_REPORTING_ENABLED === 'true';
 
 let initialized = false;
 
@@ -18,14 +13,14 @@ export const initializeCrashReporting = (): void => {
 
   initialized = true;
 
-  if (!CRASH_REPORTING_ENABLED || !SENTRY_DSN) {
+  if (!ENVIRONMENT_CONFIG.crashReportingEnabled || !ENVIRONMENT_CONFIG.sentryDsn) {
     return;
   }
 
   Sentry.init({
-    dsn: SENTRY_DSN,
+    dsn: ENVIRONMENT_CONFIG.sentryDsn,
     enabled: true,
-    environment: ENVIRONMENT,
+    environment: ENVIRONMENT_CONFIG.appEnv,
     release: `${APP_INFO.NAME}@${APP_INFO.VERSION}`,
     tracesSampleRate: 0,
     sendDefaultPii: false,
@@ -44,7 +39,7 @@ export const initializeCrashReporting = (): void => {
 };
 
 export const reportError = (error: unknown, context: CrashContext = {}): void => {
-  if (!CRASH_REPORTING_ENABLED || !SENTRY_DSN) {
+  if (!ENVIRONMENT_CONFIG.crashReportingEnabled || !ENVIRONMENT_CONFIG.sentryDsn) {
     if (__DEV__) {
       console.error('Captured app error', error, context);
     }
@@ -68,7 +63,7 @@ export const addCrashBreadcrumb = (
   data: CrashContext = {},
   level: Sentry.SeverityLevel = 'info'
 ): void => {
-  if (!CRASH_REPORTING_ENABLED || !SENTRY_DSN) {
+  if (!ENVIRONMENT_CONFIG.crashReportingEnabled || !ENVIRONMENT_CONFIG.sentryDsn) {
     return;
   }
 
