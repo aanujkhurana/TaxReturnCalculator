@@ -525,6 +525,31 @@ const getStyles = (theme: Theme) =>
       lineHeight: 17,
       color: theme.textSecondary,
     },
+    familyGuidanceCard: {
+      marginBottom: 12,
+      padding: 14,
+      borderRadius: 8,
+      borderWidth: 1,
+      borderColor: theme.categoryPink,
+      backgroundColor: theme.categoryPinkLight,
+    },
+    familyGuidanceHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: 8,
+    },
+    familyGuidanceTitle: {
+      fontSize: 14,
+      fontWeight: '700',
+      color: theme.text,
+      marginLeft: 8,
+    },
+    familyGuidanceText: {
+      fontSize: 12,
+      lineHeight: 18,
+      color: theme.textSecondary,
+      marginTop: 4,
+    },
     infoBox: {
       flexDirection: 'row',
       alignItems: 'flex-start',
@@ -5614,6 +5639,21 @@ const AppContent: React.FC = () => {
 
           {!detailsCollapsedCategories.medicareLevy && (
             <View style={styles.categoryContent}>
+              <View style={styles.familyGuidanceCard}>
+                <View style={styles.familyGuidanceHeader}>
+                  <Ionicons name="people-outline" size={18} color={theme.categoryPink} />
+                  <Text style={styles.familyGuidanceTitle}>Spouse and Family Guidance</Text>
+                </View>
+                <Text style={styles.familyGuidanceText}>
+                  Spouse income and dependents can increase Medicare levy family thresholds and
+                  change whether Medicare levy surcharge uses single or family tiers.
+                </Text>
+                <Text style={styles.familyGuidanceText}>
+                  Private hospital cover affects only the Medicare levy surcharge. Medicare levy
+                  exemptions are separate and should be used only when you have evidence.
+                </Text>
+              </View>
+
               <TouchableOpacity
                 style={[styles.toggleButton, medicareExemption && styles.toggleButtonActive]}
                 onPress={() => setMedicareExemption(!medicareExemption)}

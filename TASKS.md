@@ -91,9 +91,10 @@ Make the Australian tax return calculator more valuable, trustworthy, and produc
   - Acceptance: Medicare levy surcharge estimates support partial-year private hospital cover.
   - Completed: added private hospital policy type and covered-days inputs, saved/exported those fields, and prorated Medicare levy surcharge by uncovered days for partial-year cover.
 
-- [ ] Add spouse and family guidance.
+- [x] Add spouse and family guidance.
   - Explain spouse income, dependents, family thresholds, Medicare levy reduction, and surcharge impacts.
   - Acceptance: the app reduces user uncertainty when family details affect calculations.
+  - Completed: added a Medicare details guidance card explaining spouse income, dependents, family thresholds, Medicare levy reduction context, Medicare levy surcharge tiers, private hospital cover, and exemption evidence.
 
 ## Priority 3 - Mobile Experience
 
