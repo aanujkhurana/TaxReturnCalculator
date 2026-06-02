@@ -21,6 +21,8 @@ export interface SavedCalculation {
     deductions?: { [key: string]: any };
     workFromHomeHours?: string;
     abnIncome?: string;
+    abnBusinessDeductions?: string;
+    personalSuperContributions?: string;
     hecsDebt?: boolean;
     reportableSuper?: string;
     reportableFringeBenefits?: string;
@@ -82,6 +84,8 @@ export const saveCalculation = async (
         deductions: calculationData.deductions,
         workFromHomeHours: calculationData.workFromHomeHours,
         abnIncome: calculationData.abnIncome,
+        abnBusinessDeductions: calculationData.abnBusinessDeductions,
+        personalSuperContributions: calculationData.personalSuperContributions,
         hecsDebt: calculationData.hecsDebt,
         reportableSuper: calculationData.reportableSuper,
         reportableFringeBenefits: calculationData.reportableFringeBenefits,

@@ -81,9 +81,10 @@ Make the Australian tax return calculator more valuable, trustworthy, and produc
   - Acceptance: users can see a side-by-side summary of at least two scenarios.
   - Completed: added saved-calculation duplication into an editable scenario and a home-screen comparison panel for the two most recent saved scenarios covering refund/owing, income, deductions, HELP, spouse, and private hospital cover differences.
 
-- [ ] Add ABN/business income improvements.
+- [x] Add ABN/business income improvements.
   - Add business deductions, GST/BAS notes, super contributions, and tax instalment warnings.
   - Acceptance: ABN users get clearer estimates without mixing employment and business assumptions.
+  - Completed: added ABN business deduction and deductible personal super fields, included them in calculation/save/export totals, and added ABN guidance for PAYG instalments, GST/BAS record keeping, and personal super deduction evidence.
 
 - [ ] Add private health insurance detail.
   - Capture days covered, single/family policy type, dependents, and partial-year coverage.

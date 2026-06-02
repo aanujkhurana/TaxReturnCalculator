@@ -88,6 +88,8 @@ export interface FormData {
   };
   workFromHomeHours: string;
   abnIncome: string;
+  abnBusinessDeductions: string;
+  personalSuperContributions: string;
   hecsDebt: boolean;
   reportableSuper: string;
   reportableFringeBenefits: string;
@@ -436,6 +438,53 @@ const getStyles = (theme: Theme) =>
       color: theme.textLight,
       marginLeft: 6,
       flex: 1,
+    },
+    businessGuidanceCard: {
+      marginTop: 12,
+      padding: 14,
+      borderRadius: 8,
+      borderWidth: 1,
+      borderColor: theme.categoryEducation,
+      backgroundColor: theme.categoryEducationLight,
+    },
+    businessGuidanceHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: 10,
+    },
+    businessGuidanceTitle: {
+      fontSize: 14,
+      fontWeight: '700',
+      color: theme.text,
+      marginLeft: 8,
+    },
+    businessGuidanceRow: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      justifyContent: 'space-between',
+      paddingVertical: 7,
+      borderTopWidth: 1,
+      borderTopColor: theme.borderLight,
+    },
+    businessGuidanceLabel: {
+      width: 110,
+      fontSize: 12,
+      fontWeight: '700',
+      color: theme.text,
+      paddingRight: 8,
+    },
+    businessGuidanceValue: {
+      flex: 1,
+      fontSize: 13,
+      fontWeight: '800',
+      color: theme.categoryEducation,
+      textAlign: 'right',
+    },
+    businessGuidanceDetail: {
+      flex: 1,
+      fontSize: 12,
+      lineHeight: 17,
+      color: theme.textSecondary,
     },
     infoBox: {
       flexDirection: 'row',
@@ -2299,6 +2348,8 @@ const AppContent: React.FC = () => {
   });
   const [workFromHomeHours, setWorkFromHomeHours] = useState('');
   const [abnIncome, setAbnIncome] = useState('');
+  const [abnBusinessDeductions, setAbnBusinessDeductions] = useState('');
+  const [personalSuperContributions, setPersonalSuperContributions] = useState('');
   const [hecsDebt, setHecsDebt] = useState(false);
   const [reportableSuper, setReportableSuper] = useState('');
   const [reportableFringeBenefits, setReportableFringeBenefits] = useState('');
@@ -2465,6 +2516,8 @@ const AppContent: React.FC = () => {
     );
     setWorkFromHomeHours(calculation.formData.workFromHomeHours || '');
     setAbnIncome(calculation.formData.abnIncome || '');
+    setAbnBusinessDeductions(calculation.formData.abnBusinessDeductions || '');
+    setPersonalSuperContributions(calculation.formData.personalSuperContributions || '');
     setHecsDebt(calculation.formData.hecsDebt || false);
     setReportableSuper(calculation.formData.reportableSuper || '');
     setReportableFringeBenefits(calculation.formData.reportableFringeBenefits || '');
@@ -2532,6 +2585,8 @@ const AppContent: React.FC = () => {
     });
     setWorkFromHomeHours('');
     setAbnIncome('');
+    setAbnBusinessDeductions('');
+    setPersonalSuperContributions('');
     setHecsDebt(false);
     setReportableSuper('');
     setReportableFringeBenefits('');
@@ -2579,6 +2634,8 @@ const AppContent: React.FC = () => {
                 deductions,
                 workFromHomeHours,
                 abnIncome,
+                abnBusinessDeductions,
+                personalSuperContributions,
                 hecsDebt,
                 reportableSuper,
                 reportableFringeBenefits,
@@ -2977,6 +3034,22 @@ const AppContent: React.FC = () => {
         }
       }
 
+      if (abnBusinessDeductions?.trim()) {
+        const parsed = parseFloat(abnBusinessDeductions.trim());
+        if (isNaN(parsed) || parsed < 0) {
+          setFieldError('abnBusinessDeductions', 'Must be a valid number (0 or greater)');
+          hasErrors = true;
+        }
+      }
+
+      if (personalSuperContributions?.trim()) {
+        const parsed = parseFloat(personalSuperContributions.trim());
+        if (isNaN(parsed) || parsed < 0) {
+          setFieldError('personalSuperContributions', 'Must be a valid number (0 or greater)');
+          hasErrors = true;
+        }
+      }
+
       // Check if at least one income source is valid
       if (!hasValidJobIncome && !hasValidAbnIncome) {
         if (!jobIncomes.some((income) => income?.trim())) {
@@ -3062,6 +3135,22 @@ const AppContent: React.FC = () => {
           }
         }
 
+        if (abnBusinessDeductions?.trim()) {
+          const parsed = parseFloat(abnBusinessDeductions.trim());
+          if (isNaN(parsed) || parsed < 0) {
+            setFieldError('abnBusinessDeductions', 'Must be a valid number (0 or greater)');
+            hasErrors = true;
+          }
+        }
+
+        if (personalSuperContributions?.trim()) {
+          const parsed = parseFloat(personalSuperContributions.trim());
+          if (isNaN(parsed) || parsed < 0) {
+            setFieldError('personalSuperContributions', 'Must be a valid number (0 or greater)');
+            hasErrors = true;
+          }
+        }
+
         // Check if at least one income source is valid
         if (!hasValidJobIncome && !hasValidAbnIncome) {
           if (!jobIncomes.some((income) => income?.trim())) {
@@ -3110,6 +3199,8 @@ const AppContent: React.FC = () => {
     currentStep,
     jobIncomes,
     abnIncome,
+    abnBusinessDeductions,
+    personalSuperContributions,
     taxWithheld,
     paygUnknown,
     calculateEstimatedPayg,
@@ -3185,6 +3276,24 @@ const AppContent: React.FC = () => {
       }
     }
 
+    if (abnBusinessDeductions?.trim()) {
+      const parsed = parseFloat(abnBusinessDeductions.trim());
+      if (isNaN(parsed) || parsed < 0) {
+        setFieldError('abnBusinessDeductions', 'Must be a valid number (0 or greater)');
+        hasErrors = true;
+        validationErrorCount += 1;
+      }
+    }
+
+    if (personalSuperContributions?.trim()) {
+      const parsed = parseFloat(personalSuperContributions.trim());
+      if (isNaN(parsed) || parsed < 0) {
+        setFieldError('personalSuperContributions', 'Must be a valid number (0 or greater)');
+        hasErrors = true;
+        validationErrorCount += 1;
+      }
+    }
+
     // Check if at least one income source is valid
     if (!hasValidJobIncome && !hasValidAbnIncome) {
       if (!jobIncomes.some((income) => income?.trim())) {
@@ -3238,6 +3347,8 @@ const AppContent: React.FC = () => {
         0
       );
       const abnIncomeNum = parseFloat(abnIncome || '0');
+      const abnBusinessDeductionsNum = parseFloat(abnBusinessDeductions || '0') || 0;
+      const personalSuperContributionsNum = parseFloat(personalSuperContributions || '0') || 0;
       const taxWithheldNum = parseFloat(taxWithheld || '0');
       const wfhHours = parseFloat(workFromHomeHours || '0');
       const dependentsNum = hasDependents ? parseInt(dependents || '0') : 0;
@@ -3269,9 +3380,14 @@ const AppContent: React.FC = () => {
         0
       );
 
-      const totalDeductions = totalManualDeductions + workFromHomeDeduction;
+      const totalDeductions =
+        totalManualDeductions +
+        workFromHomeDeduction +
+        abnBusinessDeductionsNum +
+        personalSuperContributionsNum;
 
       const totalIncome = totalTFNIncome + abnIncomeNum;
+      const netBusinessIncome = Math.max(0, abnIncomeNum - abnBusinessDeductionsNum);
       const taxableIncome = Math.max(0, totalIncome - totalDeductions);
 
       const tax = calculateResidentIncomeTax(taxableIncome, selectedTaxYearConfig);
@@ -3318,6 +3434,9 @@ const AppContent: React.FC = () => {
         calculationEngineVersion: CALCULATION_ENGINE_VERSION,
         totalTFNIncome,
         abnIncomeNum,
+        abnBusinessDeductions: abnBusinessDeductionsNum,
+        personalSuperContributions: personalSuperContributionsNum,
+        netBusinessIncome,
         totalIncome, // Add totalIncome for HomeScreen display
         workFromHomeDeduction,
         totalManualDeductions,
@@ -3398,6 +3517,8 @@ const AppContent: React.FC = () => {
   }, [
     jobIncomes,
     abnIncome,
+    abnBusinessDeductions,
+    personalSuperContributions,
     taxWithheld,
     deductions,
     workFromHomeHours,
@@ -3430,8 +3551,13 @@ const AppContent: React.FC = () => {
     const employmentIncome =
       result?.totalTFNIncome ??
       jobIncomes.reduce((sum, income) => sum + (parseFloat(income || '0') || 0), 0);
+    const abnIncomeNum = (result?.abnIncomeNum ?? parseFloat(abnIncome || '0')) || 0;
+    const abnBusinessDeductionsNum =
+      (result?.abnBusinessDeductions ?? parseFloat(abnBusinessDeductions || '0')) || 0;
+    const personalSuperContributionsNum =
+      (result?.personalSuperContributions ?? parseFloat(personalSuperContributions || '0')) || 0;
 
-    return [
+    const assumptions = [
       {
         label: 'Estimate only',
         detail:
@@ -3477,7 +3603,18 @@ const AppContent: React.FC = () => {
           : 'Uses the PAYG withholding amount entered by the user; it is not verified against payslips or income statements.',
       },
     ];
+
+    if (abnIncomeNum > 0) {
+      assumptions.push({
+        label: 'ABN/business income',
+        detail: `Treats ${formatCurrency(abnIncomeNum)} as gross ABN/business income. Business deduction inputs of ${formatCurrency(abnBusinessDeductionsNum)} and deductible personal super of ${formatCurrency(personalSuperContributionsNum)} are included only if allowable and supported by records.`,
+      });
+    }
+
+    return assumptions;
   }, [
+    abnBusinessDeductions,
+    abnIncome,
     dependents,
     exemptForeignIncome,
     hasDependents,
@@ -3488,6 +3625,7 @@ const AppContent: React.FC = () => {
     medicareExemption,
     netInvestmentLosses,
     paygUnknown,
+    personalSuperContributions,
     reportableFringeBenefits,
     reportableSuper,
     result,
@@ -3500,6 +3638,10 @@ const AppContent: React.FC = () => {
       result?.totalTFNIncome ??
       jobIncomes.reduce((sum, income) => sum + (parseFloat(income || '0') || 0), 0);
     const abnIncomeNum = (result?.abnIncomeNum ?? parseFloat(abnIncome || '0')) || 0;
+    const abnBusinessDeductionsNum =
+      (result?.abnBusinessDeductions ?? parseFloat(abnBusinessDeductions || '0')) || 0;
+    const personalSuperContributionsNum =
+      (result?.personalSuperContributions ?? parseFloat(personalSuperContributions || '0')) || 0;
     const checklist: DocumentChecklistItem[] = [
       {
         label: 'Final estimate report',
@@ -3520,7 +3662,24 @@ const AppContent: React.FC = () => {
     if (abnIncomeNum > 0) {
       checklist.push({
         label: 'ABN/business income records',
-        detail: 'Keep invoices, payment records, bank statements, and related business records.',
+        detail:
+          'Keep invoices, payment records, bank statements, BAS/GST records if registered, and related business records.',
+      });
+    }
+
+    if (abnBusinessDeductionsNum > 0) {
+      checklist.push({
+        label: 'Business deduction evidence',
+        detail:
+          'Keep business expense receipts, GST/private-use apportionment records, equipment records, and vehicle or home-office logs where relevant.',
+      });
+    }
+
+    if (personalSuperContributionsNum > 0) {
+      checklist.push({
+        label: 'Personal super deduction evidence',
+        detail:
+          'Keep the notice of intent to claim a deduction and the fund acknowledgment before lodging.',
       });
     }
 
@@ -3607,6 +3766,7 @@ const AppContent: React.FC = () => {
     return checklist;
   }, [
     abnIncome,
+    abnBusinessDeductions,
     deductions,
     hasDependents,
     hasPrivateHospitalCover,
@@ -3615,6 +3775,7 @@ const AppContent: React.FC = () => {
     jobIncomes,
     medicareExemption,
     paygUnknown,
+    personalSuperContributions,
     result,
     workFromHomeHours,
   ]);
@@ -3646,6 +3807,8 @@ const AppContent: React.FC = () => {
       'Financial Year',
       'TFN Income',
       'ABN Income',
+      'ABN Business Deductions',
+      'Deductible Personal Super',
       'WFH Deduction',
       'Manual Deductions',
       'Total Deductions',
@@ -3663,6 +3826,8 @@ const AppContent: React.FC = () => {
       selectedTaxYearDisplay,
       result.totalTFNIncome.toFixed(2),
       result.abnIncomeNum.toFixed(2),
+      (result.abnBusinessDeductions || 0).toFixed(2),
+      (result.personalSuperContributions || 0).toFixed(2),
       result.workFromHomeDeduction.toFixed(2),
       result.totalManualDeductions.toFixed(2),
       result.totalDeductions.toFixed(2),
@@ -3789,6 +3954,8 @@ const AppContent: React.FC = () => {
               <tr><th>Source</th><th>Amount</th></tr>
               <tr><td>Employment Income (TFN)</td><td>${formatCurrency(result.totalTFNIncome).replace('$', '$')}</td></tr>
               <tr><td>ABN/Freelance Income</td><td>${formatCurrency(result.abnIncomeNum).replace('$', '$')}</td></tr>
+              ${result.abnBusinessDeductions > 0 ? `<tr><td>ABN Business Deductions</td><td>-${formatCurrency(result.abnBusinessDeductions).replace('$', '$')}</td></tr>` : ''}
+              ${result.personalSuperContributions > 0 ? `<tr><td>Deductible Personal Super</td><td>-${formatCurrency(result.personalSuperContributions).replace('$', '$')}</td></tr>` : ''}
               <tr class="total-row"><td>Total Income</td><td>${formatCurrency(result.totalTFNIncome + result.abnIncomeNum).replace('$', '$')}</td></tr>
             </table>
           </div>
@@ -3832,6 +3999,11 @@ const AppContent: React.FC = () => {
               <!-- Work From Home -->
               <tr class="category-header"><td colspan="3"><strong>Work From Home</strong></td></tr>
               <tr><td></td><td>Work From Home (${workFromHomeHours || 0} hrs)</td><td>${formatCurrency(result.workFromHomeDeduction).replace('$', '$')}</td></tr>
+
+              <!-- ABN and Personal Super -->
+              <tr class="category-header"><td colspan="3"><strong>ABN and Personal Super</strong></td></tr>
+              <tr><td></td><td>ABN Business Deductions</td><td>${formatCurrency(result.abnBusinessDeductions || 0).replace('$', '$')}</td></tr>
+              <tr><td></td><td>Deductible Personal Super</td><td>${formatCurrency(result.personalSuperContributions || 0).replace('$', '$')}</td></tr>
 
               <tr class="total-row"><td colspan="2"><strong>Total Deductions</strong></td><td><strong>${formatCurrency(result.totalDeductions).replace('$', '$')}</strong></td></tr>
             </table>
@@ -4133,6 +4305,9 @@ const AppContent: React.FC = () => {
   const renderIncomeTab = () => {
     const employmentTotal = jobIncomes.reduce((sum, income) => sum + parseFloat(income || '0'), 0);
     const abnTotal = parseFloat(abnIncome || '0');
+    const businessDeductionTotal = parseFloat(abnBusinessDeductions || '0') || 0;
+    const personalSuperTotal = parseFloat(personalSuperContributions || '0') || 0;
+    const netBusinessIncome = Math.max(0, abnTotal - businessDeductionTotal);
     const paygTotal = parseFloat(taxWithheld || '0');
     const totalIncome = employmentTotal + abnTotal;
     // Use proper tax calculation instead of flat rate
@@ -4270,6 +4445,76 @@ const AppContent: React.FC = () => {
                 error={validationErrors.abnIncome}
                 prefix="$"
               />
+
+              <InputField
+                label="Business Deductions"
+                value={abnBusinessDeductions}
+                onChangeText={(value) => {
+                  setAbnBusinessDeductions(value);
+                  clearFieldError('abnBusinessDeductions');
+                }}
+                placeholder="Business expenses before GST/private portions (e.g., 3500)"
+                icon="receipt-outline"
+                helpKey="otherDeductions"
+                error={validationErrors.abnBusinessDeductions}
+                prefix="$"
+              />
+
+              <InputField
+                label="Deductible Personal Super"
+                value={personalSuperContributions}
+                onChangeText={(value) => {
+                  setPersonalSuperContributions(value);
+                  clearFieldError('personalSuperContributions');
+                }}
+                placeholder="Personal super you intend to claim (e.g., 2000)"
+                icon="shield-checkmark-outline"
+                helpKey="otherDeductions"
+                error={validationErrors.personalSuperContributions}
+                prefix="$"
+              />
+
+              {abnTotal > 0 && (
+                <View style={styles.businessGuidanceCard}>
+                  <View style={styles.businessGuidanceHeader}>
+                    <Ionicons name="business-outline" size={18} color={theme.categoryEducation} />
+                    <Text style={styles.businessGuidanceTitle}>ABN Planning Notes</Text>
+                  </View>
+                  <View style={styles.businessGuidanceRow}>
+                    <Text style={styles.businessGuidanceLabel}>Net business estimate</Text>
+                    <Text style={styles.businessGuidanceValue}>
+                      {formatCurrency(netBusinessIncome)}
+                    </Text>
+                  </View>
+                  <View style={styles.businessGuidanceRow}>
+                    <Text style={styles.businessGuidanceLabel}>Extra deduction inputs</Text>
+                    <Text style={styles.businessGuidanceValue}>
+                      {formatCurrency(businessDeductionTotal + personalSuperTotal)}
+                    </Text>
+                  </View>
+                  <View style={styles.businessGuidanceRow}>
+                    <Text style={styles.businessGuidanceLabel}>PAYG instalments</Text>
+                    <Text style={styles.businessGuidanceDetail}>
+                      Business income may create quarterly PAYG instalments separate from employer
+                      PAYG withholding.
+                    </Text>
+                  </View>
+                  <View style={styles.businessGuidanceRow}>
+                    <Text style={styles.businessGuidanceLabel}>GST/BAS</Text>
+                    <Text style={styles.businessGuidanceDetail}>
+                      If registered for GST, keep BAS records and exclude GST from income used for
+                      instalment planning.
+                    </Text>
+                  </View>
+                  <View style={styles.businessGuidanceRow}>
+                    <Text style={styles.businessGuidanceLabel}>Personal super</Text>
+                    <Text style={styles.businessGuidanceDetail}>
+                      Claim only deductible personal contributions with a valid notice of intent and
+                      fund acknowledgment.
+                    </Text>
+                  </View>
+                </View>
+              )}
             </View>
           )}
         </View>
@@ -4488,8 +4733,16 @@ const AppContent: React.FC = () => {
     const donationsTotal = calculateCategoryTotal(deductions.donations);
     const otherTotal = calculateCategoryTotal(deductions.other);
     const wfhTotal = parseFloat(workFromHomeHours || '0') * selectedWfhFixedRate;
+    const businessDeductionTotal = parseFloat(abnBusinessDeductions || '0') || 0;
+    const personalSuperTotal = parseFloat(personalSuperContributions || '0') || 0;
     const grandTotal =
-      workRelatedTotal + selfEducationTotal + donationsTotal + otherTotal + wfhTotal;
+      workRelatedTotal +
+      selfEducationTotal +
+      donationsTotal +
+      otherTotal +
+      wfhTotal +
+      businessDeductionTotal +
+      personalSuperTotal;
     const completedChecklistCount = DEDUCTION_CHECKLIST_ITEMS.filter(
       isDeductionChecklistItemComplete
     ).length;
@@ -4632,6 +4885,8 @@ const AppContent: React.FC = () => {
                       donationsTotal,
                       otherTotal,
                       wfhTotal,
+                      businessDeductionTotal,
+                      personalSuperTotal,
                     ].filter((t) => t > 0).length
                   }{' '}
                   categories
@@ -4693,6 +4948,29 @@ const AppContent: React.FC = () => {
                   />
                   <Text style={styles.summaryBreakdownLabel}>Work From Home</Text>
                   <Text style={styles.summaryBreakdownValue}>{formatCurrency(wfhTotal)}</Text>
+                </View>
+              )}
+              {businessDeductionTotal > 0 && (
+                <View style={styles.summaryBreakdownItem}>
+                  <View
+                    style={[
+                      styles.summaryBreakdownDot,
+                      { backgroundColor: theme.categoryEducation },
+                    ]}
+                  />
+                  <Text style={styles.summaryBreakdownLabel}>ABN Business Deductions</Text>
+                  <Text style={styles.summaryBreakdownValue}>
+                    {formatCurrency(businessDeductionTotal)}
+                  </Text>
+                </View>
+              )}
+              {personalSuperTotal > 0 && (
+                <View style={styles.summaryBreakdownItem}>
+                  <View style={[styles.summaryBreakdownDot, { backgroundColor: theme.primary }]} />
+                  <Text style={styles.summaryBreakdownLabel}>Deductible Personal Super</Text>
+                  <Text style={styles.summaryBreakdownValue}>
+                    {formatCurrency(personalSuperTotal)}
+                  </Text>
                 </View>
               )}
             </View>
@@ -5778,6 +6056,31 @@ const AppContent: React.FC = () => {
                       -{formatCurrency(result.workFromHomeDeduction)}
                     </Text>
                   </View>
+                  {result.abnBusinessDeductions > 0 && (
+                    <View style={styles.summaryBreakdownItem}>
+                      <View
+                        style={[
+                          styles.summaryBreakdownDot,
+                          { backgroundColor: theme.categoryEducation },
+                        ]}
+                      />
+                      <Text style={styles.summaryBreakdownLabel}>ABN Business Deductions</Text>
+                      <Text style={styles.summaryBreakdownValue}>
+                        -{formatCurrency(result.abnBusinessDeductions)}
+                      </Text>
+                    </View>
+                  )}
+                  {result.personalSuperContributions > 0 && (
+                    <View style={styles.summaryBreakdownItem}>
+                      <View
+                        style={[styles.summaryBreakdownDot, { backgroundColor: theme.primary }]}
+                      />
+                      <Text style={styles.summaryBreakdownLabel}>Deductible Personal Super</Text>
+                      <Text style={styles.summaryBreakdownValue}>
+                        -{formatCurrency(result.personalSuperContributions)}
+                      </Text>
+                    </View>
+                  )}
                 </View>
               </View>
             </View>
