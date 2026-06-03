@@ -47,6 +47,7 @@ import {
   DocumentChecklistCard,
 } from './components/results/ResultInfoCards';
 import CalculationLoadingState from './components/results/CalculationLoadingState';
+import CompactTaxTable from './components/results/CompactTaxTable';
 import TaxYearSelector from './components/details/TaxYearSelector';
 import HelpDebtSection from './components/details/HelpDebtSection';
 import MedicareDetailsSection from './components/details/MedicareDetailsSection';
@@ -1830,82 +1831,6 @@ const getStyles = (theme: Theme) =>
       fontSize: 16,
       fontWeight: '700',
       color: theme.text,
-    },
-
-    // Compact table styles
-    compactTableContainer: {
-      backgroundColor: theme.surface,
-      borderRadius: 12,
-      marginTop: 16,
-      borderWidth: 1,
-      borderColor: theme.border,
-      shadowColor: theme.shadow,
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.05,
-      shadowRadius: 4,
-      elevation: 2,
-      overflow: 'hidden',
-    },
-
-    compactTableContent: {
-      width: '100%', // Fixed width instead of minWidth
-    },
-
-    compactTableRow: {
-      flexDirection: 'row',
-      borderBottomWidth: 1,
-      borderBottomColor: theme.borderLight,
-      minHeight: 48,
-    },
-
-    compactTableHeaderRow: {
-      backgroundColor: theme.surfaceSecondary,
-      borderBottomWidth: 2,
-      borderBottomColor: theme.border,
-    },
-
-    compactTableFinalRow: {
-      backgroundColor: theme.successLight,
-      borderBottomWidth: 0,
-    },
-
-    compactTableCell: {
-      paddingVertical: 14,
-      paddingHorizontal: 16,
-      justifyContent: 'center',
-    },
-
-    compactTableCellLabel: {
-      flex: 2,
-      borderRightWidth: 1,
-      borderRightColor: theme.borderLight,
-    },
-
-    compactTableCellValue: {
-      flex: 1,
-      alignItems: 'flex-end',
-    },
-
-    compactTableCellText: {
-      fontSize: 14,
-      color: theme.textSecondary, // Use theme color instead of hardcoded
-      fontWeight: '500',
-    },
-
-    compactTableHeaderText: {
-      fontWeight: '700',
-      color: theme.text, // Use theme color instead of hardcoded
-    },
-
-    compactTableFinalText: {
-      fontWeight: '700',
-      color: theme.success, // Use theme color instead of hardcoded
-    },
-
-    compactTableValueText: {
-      fontWeight: '600',
-      textAlign: 'right',
-      color: theme.text, // Use theme color for values
     },
   });
 
@@ -5004,78 +4929,6 @@ const AppContent: React.FC = () => {
     );
   };
 
-  // Render compact table view component
-  const renderCompactTableView = () => {
-    if (!result) return null;
-
-    const tableData = [
-      ['Item', 'Amount'],
-      ['TFN Employment Income', formatCurrency(result.totalTFNIncome)],
-      ['ABN/Business Income', formatCurrency(result.abnIncomeNum)],
-      ['Total Gross Income', formatCurrency(result.totalTFNIncome + result.abnIncomeNum)],
-      ['Manual Deductions', formatCurrency(result.totalManualDeductions)],
-      ['Work From Home Deduction', formatCurrency(result.workFromHomeDeduction)],
-      ['Total Deductions', formatCurrency(result.totalDeductions)],
-      ['Taxable Income', formatCurrency(result.taxableIncome)],
-      ['Gross Tax', formatCurrency(result.tax)],
-      ['LITO Offset', formatCurrency(result.lito)],
-      ['Medicare Levy', formatCurrency(result.medicare)],
-    ];
-
-    if (result.medicareLevySurcharge > 0) {
-      tableData.push(['Medicare Levy Surcharge', formatCurrency(result.medicareLevySurcharge)]);
-    }
-
-    // Add HECS repayment if applicable
-    if (result.hecsRepayment > 0) {
-      tableData.push(['HECS-HELP Repayment', formatCurrency(result.hecsRepayment)]);
-    }
-
-    // Add final calculations
-    tableData.push(
-      ['Tax Withheld (PAYG)', formatCurrency(parseFloat(taxWithheld || '0'))],
-      [result.refund >= 0 ? 'Tax Refund' : 'Tax Owing', formatCurrency(Math.abs(result.refund))]
-    );
-
-    return (
-      <View style={styles.compactTableContainer}>
-        <View style={styles.compactTableContent}>
-          {tableData.map((row, rowIndex) => (
-            <View
-              key={rowIndex}
-              style={[
-                styles.compactTableRow,
-                rowIndex === 0 && styles.compactTableHeaderRow,
-                rowIndex === tableData.length - 1 && styles.compactTableFinalRow,
-              ]}
-            >
-              {row.map((cell, cellIndex) => (
-                <View
-                  key={cellIndex}
-                  style={[
-                    styles.compactTableCell,
-                    cellIndex === 0 ? styles.compactTableCellLabel : styles.compactTableCellValue,
-                  ]}
-                >
-                  <Text
-                    style={[
-                      styles.compactTableCellText,
-                      rowIndex === 0 && styles.compactTableHeaderText,
-                      rowIndex === tableData.length - 1 && styles.compactTableFinalText,
-                      cellIndex === 1 && rowIndex > 0 && styles.compactTableValueText,
-                    ]}
-                  >
-                    {cell}
-                  </Text>
-                </View>
-              ))}
-            </View>
-          ))}
-        </View>
-      </View>
-    );
-  };
-
   const renderResults = () => {
     console.log('renderResults called - isCalculating:', isCalculating, 'result:', !!result);
 
@@ -5547,7 +5400,7 @@ const AppContent: React.FC = () => {
           </>
         ) : (
           /* Compact Table View */
-          renderCompactTableView()
+          <CompactTaxTable result={result} taxWithheld={taxWithheld} />
         )}
 
         {/* Full Width Back to Home Button */}
