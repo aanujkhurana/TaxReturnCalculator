@@ -145,9 +145,10 @@ Make the Australian tax return calculator more valuable, trustworthy, and produc
 
 ## Priority 5 - Release Preparation
 
-- [ ] Add app metadata.
+- [x] Add app metadata.
   - Prepare app icon, splash screen, store screenshots, description, keywords, support URL, and privacy policy URL.
   - Acceptance: metadata is ready for TestFlight/App Store submission.
+  - Completed: added generated app icon/splash assets, wired them into Expo config, added store metadata copy, screenshot capture requirements, support page, and privacy policy draft under `docs/release/`.
 
 - [x] Add EAS build setup.
   - Configure development, preview, and production build profiles.

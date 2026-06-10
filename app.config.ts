@@ -26,8 +26,10 @@ const ENVIRONMENT_DEFAULTS: Record<
     scheme: 'mytaxreturnau-dev',
     iosBundleIdentifier: 'au.mytaxreturn.app.dev',
     androidPackage: 'au.mytaxreturn.app.dev',
-    supportUrl: 'mailto:support@example.com?subject=MyTaxReturn%20AU%20Dev%20Support',
-    privacyPolicyUrl: 'https://example.com/mytaxreturn-au/privacy',
+    supportUrl:
+      'https://github.com/aanujkhurana/TaxReturnCalculator/blob/main/docs/release/SUPPORT.md',
+    privacyPolicyUrl:
+      'https://github.com/aanujkhurana/TaxReturnCalculator/blob/main/docs/release/PRIVACY_POLICY.md',
   },
   preview: {
     analyticsEnabled: false,
@@ -37,8 +39,10 @@ const ENVIRONMENT_DEFAULTS: Record<
     scheme: 'mytaxreturnau-preview',
     iosBundleIdentifier: 'au.mytaxreturn.app.preview',
     androidPackage: 'au.mytaxreturn.app.preview',
-    supportUrl: 'mailto:support@example.com?subject=MyTaxReturn%20AU%20Preview%20Support',
-    privacyPolicyUrl: 'https://example.com/mytaxreturn-au/privacy',
+    supportUrl:
+      'https://github.com/aanujkhurana/TaxReturnCalculator/blob/main/docs/release/SUPPORT.md',
+    privacyPolicyUrl:
+      'https://github.com/aanujkhurana/TaxReturnCalculator/blob/main/docs/release/PRIVACY_POLICY.md',
   },
   production: {
     analyticsEnabled: true,
@@ -48,8 +52,10 @@ const ENVIRONMENT_DEFAULTS: Record<
     scheme: 'mytaxreturnau',
     iosBundleIdentifier: 'au.mytaxreturn.app',
     androidPackage: 'au.mytaxreturn.app',
-    supportUrl: 'mailto:support@example.com?subject=MyTaxReturn%20AU%20Support',
-    privacyPolicyUrl: 'https://example.com/mytaxreturn-au/privacy',
+    supportUrl:
+      'https://github.com/aanujkhurana/TaxReturnCalculator/blob/main/docs/release/SUPPORT.md',
+    privacyPolicyUrl:
+      'https://github.com/aanujkhurana/TaxReturnCalculator/blob/main/docs/release/PRIVACY_POLICY.md',
   },
 };
 
@@ -92,7 +98,9 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     scheme: process.env.EXPO_PUBLIC_APP_SCHEME || defaults.scheme,
     orientation: 'portrait',
     userInterfaceStyle: 'automatic',
+    icon: './assets/icon.png',
     splash: {
+      image: './assets/splash-icon.png',
       resizeMode: 'contain',
       backgroundColor: '#0F172A',
     },
@@ -105,6 +113,10 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     android: {
       package: process.env.ANDROID_PACKAGE || defaults.androidPackage,
       versionCode: readPositiveInteger(process.env.ANDROID_VERSION_CODE, 1),
+      adaptiveIcon: {
+        foregroundImage: './assets/icon.png',
+        backgroundColor: '#0F172A',
+      },
     },
     web: {
       bundler: 'metro',

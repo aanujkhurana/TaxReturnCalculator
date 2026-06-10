@@ -37,7 +37,8 @@ export const ENVIRONMENT_CONFIG = {
   sentryDsn: process.env?.EXPO_PUBLIC_SENTRY_DSN,
   supportUrl:
     process.env?.EXPO_PUBLIC_SUPPORT_URL ||
-    'mailto:support@example.com?subject=MyTaxReturn%20AU%20Support',
+    'https://github.com/aanujkhurana/TaxReturnCalculator/blob/main/docs/release/SUPPORT.md',
   privacyPolicyUrl:
-    process.env?.EXPO_PUBLIC_PRIVACY_POLICY_URL || 'https://example.com/mytaxreturn-au/privacy',
+    process.env?.EXPO_PUBLIC_PRIVACY_POLICY_URL ||
+    'https://github.com/aanujkhurana/TaxReturnCalculator/blob/main/docs/release/PRIVACY_POLICY.md',
 } as const;
