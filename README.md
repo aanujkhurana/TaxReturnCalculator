@@ -710,16 +710,16 @@ npm run test:report
 
 ### Accuracy and Limitations
 
-- **Estimates Only**: Results are estimates and should not replace professional tax advice
+- **Estimates Only**: Results are estimates and should not replace advice from a registered tax agent
 - **2025-26 Rates**: Uses current Australian tax rates and thresholds
 - **Simplified Calculations**: Some complex scenarios may require professional consultation
-- **ATO Compliance**: Calculations follow ATO guidelines but may not cover all edge cases
+- **ATO Source Notes**: Supported tax-year assumptions are source-linked but may not cover all edge cases
 
 ### Data Privacy
 
-- **No Data Storage**: All calculations performed locally on device
-- **No Network Requests**: App works completely offline
-- **No Personal Data Collection**: No user information is transmitted or stored
+- **Local Saved Data**: Saved calculations are stored locally on the device
+- **Optional Diagnostics**: Preview and production builds can enable analytics or crash reporting through environment configuration
+- **Export Control**: Reports leave the device only when the user chooses to export or share them
 
 ### Professional Advice
 
@@ -733,7 +733,7 @@ Users should consult qualified tax professionals for:
 
 ## 📄 License
 
-This project is for educational and estimation purposes only. Users should consult qualified tax professionals for official tax advice and return preparation.
+This project is for educational and estimation purposes only. Users should consult a registered tax agent or official ATO services for actual tax return preparation.
 
 ---
 

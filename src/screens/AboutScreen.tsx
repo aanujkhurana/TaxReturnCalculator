@@ -53,21 +53,21 @@ const AboutScreen: React.FC<AboutScreenProps> = ({ onBack }) => {
     {
       title: 'Privacy Policy',
       content: [
-        'This application does not collect, store, or transmit any personal data to external servers. All calculations and data remain on your device only.',
-        'No personal information, tax details, or usage data is shared with third parties. Your privacy is completely protected.',
-        'The app may access device storage only to save your calculations locally for your convenience. No data leaves your device.',
+        'Calculations run on your device. Saved calculations are stored locally so you can reopen estimates and compare scenarios.',
+        'Analytics and crash reporting can be enabled by build configuration, but should not include raw tax amounts, tax file numbers, identity documents, bank details, or myGov credentials.',
+        'Data can leave your device if you choose to export or share a report, or when configured analytics or crash reporting sends non-sensitive diagnostics.',
       ],
     },
     {
       title: 'Important Disclaimer',
       content: [
         'This application is NOT affiliated with the Australian Taxation Office (ATO). This app is NOT operated by a registered tax agent.',
-        'All calculations are estimates only and should not be considered as professional tax advice. Results may not reflect your actual tax liability or refund amount.',
+        'All calculations are estimates only and should not be considered registered tax agent advice. Results may not reflect your actual tax liability or refund amount.',
         'The developers assume no responsibility for any financial decisions made based on the calculations provided by this application.',
       ],
     },
     {
-      title: 'Professional Advice',
+      title: 'Tax Advice',
       content: [
         'For final accuracy and compliance, consult a registered tax agent. Tax laws are complex and subject to change.',
         'Individual circumstances may affect your tax obligations in ways this calculator cannot account for.',

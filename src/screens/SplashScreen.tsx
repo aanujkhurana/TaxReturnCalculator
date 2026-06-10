@@ -198,7 +198,7 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish }) => {
           ]}
         >
           <Text style={styles.appTitle}>Australia Tax Return</Text>
-          <Text style={styles.appSubtitle}>Professional Tax Calculator</Text>
+          <Text style={styles.appSubtitle}>Tax Estimate Calculator</Text>
         </Animated.View>
 
         {/* Version Info */}

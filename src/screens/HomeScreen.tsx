@@ -365,7 +365,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
           </TouchableOpacity>
           <View style={styles.fixedHeaderTextContainer}>
             <Text style={styles.fixedHeaderTitle}>Australia Tax Return</Text>
-            <Text style={styles.fixedHeaderSubtitle}>Professional Tax Calculator</Text>
+            <Text style={styles.fixedHeaderSubtitle}>Tax Estimate Calculator</Text>
           </View>
           <View style={styles.fixedHeaderActions}>
             <ThemeToggle style={styles.themeToggle} />
@@ -388,13 +388,13 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
             </View>
             <Text style={styles.emptyStateTitle}>Ready to Calculate Your Tax Return?</Text>
             <Text style={styles.emptyStateText}>
-              Get started with a comprehensive Australian tax calculator. We will guide you through
-              each step to maximize your refund.
+              Estimate your Australian tax outcome with guided income, deduction, Medicare, HELP,
+              and PAYG inputs.
             </Text>
             <View style={styles.emptyStateFeatures}>
               <View style={styles.emptyStateFeature}>
                 <Ionicons name="checkmark-circle" size={16} color={theme.success} />
-                <Text style={styles.emptyStateFeatureText}>ATO compliant calculations</Text>
+                <Text style={styles.emptyStateFeatureText}>ATO source-linked assumptions</Text>
               </View>
               <View style={styles.emptyStateFeature}>
                 <Ionicons name="checkmark-circle" size={16} color={theme.success} />
@@ -402,7 +402,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
               </View>
               <View style={styles.emptyStateFeature}>
                 <Ionicons name="checkmark-circle" size={16} color={theme.success} />
-                <Text style={styles.emptyStateFeatureText}>Professional guidance included</Text>
+                <Text style={styles.emptyStateFeatureText}>Estimate assumptions included</Text>
               </View>
             </View>
           </View>

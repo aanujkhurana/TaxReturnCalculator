@@ -165,9 +165,10 @@ Make the Australian tax return calculator more valuable, trustworthy, and produc
   - Acceptance: beta users can report calculation concerns with enough context to reproduce them.
   - Completed: added an About-screen Beta Feedback link, GitHub beta feedback issue template, beta triage guide, and support-page link with privacy-safe reporting questions.
 
-- [ ] Add app store compliance review.
+- [x] Add app store compliance review.
   - Review financial/tax advice wording, disclaimers, privacy claims, and data handling.
   - Acceptance: app copy avoids implying registered tax agent advice.
+  - Completed: added `docs/release/COMPLIANCE_REVIEW.md`, removed high-risk professional/ATO-compliant/refund-maximization app copy, aligned privacy claims with analytics/crash/export behavior, and documented blocked wording for screenshots and store metadata.
 
 ## Priority 6 - Future Tax-Year Maintenance
 
@@ -189,9 +190,8 @@ Make the Australian tax return calculator more valuable, trustworthy, and produc
 
 ## Suggested Next Sprint
 
-1. Add a release checklist covering tax-source verification, tests, simulator QA, physical-device QA, privacy review, dependency audit, and export QA.
-2. Replace placeholder support/privacy URLs and prepare store metadata, app icon, splash asset, screenshots, description, and keywords.
-3. Review compliance copy so tax/financial wording does not imply registered tax agent advice.
-4. Continue Priority 3 mobile hardening: component extraction, service cleanup, validation, accessibility, keyboard, and saved-calculation states.
-5. Improve export/storage/privacy controls: PDF detail, CSV export, delete/clear data, backup import/export, and data-retention copy.
-6. Add future tax-year maintenance automation: config validation tests, update script, annual source-review reminders, and unsupported-year handling.
+1. Continue Priority 3 mobile hardening: component extraction, service cleanup, validation, accessibility, keyboard, and saved-calculation states.
+2. Improve export/storage/privacy controls: PDF detail, CSV export, delete/clear data, backup import/export, and data-retention copy.
+3. Add future tax-year maintenance automation: config validation tests, update script, annual source-review reminders, and unsupported-year handling.
+4. Capture fresh release screenshots from the current build and do not use the old `mockups/` screenshots.
+5. Replace repository-hosted support/privacy URLs with stable branded website URLs before broad production launch.
