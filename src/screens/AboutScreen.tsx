@@ -101,6 +101,12 @@ const AboutScreen: React.FC<AboutScreenProps> = ({ onBack }) => {
       url: EXTERNAL_LINKS.SUPPORT,
     },
     {
+      icon: 'chatbox-ellipses-outline',
+      title: 'Beta Feedback',
+      subtitle: 'Report calculation concerns or app issues',
+      url: EXTERNAL_LINKS.BETA_FEEDBACK,
+    },
+    {
       icon: 'shield-checkmark-outline',
       title: 'Privacy Policy',
       subtitle: 'How app data is handled',
@@ -367,9 +373,9 @@ const AboutScreen: React.FC<AboutScreenProps> = ({ onBack }) => {
             <Text style={styles.appName}>{APP_INFO.NAME}</Text>
             <Text style={styles.appVersion}>Version {APP_INFO.VERSION}</Text>
             <Text style={styles.appDescription}>
-              Professional Australian tax calculator designed to help you estimate your tax return
-              for the {APP_INFO.FINANCIAL_YEAR} financial year. Simple, secure, and private - all
-              data stays on your device.
+              Australian tax estimate calculator designed to help you review possible tax outcomes
+              for the {APP_INFO.FINANCIAL_YEAR} financial year. Saved calculations stay on your
+              device unless you choose to export or share them.
             </Text>
             <View style={styles.disclaimerBanner}>
               <Ionicons name="warning" size={16} color={theme.warning} />

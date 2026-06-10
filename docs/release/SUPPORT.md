@@ -23,6 +23,16 @@ When reporting a calculation concern, include:
 
 Do not include exact sensitive tax records if rounded or anonymized numbers are enough to reproduce the problem.
 
+## Beta Feedback
+
+Beta users can report structured feedback from the app:
+
+About -> Beta Feedback
+
+Direct template URL:
+
+https://github.com/aanujkhurana/TaxReturnCalculator/issues/new?template=beta-feedback.md
+
 ## Bug Report Template
 
 When reporting an app bug, include:

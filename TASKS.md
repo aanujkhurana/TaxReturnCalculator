@@ -160,9 +160,10 @@ Make the Australian tax return calculator more valuable, trustworthy, and produc
   - Acceptance: releases follow a repeatable checklist.
   - Completed: added `docs/release/RELEASE_CHECKLIST.md` covering release scope, ATO source verification, automated checks, manual app QA, privacy/data handling, store metadata, EAS build/submission, and final review steps.
 
-- [ ] Add beta feedback flow.
+- [x] Add beta feedback flow.
   - Provide an in-app support/contact path and structured feedback questions.
   - Acceptance: beta users can report calculation concerns with enough context to reproduce them.
+  - Completed: added an About-screen Beta Feedback link, GitHub beta feedback issue template, beta triage guide, and support-page link with privacy-safe reporting questions.
 
 - [ ] Add app store compliance review.
   - Review financial/tax advice wording, disclaimers, privacy claims, and data handling.

@@ -160,6 +160,7 @@ export interface ExternalLinks {
   readonly ATO_DEDUCTIONS_GUIDE: string;
   readonly MYGOV: string;
   readonly SUPPORT: string;
+  readonly BETA_FEEDBACK: string;
   readonly PRIVACY_POLICY: string;
 }
 
@@ -229,6 +230,8 @@ export const EXTERNAL_LINKS: ExternalLinks = {
     'https://www.ato.gov.au/individuals/income-deductions-offsets-and-records/deductions/',
   MYGOV: 'https://my.gov.au',
   SUPPORT: ENVIRONMENT_CONFIG.supportUrl,
+  BETA_FEEDBACK:
+    'https://github.com/aanujkhurana/TaxReturnCalculator/issues/new?template=beta-feedback.md&title=Beta%20feedback%3A%20',
   PRIVACY_POLICY: ENVIRONMENT_CONFIG.privacyPolicyUrl,
 } as const;
 
