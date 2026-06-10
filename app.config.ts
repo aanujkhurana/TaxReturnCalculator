@@ -11,6 +11,9 @@ const ENVIRONMENT_DEFAULTS: Record<
     crashReportingEnabled: boolean;
     name: string;
     slug: string;
+    scheme: string;
+    iosBundleIdentifier: string;
+    androidPackage: string;
     supportUrl: string;
     privacyPolicyUrl: string;
   }
@@ -20,6 +23,9 @@ const ENVIRONMENT_DEFAULTS: Record<
     crashReportingEnabled: false,
     name: 'MyTaxReturn AU Dev',
     slug: 'MyTaxReturn-au-dev',
+    scheme: 'mytaxreturnau-dev',
+    iosBundleIdentifier: 'au.mytaxreturn.app.dev',
+    androidPackage: 'au.mytaxreturn.app.dev',
     supportUrl: 'mailto:support@example.com?subject=MyTaxReturn%20AU%20Dev%20Support',
     privacyPolicyUrl: 'https://example.com/mytaxreturn-au/privacy',
   },
@@ -28,6 +34,9 @@ const ENVIRONMENT_DEFAULTS: Record<
     crashReportingEnabled: true,
     name: 'MyTaxReturn AU Preview',
     slug: 'MyTaxReturn-au-preview',
+    scheme: 'mytaxreturnau-preview',
+    iosBundleIdentifier: 'au.mytaxreturn.app.preview',
+    androidPackage: 'au.mytaxreturn.app.preview',
     supportUrl: 'mailto:support@example.com?subject=MyTaxReturn%20AU%20Preview%20Support',
     privacyPolicyUrl: 'https://example.com/mytaxreturn-au/privacy',
   },
@@ -36,6 +45,9 @@ const ENVIRONMENT_DEFAULTS: Record<
     crashReportingEnabled: true,
     name: 'MyTaxReturn AU',
     slug: 'MyTaxReturn-au',
+    scheme: 'mytaxreturnau',
+    iosBundleIdentifier: 'au.mytaxreturn.app',
+    androidPackage: 'au.mytaxreturn.app',
     supportUrl: 'mailto:support@example.com?subject=MyTaxReturn%20AU%20Support',
     privacyPolicyUrl: 'https://example.com/mytaxreturn-au/privacy',
   },
@@ -55,15 +67,29 @@ const readBoolean = (value: string | undefined, fallback: boolean): boolean => {
   return fallback;
 };
 
+const readPositiveInteger = (value: string | undefined, fallback: number): number => {
+  if (!value) return fallback;
+
+  const parsed = Number(value);
+  if (!Number.isInteger(parsed) || parsed < 1) {
+    return fallback;
+  }
+
+  return parsed;
+};
+
 export default ({ config }: ConfigContext): ExpoConfig => {
   const appEnv = normalizeEnvironment(process.env.APP_ENV || process.env.EXPO_PUBLIC_APP_ENV);
   const defaults = ENVIRONMENT_DEFAULTS[appEnv];
+  const easProjectId = process.env.EAS_PROJECT_ID;
 
   return {
     ...config,
+    ...(process.env.EXPO_OWNER ? { owner: process.env.EXPO_OWNER } : {}),
     name: process.env.EXPO_PUBLIC_APP_NAME || defaults.name,
     slug: process.env.EXPO_PUBLIC_APP_SLUG || defaults.slug,
     version: '1.0.0',
+    scheme: process.env.EXPO_PUBLIC_APP_SCHEME || defaults.scheme,
     orientation: 'portrait',
     userInterfaceStyle: 'automatic',
     splash: {
@@ -73,8 +99,13 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     assetBundlePatterns: ['**/*'],
     ios: {
       supportsTablet: true,
+      bundleIdentifier: process.env.IOS_BUNDLE_IDENTIFIER || defaults.iosBundleIdentifier,
+      buildNumber: process.env.IOS_BUILD_NUMBER || '1',
     },
-    android: {},
+    android: {
+      package: process.env.ANDROID_PACKAGE || defaults.androidPackage,
+      versionCode: readPositiveInteger(process.env.ANDROID_VERSION_CODE, 1),
+    },
     web: {
       bundler: 'metro',
     },
@@ -91,6 +122,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       ),
       supportUrl: process.env.EXPO_PUBLIC_SUPPORT_URL || defaults.supportUrl,
       privacyPolicyUrl: process.env.EXPO_PUBLIC_PRIVACY_POLICY_URL || defaults.privacyPolicyUrl,
+      ...(easProjectId ? { eas: { projectId: easProjectId } } : {}),
     },
   };
 };

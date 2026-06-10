@@ -149,9 +149,10 @@ Make the Australian tax return calculator more valuable, trustworthy, and produc
   - Prepare app icon, splash screen, store screenshots, description, keywords, support URL, and privacy policy URL.
   - Acceptance: metadata is ready for TestFlight/App Store submission.
 
-- [ ] Add EAS build setup.
+- [x] Add EAS build setup.
   - Configure development, preview, and production build profiles.
   - Acceptance: `eas build` can produce an iOS preview build.
+  - Completed: added EAS development simulator, preview, preview simulator, and production profiles; added native app IDs/build numbers to Expo config; added npm EAS build shortcuts and updated README build commands.
 
 - [ ] Add release checklist.
   - Include tax-source verification, tests, simulator QA, physical-device QA, privacy review, dependency audit, and export QA.
@@ -185,8 +186,9 @@ Make the Australian tax return calculator more valuable, trustworthy, and produc
 
 ## Suggested Next Sprint
 
-1. Move remaining formula logic from `src/App.tsx` into `src/services/taxCalculationService.ts`.
-2. Add calculation snapshot tests for the 2025-26 tax-year config.
-3. Add source-linked audit notes for every 2025-26 constant.
-4. Add UI tax-year selection using the existing config switch.
-5. Resolve Expo dependency warnings and add CI.
+1. Add a release checklist covering tax-source verification, tests, simulator QA, physical-device QA, privacy review, dependency audit, and export QA.
+2. Replace placeholder support/privacy URLs and prepare store metadata, app icon, splash asset, screenshots, description, and keywords.
+3. Review compliance copy so tax/financial wording does not imply registered tax agent advice.
+4. Continue Priority 3 mobile hardening: component extraction, service cleanup, validation, accessibility, keyboard, and saved-calculation states.
+5. Improve export/storage/privacy controls: PDF detail, CSV export, delete/clear data, backup import/export, and data-retention copy.
+6. Add future tax-year maintenance automation: config validation tests, update script, annual source-review reminders, and unsupported-year handling.

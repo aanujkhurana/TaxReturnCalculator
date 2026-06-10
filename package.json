@@ -11,6 +11,12 @@
     "format": "prettier --write \"*.{js,json,md,ts,tsx}\" \"src/**/*.{ts,tsx}\"",
     "type-check": "npx tsc --noEmit",
     "type-check:watch": "npx tsc --noEmit --watch",
+    "eas:whoami": "npx eas-cli@20.1.0 whoami",
+    "eas:build:ios:preview-simulator": "npx eas-cli@20.1.0 build --profile preview-simulator --platform ios",
+    "eas:build:ios:preview": "npx eas-cli@20.1.0 build --profile preview --platform ios",
+    "eas:build:android:preview": "npx eas-cli@20.1.0 build --profile preview --platform android",
+    "eas:build:ios:production": "npx eas-cli@20.1.0 build --profile production --platform ios",
+    "eas:build:android:production": "npx eas-cli@20.1.0 build --profile production --platform android",
     "build": "npx tsc",
     "build:watch": "npx tsc --watch"
   },

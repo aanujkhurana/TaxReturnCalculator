@@ -285,12 +285,19 @@ For development with hot reloading:
 expo start --dev-client
 ```
 
-For production build:
+For EAS preview and store builds:
 
 ```bash
-expo build:android
-expo build:ios
+npm run eas:whoami
+npm run eas:build:ios:preview-simulator
+npm run eas:build:android:preview
+npm run eas:build:ios:production
+npm run eas:build:android:production
 ```
+
+The iOS preview simulator build does not require Apple signing credentials. Internal iOS device
+builds and production store builds require an Expo account plus Apple Developer Program or Google
+Play Console credentials.
 
 ## 🛠️ Development Guide
 
