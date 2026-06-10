@@ -154,9 +154,10 @@ Make the Australian tax return calculator more valuable, trustworthy, and produc
   - Acceptance: `eas build` can produce an iOS preview build.
   - Completed: added EAS development simulator, preview, preview simulator, and production profiles; added native app IDs/build numbers to Expo config; added npm EAS build shortcuts and updated README build commands.
 
-- [ ] Add release checklist.
+- [x] Add release checklist.
   - Include tax-source verification, tests, simulator QA, physical-device QA, privacy review, dependency audit, and export QA.
   - Acceptance: releases follow a repeatable checklist.
+  - Completed: added `docs/release/RELEASE_CHECKLIST.md` covering release scope, ATO source verification, automated checks, manual app QA, privacy/data handling, store metadata, EAS build/submission, and final review steps.
 
 - [ ] Add beta feedback flow.
   - Provide an in-app support/contact path and structured feedback questions.
